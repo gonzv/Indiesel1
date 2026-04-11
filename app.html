@@ -432,6 +432,76 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 /* ══════════════════════════════════════════
+   DRAWER (panel lateral de detalle)
+══════════════════════════════════════════ */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(4px);
+  z-index: 150; display: none;
+}
+.drawer-overlay.open { display: block; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 560px; max-width: 100vw;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  z-index: 151;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform var(--transition);
+  box-shadow: -8px 0 40px rgba(0,0,0,.4);
+}
+.drawer.open { transform: none; }
+.drawer-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  flex-shrink: 0;
+}
+.drawer-body { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.drawer-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0;
+}
+.status-btn {
+  padding: 6px 14px; border-radius: 99px; font-size: 12px; font-weight: 700;
+  border: 2px solid transparent; cursor: pointer; transition: all var(--transition);
+  background: transparent;
+}
+.status-btn:hover { transform: translateY(-1px); }
+.status-btn.s-presupuestado { color: var(--warn);   border-color: var(--warn); }
+.status-btn.s-en_trabajo    { color: var(--info);   border-color: var(--info); }
+.status-btn.s-listo         { color: var(--accent); border-color: var(--accent); }
+.status-btn.s-entregado     { color: var(--text3);  border-color: var(--text3); }
+.status-btn.active.s-presupuestado { background: rgba(245,158,11,.15); }
+.status-btn.active.s-en_trabajo    { background: rgba(59,130,246,.15); }
+.status-btn.active.s-listo         { background: rgba(34,197,94,.15);  }
+.status-btn.active.s-entregado     { background: rgba(100,116,139,.15);}
+.items-orden-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.items-orden-table th {
+  text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text3); padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.items-orden-table td { padding: 6px 4px; border-bottom: 1px solid rgba(51,65,85,.4); vertical-align: middle; }
+.items-orden-table td input {
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 7px 9px; font-size: 13px; color: var(--text); width: 100%;
+  transition: border-color var(--transition);
+}
+.items-orden-table td input:focus { outline: none; border-color: var(--accent); }
+.total-display {
+  background: rgba(34,197,94,.08); border: 1px solid rgba(34,197,94,.25);
+  border-radius: var(--radius-sm); padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.total-display span { font-size: 13px; color: var(--text3); font-weight: 500; }
+.total-display strong { font-size: 22px; font-weight: 800; color: var(--accent); }
+.tr-clickable { cursor: pointer; }
+.tr-clickable:hover td { background: rgba(34,197,94,.04) !important; }
+
+/* ══════════════════════════════════════════
    SIDEBAR OVERLAY (mobile)
 ══════════════════════════════════════════ */
 .sidebar-overlay {
@@ -585,13 +655,13 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('clientes');openModal('modal-cliente')">
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('clientes');limpiarFormCliente();openModal('modal-cliente')">
             <i class="fa-solid fa-user-plus" style="color:var(--info)"></i> Nuevo cliente
           </button>
           <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('ordenes');openModal('modal-orden')">
             <i class="fa-solid fa-plus" style="color:var(--accent)"></i> Nueva orden de trabajo
           </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('presupuestos')">
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('presupuestos');abrirNuevoPresupuesto()">
             <i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn)"></i> Nuevo presupuesto
           </button>
           <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="window.open('index.html','_blank')">
@@ -609,7 +679,7 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" placeholder="Buscar cliente..." id="search-clientes" oninput="filtrarClientes()">
       </div>
-      <button class="btn btn-primary" onclick="openModal('modal-cliente')">
+      <button class="btn btn-primary" onclick="limpiarFormCliente();openModal('modal-cliente')">
         <i class="fa-solid fa-plus"></i> Nuevo cliente
       </button>
     </div>
@@ -687,7 +757,7 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" placeholder="Buscar presupuesto...">
       </div>
-      <button class="btn btn-primary" onclick="openModal('modal-presupuesto')">
+      <button class="btn btn-primary" onclick="abrirNuevoPresupuesto()">
         <i class="fa-solid fa-plus"></i> Nuevo presupuesto
       </button>
     </div>
@@ -829,11 +899,11 @@ tbody tr:last-child td { border-bottom: none; }
 
 <!-- ═══════════════════════ MODALS ═══════════════════════ -->
 
-<!-- Modal: Nuevo Cliente -->
+<!-- Modal: Nuevo/Editar Cliente -->
 <div class="modal-overlay" id="modal-cliente">
   <div class="modal">
     <div class="modal-header">
-      <h2><i class="fa-solid fa-user-plus" style="color:var(--info);margin-right:8px"></i>Nuevo cliente</h2>
+      <h2 id="modal-cliente-titulo"><i class="fa-solid fa-user-plus" style="color:var(--info);margin-right:8px"></i>Nuevo cliente</h2>
       <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-cliente')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
@@ -848,6 +918,18 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="field"><label>Dirección</label>
           <input type="text" id="cli-direccion" placeholder="Calle 123, Mar del Plata"></div>
+        <div class="form-grid-2">
+          <div class="field"><label>CUIT</label>
+            <input type="text" id="cli-cuit" placeholder="20-12345678-9"></div>
+          <div class="field"><label>Condición IVA</label>
+            <select id="cli-condicion-iva">
+              <option value="consumidor_final">Consumidor Final</option>
+              <option value="responsable_inscripto">Responsable Inscripto</option>
+              <option value="monotributista">Monotributista</option>
+              <option value="exento">Exento</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer">
@@ -960,20 +1042,289 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 
 <!-- Modal: Presupuesto -->
-<div class="modal-overlay" id="modal-presupuesto">
-  <div class="modal">
+<!-- Modal: Vista orden de trabajo -->
+<div class="modal-overlay" id="modal-orden-preview">
+  <div class="modal" style="max-width:720px;width:95vw">
     <div class="modal-header">
-      <h2><i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn);margin-right:8px"></i>Nuevo presupuesto</h2>
-      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-presupuesto')"><i class="fa-solid fa-xmark"></i></button>
+      <h2><i class="fa-solid fa-wrench" style="color:var(--accent);margin-right:8px"></i>Orden de trabajo</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-orden-preview')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-body">
-      <p style="color:var(--text3);font-size:13px">Próximamente — el módulo completo de presupuestos va a estar acá.</p>
+    <div class="modal-body" style="overflow-y:auto;max-height:80vh;padding:0">
+      <div id="orden-preview-content" style="background:#fff;color:#222;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px 36px;min-height:400px"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-ghost" onclick="closeModal('modal-presupuesto')">Cerrar</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-orden-preview')">Cerrar</button>
+      <button class="btn btn-primary" id="orden-preview-pdf-btn">
+        <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+      </button>
     </div>
   </div>
 </div>
+
+<!-- Modal: Vista previa presupuesto -->
+<!-- Modal: Confirmar entrega -->
+<div class="modal-overlay" id="modal-confirmar-entrega">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-truck" style="color:var(--accent);margin-right:8px"></i>Confirmar entrega</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-confirmar-entrega')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);font-size:14px;margin-bottom:16px">¿La fecha de entrega es la de hoy?</p>
+      <div class="field">
+        <label>Fecha de entrega</label>
+        <input type="date" id="input-fecha-entrega">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-confirmar-entrega')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarEntrega()">
+        <i class="fa-solid fa-check"></i> Confirmar entrega
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-presup-preview">
+  <div class="modal" style="max-width:720px;width:95vw">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn);margin-right:8px"></i>Vista del presupuesto</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-presup-preview')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;max-height:80vh;padding:0">
+      <div id="presup-preview-content" style="background:#fff;color:#222;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px 36px;min-height:400px">
+        <!-- se rellena dinámicamente -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-presup-preview')">Cerrar</button>
+      <button class="btn btn-primary" id="presup-preview-pdf-btn" onclick="">
+        <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-presupuesto">
+  <div class="modal" style="max-width:820px;width:95vw">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn);margin-right:8px"></i><span id="presup-titulo">Nuevo presupuesto</span></h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-presupuesto')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="overflow-y:auto;max-height:75vh">
+      <div class="form-grid" style="gap:16px">
+
+        <!-- N°, fecha, validez -->
+        <div class="form-grid-3">
+          <div class="field"><label>N° Presupuesto</label>
+            <input type="text" id="presup-numero" placeholder="001"></div>
+          <div class="field"><label>Fecha</label>
+            <input type="date" id="presup-fecha"></div>
+          <div class="field"><label>Validez (días)</label>
+            <input type="number" id="presup-validez" placeholder="30" value="30" min="1"></div>
+        </div>
+
+        <!-- Selector de cliente -->
+        <div class="field"><label>Cliente registrado</label>
+          <select id="presup-cli-select" onchange="presupSeleccionarCliente()">
+            <option value="">— Seleccionar cliente o completar manualmente —</option>
+          </select>
+        </div>
+
+        <!-- Datos del cliente -->
+        <div class="form-grid-2">
+          <div class="field"><label>Nombre / Empresa *</label>
+            <input type="text" id="presup-cli-nombre" placeholder="Juan García / Transportes S.A."></div>
+          <div class="field"><label>CUIT</label>
+            <input type="text" id="presup-cli-cuit" placeholder="20-12345678-9"></div>
+        </div>
+        <div class="form-grid-3">
+          <div class="field"><label>Teléfono</label>
+            <input type="tel" id="presup-cli-telefono" placeholder="223-456-7890"></div>
+          <div class="field"><label>Email</label>
+            <input type="email" id="presup-cli-email" placeholder="cliente@mail.com"></div>
+          <div class="field"><label>Dirección</label>
+            <input type="text" id="presup-cli-direccion" placeholder="Calle 123, Mar del Plata"></div>
+        </div>
+
+        <!-- Tipo de trabajo -->
+        <div class="field">
+          <label>Tipo de trabajo</label>
+          <div style="display:flex;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-top:4px">
+            <button id="presup-btn-lab" onclick="presupSetTipo('lab')"
+              style="flex:1;padding:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--accent);color:var(--bg);transition:all .15s">
+              <i class="fa-solid fa-flask"></i> Laboratorio
+            </button>
+            <button id="presup-btn-pla" onclick="presupSetTipo('pla')"
+              style="flex:1;padding:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;background:var(--bg3);color:var(--text2);border-left:1.5px solid var(--border);transition:all .15s">
+              <i class="fa-solid fa-car"></i> Playa
+            </button>
+          </div>
+          <input type="text" id="presup-tipo-detalle" placeholder="Ej: 3 inyectores VW Amarok..." style="margin-top:8px">
+        </div>
+
+        <!-- Ítems -->
+        <div>
+          <label style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Ítems / Servicios</label>
+          <div style="overflow-x:auto;margin-top:8px;border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="background:var(--bg3)">
+                  <th style="padding:8px 6px;font-size:11px;font-weight:700;text-align:left;color:var(--text2);width:28px">#</th>
+                  <th style="padding:8px 6px;font-size:11px;font-weight:700;text-align:left;color:var(--text2)">Descripción del trabajo / servicio / repuesto</th>
+                  <th style="padding:8px 6px;font-size:11px;font-weight:700;text-align:center;color:var(--text2);width:60px">Cant.</th>
+                  <th style="padding:8px 6px;font-size:11px;font-weight:700;text-align:right;color:var(--text2);width:130px">Precio unit.</th>
+                  <th style="padding:8px 6px;font-size:11px;font-weight:700;text-align:right;color:var(--text2);width:110px">Subtotal</th>
+                  <th style="width:32px"></th>
+                </tr>
+              </thead>
+              <tbody id="presup-tbody"></tbody>
+            </table>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="presupAddItem()" style="margin-top:8px;border-style:dashed">
+            <i class="fa-solid fa-plus"></i> Agregar ítem
+          </button>
+          <div style="display:flex;justify-content:flex-end;margin-top:14px">
+            <div style="min-width:240px">
+              <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)">
+                <span>Subtotal</span><span id="presup-t-sub">$ 0,00</span>
+              </div>
+              <div id="presup-row-desc" style="display:none;justify-content:space-between;padding:5px 0;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)">
+                <span id="presup-label-desc">Descuento</span><span id="presup-t-desc" style="color:var(--danger)">- $ 0,00</span>
+              </div>
+              <div id="presup-row-iva" style="display:none;justify-content:space-between;padding:5px 0;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border)">
+                <span>IVA (21%)</span><span id="presup-t-iva">$ 0,00</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:8px 0 4px;font-size:17px;font-weight:800;color:var(--accent);border-top:2px solid var(--accent);margin-top:2px">
+                <span>TOTAL</span><span id="presup-t-total">$ 0,00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Condiciones de pago -->
+        <div class="form-grid-2">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <label style="font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px">Condiciones de pago</label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="presup-check-iva" onchange="presupRecalcular();presupActualizarPago()" style="accent-color:var(--accent);width:16px;height:16px">
+              Agregar IVA (21%)
+            </label>
+            <div class="field"><label>Descuento (%)</label>
+              <input type="number" id="presup-descuento" value="0" min="0" max="100" oninput="presupRecalcular()" style="max-width:100px"></div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+              <input type="checkbox" id="presup-check-cheque" onchange="presupActualizarPago()" style="accent-color:var(--accent);width:16px;height:16px">
+              Aceptar cheque
+            </label>
+          </div>
+          <div class="field">
+            <label>Medios de pago</label>
+            <div id="presup-medios-pago" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text2);min-height:44px;line-height:1.8"></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:6px;font-style:italic">* El presupuesto no incluye repuestos adicionales que puedan surgir durante la reparación.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-presupuesto')">Cancelar</button>
+      <button class="btn btn-secondary" onclick="guardarPresupuesto(false)">
+        <i class="fa-solid fa-floppy-disk"></i> Guardar
+      </button>
+      <button class="btn btn-primary" onclick="guardarPresupuesto(true)">
+        <i class="fa-solid fa-file-pdf"></i> Guardar y PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ DRAWER: DETALLE ORDEN ═══════════════════════ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="cerrarDrawer()"></div>
+<aside class="drawer" id="drawer-orden">
+  <div class="drawer-header">
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px">Orden de trabajo</div>
+      <div id="dr-cliente" style="font-size:18px;font-weight:800;line-height:1.2"></div>
+      <div id="dr-vehiculo" style="font-size:13px;color:var(--text3);margin-top:4px"></div>
+    </div>
+    <button class="btn btn-icon btn-ghost" onclick="cerrarDrawer()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <div class="drawer-body">
+
+    <!-- Estado -->
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px">Estado</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="dr-estados">
+        <button class="status-btn s-presupuestado" onclick="cambiarEstado('presupuestado')">Presupuestado</button>
+        <button class="status-btn s-en_trabajo"    onclick="cambiarEstado('en_trabajo')">En trabajo</button>
+        <button class="status-btn s-listo"         onclick="cambiarEstado('listo')">Listo</button>
+        <button class="status-btn s-entregado"     onclick="cambiarEstado('entregado')">Entregado</button>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Items / Trabajos</div>
+        <button class="btn btn-primary btn-sm" onclick="agregarFilaItem()">
+          <i class="fa-solid fa-plus"></i> Agregar
+        </button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="items-orden-table">
+          <thead>
+            <tr>
+              <th style="width:35%">Descripción</th>
+              <th style="width:22%">N° Parte</th>
+              <th style="width:10%">Cant.</th>
+              <th style="width:18%">Precio unit.</th>
+              <th style="width:10%;text-align:right">Subtotal</th>
+              <th style="width:5%"></th>
+            </tr>
+          </thead>
+          <tbody id="dr-items-tbody"></tbody>
+        </table>
+      </div>
+      <div class="total-display" style="margin-top:14px">
+        <span>Total de la orden</span>
+        <strong id="dr-total">$0</strong>
+      </div>
+    </div>
+
+    <!-- Observaciones -->
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">Observaciones</div>
+      <textarea id="dr-obs" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--text);resize:vertical;min-height:80px;transition:border-color var(--transition)" placeholder="Notas sobre el trabajo..."></textarea>
+    </div>
+
+    <!-- Fechas -->
+    <div class="form-grid-2">
+      <div class="field">
+        <label>Fecha de ingreso</label>
+        <input type="date" id="dr-fecha-ingreso">
+      </div>
+      <div class="field">
+        <label>Fecha de entrega</label>
+        <input type="date" id="dr-fecha-entrega">
+      </div>
+    </div>
+
+  </div>
+
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" onclick="cerrarDrawer()">Cerrar</button>
+    <button class="btn btn-danger btn-sm" onclick="eliminarOrdenActual()">
+      <i class="fa-solid fa-trash"></i> Eliminar
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="verOrden(_ordenActual?.id)">
+      <i class="fa-solid fa-eye"></i> Ver orden
+    </button>
+    <button class="btn btn-primary" onclick="guardarDetalleOrden()">
+      <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+    </button>
+  </div>
+</aside>
 
 <!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
@@ -981,6 +1332,12 @@ tbody tr:last-child td { border-bottom: none; }
 <!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+// ════════════════════════════════════════
+// PRESUPUESTOS — ASSETS
+// ════════════════════════════════════════
+const PRESUP_NOTAS = 'El presupuesto no incluye repuestos adicionales que puedan surgir durante la reparación.'
+const PRESUP_LOGO = 'data:image/png;base64,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'
+
 // ════════════════════════════════════════
 // SUPABASE INIT
 // ════════════════════════════════════════
@@ -1179,21 +1536,30 @@ function filtrarClientes() {
   ))
 }
 
+let _editandoClienteId = null
+
 async function guardarCliente() {
   const nombre = document.getElementById('cli-nombre').value.trim()
   if (!nombre) { toast('El nombre es obligatorio', 'error'); return }
 
   const payload = {
     nombre,
-    telefono: document.getElementById('cli-telefono').value.trim() || null,
-    email:    document.getElementById('cli-email').value.trim() || null,
-    direccion:document.getElementById('cli-direccion').value.trim() || null,
+    telefono:       document.getElementById('cli-telefono').value.trim() || null,
+    email:          document.getElementById('cli-email').value.trim() || null,
+    direccion:      document.getElementById('cli-direccion').value.trim() || null,
+    cuit:           document.getElementById('cli-cuit').value.trim() || null,
+    condicion_iva:  document.getElementById('cli-condicion-iva').value || 'consumidor_final',
   }
 
-  const { error } = await db.from('clientes').insert(payload)
+  let error
+  if (_editandoClienteId) {
+    ;({ error } = await db.from('clientes').update(payload).eq('id', _editandoClienteId))
+  } else {
+    ;({ error } = await db.from('clientes').insert(payload))
+  }
   if (error) { toast('Error al guardar', 'error'); return }
 
-  toast('Cliente guardado')
+  toast(_editandoClienteId ? 'Cliente actualizado' : 'Cliente guardado')
   closeModal('modal-cliente')
   limpiarFormCliente()
   cargarClientes()
@@ -1201,9 +1567,13 @@ async function guardarCliente() {
 }
 
 function limpiarFormCliente() {
-  ['cli-nombre','cli-telefono','cli-email','cli-direccion'].forEach(id => {
+  _editandoClienteId = null
+  document.getElementById('modal-cliente-titulo').innerHTML =
+    '<i class="fa-solid fa-user-plus" style="color:var(--info);margin-right:8px"></i>Nuevo cliente'
+  ;['cli-nombre','cli-telefono','cli-email','cli-direccion','cli-cuit'].forEach(id => {
     document.getElementById(id).value = ''
   })
+  document.getElementById('cli-condicion-iva').value = 'consumidor_final'
 }
 
 async function eliminarCliente(id) {
@@ -1216,8 +1586,18 @@ async function eliminarCliente(id) {
 }
 
 function editarCliente(id) {
-  // TODO en próxima iteración
-  toast('Edición próximamente', 'error')
+  const c = _clientes.find(c => c.id === id)
+  if (!c) return
+  _editandoClienteId = id
+  document.getElementById('modal-cliente-titulo').innerHTML =
+    '<i class="fa-solid fa-pen" style="color:var(--info);margin-right:8px"></i>Editar cliente'
+  document.getElementById('cli-nombre').value    = c.nombre    || ''
+  document.getElementById('cli-telefono').value      = c.telefono     || ''
+  document.getElementById('cli-email').value         = c.email        || ''
+  document.getElementById('cli-direccion').value     = c.direccion    || ''
+  document.getElementById('cli-cuit').value          = c.cuit         || ''
+  document.getElementById('cli-condicion-iva').value = c.condicion_iva || 'consumidor_final'
+  openModal('modal-cliente')
 }
 
 // ════════════════════════════════════════
@@ -1249,17 +1629,18 @@ function renderOrdenes(lista) {
     return
   }
   tbody.innerHTML = lista.map((o, i) => `
-    <tr>
+    <tr class="tr-clickable" onclick="abrirOrden('${o.id}')">
       <td style="color:var(--text3);font-size:12px">#${String(_ordenes.length - i).padStart(4,'0')}</td>
       <td style="font-weight:600">${esc(o.clientes?.nombre || '—')}</td>
-      <td style="color:var(--text3)">${esc(o.vehiculos ? `${o.vehiculos.marca} ${o.vehiculos.modelo}` : o.vehiculo_desc || '—')}</td>
+      <td style="color:var(--text3)">${esc(o.vehiculos ? `${o.vehiculos.marca} ${o.vehiculos.modelo}` : '—')}</td>
       <td style="color:var(--text3)">${formatFecha(o.fecha_ingreso)}</td>
       <td>${badgeEstado(o.estado)}</td>
-      <td style="font-weight:600">${o.total ? '$'+Number(o.total).toLocaleString('es-AR') : '—'}</td>
+      <td style="font-weight:600">${o.total ? '$ '+Number(o.total).toLocaleString('es-AR') : '—'}</td>
       <td style="text-align:right">
-        <button class="btn btn-danger btn-sm btn-icon" onclick="eliminarOrden('${o.id}')">
-          <i class="fa-solid fa-trash"></i>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Ver orden" onclick="event.stopPropagation();verOrden('${o.id}')">
+          <i class="fa-solid fa-eye" style="color:var(--info)"></i>
         </button>
+        <i class="fa-solid fa-chevron-right" style="font-size:12px;color:var(--text3);margin-left:4px"></i>
       </td>
     </tr>`).join('')
 }
@@ -1325,14 +1706,6 @@ function limpiarFormOrden() {
   document.getElementById('ord-estado').value = 'presupuestado'
 }
 
-async function eliminarOrden(id) {
-  if (!confirm('¿Eliminar esta orden?')) return
-  const { error } = await db.from('ordenes_trabajo').delete().eq('id', id)
-  if (error) { toast('Error al eliminar', 'error'); return }
-  toast('Orden eliminada')
-  cargarOrdenes()
-  cargarDashboard()
-}
 
 // ════════════════════════════════════════
 // STOCK
@@ -1433,13 +1806,864 @@ async function cargarPresupuestos() {
   tbody.innerHTML = data.map(p => `
     <tr>
       <td style="color:var(--text3)">#${esc(p.n_presupuesto || '—')}</td>
-      <td style="font-weight:600">${esc(p.clientes?.nombre || '—')}</td>
+      <td style="font-weight:600">${esc(p.datos_cliente?.nombre || p.clientes?.nombre || '—')}</td>
       <td style="color:var(--text3)">${formatFecha(p.fecha)}</td>
       <td style="color:var(--text3)">${p.validez_dias ? p.validez_dias + ' días' : '—'}</td>
       <td>${badgeEstado(p.estado)}</td>
-      <td style="font-weight:600">${p.total ? '$'+Number(p.total).toLocaleString('es-AR') : '—'}</td>
-      <td></td>
+      <td style="font-weight:600">${p.total ? '$ '+Number(p.total).toLocaleString('es-AR') : '—'}</td>
+      <td style="display:flex;gap:4px;align-items:center">
+        ${p.estado === 'pendiente' ? `
+        <button class="btn btn-ghost btn-sm" title="Aprobar y crear orden" onclick="aprobarPresupuesto('${p.id}')" style="color:var(--accent);border-color:var(--accent)">
+          <i class="fa-solid fa-circle-check"></i> Aprobar
+        </button>` : ''}
+        <button class="btn btn-ghost btn-sm btn-icon" title="Ver presupuesto" onclick="verPresupuesto('${p.id}')">
+          <i class="fa-solid fa-eye" style="color:var(--info)"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Editar presupuesto" onclick="editarPresupuesto('${p.id}')">
+          <i class="fa-solid fa-pen" style="color:var(--text2)"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Generar PDF" onclick="presupPDFDesdeDB('${p.id}')">
+          <i class="fa-solid fa-file-pdf" style="color:var(--warn)"></i>
+        </button>
+      </td>
     </tr>`).join('')
+}
+
+// ════════════════════════════════════════
+// PRESUPUESTOS — FORM / PDF
+// ════════════════════════════════════════
+let _presupTipoActual = 'lab'
+let _presupItemCounter = 0
+let _editandoPresupuestoId = null
+
+function abrirNuevoPresupuesto() {
+  limpiarPresupuesto()
+  // Poblar selector de clientes
+  const sel = document.getElementById('presup-cli-select')
+  sel.innerHTML = '<option value="">— Seleccionar cliente existente —</option>'
+  _clientes.forEach(c => {
+    const opt = document.createElement('option')
+    opt.value = c.id
+    opt.textContent = c.nombre
+    opt.dataset.cuit      = c.cuit      || ''
+    opt.dataset.telefono  = c.telefono  || ''
+    opt.dataset.email     = c.email     || ''
+    opt.dataset.direccion = c.direccion || ''
+    sel.appendChild(opt)
+  })
+  // Número sugerido
+  const hoy = new Date()
+  const yy  = String(hoy.getFullYear()).slice(2)
+  document.getElementById('presup-numero').value = yy + '-' + String(Date.now()).slice(-3)
+  document.getElementById('presup-fecha').value  = hoy.toISOString().slice(0, 10)
+  presupAddItem(); presupAddItem()
+  presupActualizarPago()
+  openModal('modal-presupuesto')
+}
+
+function limpiarPresupuesto() {
+  _editandoPresupuestoId = null
+  _presupTipoActual = 'lab'
+  _presupItemCounter = 0
+  document.getElementById('presup-titulo').textContent = 'Nuevo presupuesto'
+  document.getElementById('presup-tbody').innerHTML = ''
+  document.getElementById('presup-cli-select').value     = ''
+  document.getElementById('presup-cli-nombre').value     = ''
+  document.getElementById('presup-cli-cuit').value       = ''
+  document.getElementById('presup-cli-telefono').value   = ''
+  document.getElementById('presup-cli-email').value      = ''
+  document.getElementById('presup-cli-direccion').value  = ''
+  document.getElementById('presup-tipo-detalle').value   = ''
+  document.getElementById('presup-validez').value        = '30'
+  document.getElementById('presup-descuento').value      = '0'
+  document.getElementById('presup-check-iva').checked    = false
+  document.getElementById('presup-check-cheque').checked = false
+  presupSetTipo('lab')
+  presupRecalcular()
+}
+
+function presupSeleccionarCliente() {
+  const sel = document.getElementById('presup-cli-select')
+  const opt = sel.options[sel.selectedIndex]
+  if (!opt.value) return
+  document.getElementById('presup-cli-nombre').value    = opt.textContent
+  document.getElementById('presup-cli-cuit').value      = opt.dataset.cuit
+  document.getElementById('presup-cli-telefono').value  = opt.dataset.telefono
+  document.getElementById('presup-cli-email').value     = opt.dataset.email
+  document.getElementById('presup-cli-direccion').value = opt.dataset.direccion
+}
+
+function presupSetTipo(t) {
+  _presupTipoActual = t
+  const btnLab = document.getElementById('presup-btn-lab')
+  const btnPla = document.getElementById('presup-btn-pla')
+  if (t === 'lab') {
+    btnLab.style.background = 'var(--accent)'; btnLab.style.color = 'var(--bg)'
+    btnPla.style.background = 'var(--bg3)';    btnPla.style.color = 'var(--text2)'
+    document.getElementById('presup-tipo-detalle').placeholder = 'Ej: 3 inyectores VW Amarok...'
+  } else {
+    btnPla.style.background = 'var(--accent)'; btnPla.style.color = 'var(--bg)'
+    btnLab.style.background = 'var(--bg3)';    btnLab.style.color = 'var(--text2)'
+    document.getElementById('presup-tipo-detalle').placeholder = 'Ej: Ford Ranger 2019...'
+  }
+}
+
+function presupAddItem() {
+  const id = ++_presupItemCounter
+  const tr = document.createElement('tr')
+  tr.id = 'presup-item-' + id
+  tr.style.borderBottom = '1px solid var(--border)'
+  tr.innerHTML = `
+    <td style="padding:4px 6px;color:var(--text3);font-size:12px" class="presup-num-cell">${document.querySelectorAll('#presup-tbody tr').length + 1}</td>
+    <td style="padding:4px 3px"><input type="text" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 8px;font-size:13px;color:var(--text)" placeholder="Descripción..."></td>
+    <td style="padding:4px 3px"><input type="number" value="1" min="0" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 4px;font-size:13px;color:var(--text);text-align:center" oninput="presupRecalcular()"></td>
+    <td style="padding:4px 3px"><input type="number" value="" min="0" step="0.01" placeholder="0.00" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 8px;font-size:13px;color:var(--text);text-align:right" oninput="presupRecalcular()"></td>
+    <td style="padding:4px 8px;text-align:right;font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap" id="presup-sub-${id}">$ 0,00</td>
+    <td style="padding:4px 3px;text-align:center"><button onclick="presupRemoveItem(${id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text3)'">×</button></td>`
+  document.getElementById('presup-tbody').appendChild(tr)
+  presupRenumerar()
+}
+
+function presupRemoveItem(id) {
+  const el = document.getElementById('presup-item-' + id)
+  if (el) el.remove()
+  presupRenumerar(); presupRecalcular()
+}
+
+function presupRenumerar() {
+  document.querySelectorAll('#presup-tbody tr').forEach((tr, i) => {
+    const cell = tr.querySelector('.presup-num-cell')
+    if (cell) cell.textContent = i + 1
+  })
+}
+
+function presupGetItems() {
+  const items = []
+  document.querySelectorAll('#presup-tbody tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input')
+    const desc = inputs[0].value.trim()
+    const cant = parseFloat(inputs[1].value) || 0
+    const prec = parseFloat(inputs[2].value) || 0
+    if (desc || prec > 0) items.push({ descripcion: desc, cantidad: cant, precio_unitario: prec })
+  })
+  return items
+}
+
+function presupFmt(n) {
+  return '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+function presupRecalcular() {
+  let sub = 0
+  document.querySelectorAll('#presup-tbody tr').forEach(tr => {
+    const inputs = tr.querySelectorAll('input')
+    const c = parseFloat(inputs[1]?.value) || 0
+    const p = parseFloat(inputs[2]?.value) || 0
+    const s = c * p; sub += s
+    const m = tr.id.match(/presup-item-(\d+)/)
+    if (m) { const el = document.getElementById('presup-sub-' + m[1]); if (el) el.textContent = presupFmt(s) }
+  })
+  const desc = parseFloat(document.getElementById('presup-descuento').value) || 0
+  const iva  = document.getElementById('presup-check-iva').checked
+  const dm   = sub * desc / 100
+  const cd   = sub - dm
+  const ivm  = iva ? cd * 0.21 : 0
+  const tot  = cd + ivm
+  document.getElementById('presup-t-sub').textContent   = presupFmt(sub)
+  const rd = document.getElementById('presup-row-desc')
+  if (desc > 0) {
+    rd.style.display = 'flex'
+    document.getElementById('presup-label-desc').textContent = 'Descuento (' + desc + '%)'
+    document.getElementById('presup-t-desc').textContent = '- ' + presupFmt(dm)
+  } else { rd.style.display = 'none' }
+  const ri = document.getElementById('presup-row-iva')
+  if (iva) { ri.style.display = 'flex'; document.getElementById('presup-t-iva').textContent = presupFmt(ivm) }
+  else { ri.style.display = 'none' }
+  document.getElementById('presup-t-total').textContent = presupFmt(tot)
+}
+
+function presupGetMediosPago() {
+  const iva    = document.getElementById('presup-check-iva').checked
+  const cheque = document.getElementById('presup-check-cheque').checked
+  const m = iva
+    ? ['Transferencia bancaria', 'Efectivo', 'Tarjeta de crédito o débito']
+    : ['Efectivo', 'Transferencia bancaria']
+  if (cheque) m.push('Cheque')
+  return m
+}
+
+function presupActualizarPago() {
+  document.getElementById('presup-medios-pago').textContent = presupGetMediosPago().join('  ·  ')
+}
+
+async function guardarPresupuesto(generarPdf) {
+  const nombre = document.getElementById('presup-cli-nombre').value.trim()
+  if (!nombre) { toast('El nombre del cliente es obligatorio', 'error'); return }
+  const items = presupGetItems()
+  if (!items.length) { toast('Agregá al menos un ítem', 'error'); return }
+
+  const iva      = document.getElementById('presup-check-iva').checked
+  const desc     = parseFloat(document.getElementById('presup-descuento').value) || 0
+  const sub      = items.reduce((a, i) => a + i.cantidad * i.precio_unitario, 0)
+  const dm       = sub * desc / 100
+  const cd       = sub - dm
+  const total    = cd + (iva ? cd * 0.21 : 0)
+  const cliSelId = document.getElementById('presup-cli-select').value || null
+
+  const datosCliente = {
+    nombre:    nombre,
+    cuit:      document.getElementById('presup-cli-cuit').value.trim() || null,
+    telefono:  document.getElementById('presup-cli-telefono').value.trim() || null,
+    email:     document.getElementById('presup-cli-email').value.trim() || null,
+    direccion: document.getElementById('presup-cli-direccion').value.trim() || null,
+  }
+
+  const esEdicion = !!_editandoPresupuestoId
+
+  const payload = {
+    n_presupuesto: document.getElementById('presup-numero').value.trim() || null,
+    fecha:         document.getElementById('presup-fecha').value || null,
+    validez_dias:  parseInt(document.getElementById('presup-validez').value) || 30,
+    total,
+    cliente_id:    cliSelId,
+    datos_cliente: datosCliente,
+    tipo:          _presupTipoActual,
+    tipo_detalle:  document.getElementById('presup-tipo-detalle').value.trim() || null,
+    iva,
+    descuento:     desc,
+    forma_pago:    presupGetMediosPago().join(' / '),
+  }
+
+  let presupId
+  if (esEdicion) {
+    payload.updated_at = new Date().toISOString()
+    const { error } = await db.from('presupuestos').update(payload).eq('id', _editandoPresupuestoId)
+    if (error) { toast('Error al actualizar presupuesto', 'error'); console.error(error); return }
+    // Reemplazar ítems: borrar los anteriores y reinsertar
+    await db.from('items_presupuesto').delete().eq('presupuesto_id', _editandoPresupuestoId)
+    presupId = _editandoPresupuestoId
+  } else {
+    payload.estado = 'pendiente'
+    const { data: presup, error } = await db.from('presupuestos').insert(payload).select().single()
+    if (error) { toast('Error al guardar presupuesto', 'error'); console.error(error); return }
+    presupId = presup.id
+  }
+
+  // Guardar ítems
+  if (items.length) {
+    const itemsPayload = items.map(i => ({ ...i, presupuesto_id: presupId }))
+    await db.from('items_presupuesto').insert(itemsPayload)
+  }
+
+  toast(esEdicion ? 'Presupuesto actualizado' : 'Presupuesto guardado')
+  closeModal('modal-presupuesto')
+  cargarPresupuestos()
+  cargarDashboard()
+
+  if (generarPdf) {
+    const pdfData = {
+      numero:       payload.n_presupuesto || '—',
+      fecha:        payload.fecha ? new Date(payload.fecha + 'T12:00:00').toLocaleDateString('es-AR') : '—',
+      vigencia:     payload.validez_dias + ' días',
+      cliente:      datosCliente,
+      items,
+      descuento:    desc,
+      iva,
+      forma_pago:   payload.forma_pago,
+      tipo:         _presupTipoActual,
+      tipo_detalle: payload.tipo_detalle || '',
+      notas:        PRESUP_NOTAS,
+    }
+    presupLoadLibs().then(() => presupBuildPDF(pdfData))
+  }
+}
+
+async function verOrden(id) {
+  if (!id) return
+  const { data: o, error } = await db
+    .from('ordenes_trabajo')
+    .select('*, clientes(nombre,telefono,email,direccion,cuit), vehiculos(marca,modelo,patente,año), items_orden(*)')
+    .eq('id', id)
+    .single()
+  if (error || !o) { toast('No se pudo cargar la orden', 'error'); return }
+
+  const items   = o.items_orden || []
+  const fmt     = n => '$ ' + Number(n).toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })
+  const total   = items.reduce((s, i) => s + (i.precio_unitario||0)*(i.cantidad||1), 0)
+  const cli     = o.clientes || {}
+  const veh     = o.vehiculos
+  const estadoMap = { presupuestado:'Presupuestado', en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
+  const estadoColor = { presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
+  const fila = (lbl, val) => val ? `<tr><td style="padding:3px 8px 3px 0;color:#777;font-size:12px;font-weight:600;white-space:nowrap">${lbl}</td><td style="padding:3px 0;font-size:13px">${val}</td></tr>` : ''
+
+  const itemsHtml = items.length ? items.map((it, i) => `
+    <tr style="background:${i%2===0?'#f9f9f9':'#fff'}">
+      <td style="padding:7px 8px;text-align:center;color:#888;font-size:12px">${i+1}</td>
+      <td style="padding:7px 8px;font-size:13px">${esc(it.descripcion||'')}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:12px;color:#666">${esc(it.numero_parte||'—')}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:13px">${it.cantidad||1}</td>
+    </tr>`) .join('') : `<tr><td colspan="4" style="padding:16px;text-align:center;color:#aaa">Sin ítems registrados</td></tr>`
+
+  const estadoLabel = estadoMap[o.estado] || o.estado
+  const estadoClr   = estadoColor[o.estado] || '#64748b'
+
+  document.getElementById('orden-preview-content').innerHTML = `
+    <!-- Encabezado -->
+    <div style="background:#16a34a;color:#fff;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px">INDIESEL</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">Laboratorio Diesel · Mar del Plata, Buenos Aires</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700;letter-spacing:1px">ORDEN DE TRABAJO</div>
+        <div style="font-size:11px;opacity:.9;margin-top:2px">Ingreso: ${formatFecha(o.fecha_ingreso)}</div>
+        ${o.fecha_entrega ? `<div style="font-size:11px;opacity:.8">Entrega: ${formatFecha(o.fecha_entrega)}</div>` : ''}
+        <div style="display:inline-block;margin-top:6px;background:${estadoClr};color:#fff;font-size:10px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.5px">${estadoLabel}</div>
+      </div>
+    </div>
+
+    <!-- Cliente y vehículo -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:#f5f5f5;border-radius:6px;padding:14px 16px">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#16a34a;margin-bottom:10px">Cliente</div>
+        <table style="border-collapse:collapse">
+          ${fila('Nombre:', esc(cli.nombre))}
+          ${fila('CUIT:', esc(cli.cuit))}
+          ${fila('Teléfono:', esc(cli.telefono))}
+          ${fila('Email:', esc(cli.email))}
+          ${fila('Dirección:', esc(cli.direccion))}
+        </table>
+      </div>
+      <div style="background:#f5f5f5;border-radius:6px;padding:14px 16px">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#16a34a;margin-bottom:10px">Vehículo</div>
+        ${veh ? `<table style="border-collapse:collapse">
+          ${fila('Marca:', esc(veh.marca))}
+          ${fila('Modelo:', esc(veh.modelo))}
+          ${fila('Patente:', esc(veh.patente))}
+          ${fila('Año:', veh.año)}
+        </table>` : '<div style="color:#aaa;font-size:13px">Sin vehículo registrado</div>'}
+      </div>
+    </div>
+
+    <!-- Ítems -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden">
+      <thead>
+        <tr style="background:#16a34a;color:#fff">
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:center;width:28px">#</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:left">Descripción del trabajo / pieza</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:center;width:90px">N° Parte</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:center;width:50px">Cant.</th>
+        </tr>
+      </thead>
+      <tbody>${itemsHtml}</tbody>
+    </table>
+
+    <!-- Observaciones -->
+    ${o.observaciones ? `
+    <div style="background:#f0f7f0;border:1px solid #c8e6c9;border-radius:6px;padding:12px 14px;font-size:13px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#16a34a;margin-bottom:6px">Observaciones</div>
+      <div style="white-space:pre-wrap;color:#333">${esc(o.observaciones)}</div>
+    </div>` : ''}
+  `
+
+  document.getElementById('orden-preview-pdf-btn').onclick = () => ordenBuildPDF(o, items)
+  openModal('modal-orden-preview')
+}
+
+function ordenBuildPDF(o, items) {
+  presupLoadLibs().then(() => {
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF('p','mm','a4')
+    const pW=210, pH=297, mL=18, mR=18, mT=14, cW=pW-mL-mR
+    const VERDE=[22,163,74], GRIS=[110,110,110], GOSC=[40,40,40], LINEA=[210,210,210]
+    let y = mT
+    const estadoLabel = {presupuestado:'Presupuestado',en_trabajo:'En trabajo',listo:'Listo',entregado:'Entregado'}[o.estado] || o.estado
+
+    // Banner
+    doc.setFillColor(...VERDE); doc.rect(mL,y,cW,22,'F')
+    doc.setTextColor(255,255,255)
+    doc.setFont('helvetica','bold'); doc.setFontSize(17); doc.text('INDIESEL',mL+4,y+12)
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.text('Laboratorio Diesel  ·  Mar del Plata, Buenos Aires',mL+4,y+17.5)
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('ORDEN DE TRABAJO',pW-mR-3,y+9,{align:'right'})
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5)
+    doc.text('Ingreso: '+formatFecha(o.fecha_ingreso),pW-mR-3,y+14,{align:'right'})
+    if (o.fecha_entrega) doc.text('Entrega: '+formatFecha(o.fecha_entrega),pW-mR-3,y+19,{align:'right'})
+    y += 28
+
+    // Estado
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...GRIS)
+    doc.text('Estado:', mL+2, y)
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GOSC); doc.text(estadoLabel, mL+20, y); y += 10
+
+    // Cliente y vehículo
+    const cli = o.clientes || {}, veh = o.vehiculos
+    function drawF(lbl,val,lx,vx,yy){ doc.setFont('helvetica','bold');doc.setTextColor(...GRIS);doc.text(lbl,lx,yy);doc.setFont('helvetica','normal');doc.setTextColor(...GOSC);doc.text(val||'—',vx,yy) }
+    doc.setFillColor(245,245,245); doc.rect(mL,y,cW,6,'F')
+    doc.setDrawColor(...LINEA); doc.setLineWidth(0.3); doc.rect(mL,y,cW,6,'S')
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...VERDE); doc.text('CLIENTE / VEHÍCULO',mL+3,y+4); y+=12
+    const colAx=mL+2,colAval=mL+22,colBx=mL+cW/2+4,colBval=mL+cW/2+24
+    doc.setFontSize(8.5)
+    drawF('Cliente:',cli.nombre||'',colAx,colAval,y); drawF(veh?'Vehículo:':'',veh?`${veh.marca||''} ${veh.modelo||''}`.trim():'',colBx,colBval,y); y+=7
+    drawF('Tel:',cli.telefono||'',colAx,colAval,y); drawF(veh?'Patente:':'',veh?.patente||'',colBx,colBval,y); y+=7
+    drawF('Email:',cli.email||'',colAx,colAval,y); drawF(veh&&veh.año?'Año:':'',veh?.año?String(veh.año):'',colBx,colBval,y); y+=12
+
+    // Ítems — sin precios
+    const tableBody = items.map((it,i) => [
+      String(i+1), it.descripcion||'', it.numero_parte||'—', String(it.cantidad||1)
+    ])
+    doc.autoTable({
+      startY:y,
+      head:[['#','Descripción del trabajo / pieza','N° Parte','Cant.']],
+      body:tableBody, theme:'striped',
+      headStyles:{fillColor:VERDE,textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,cellPadding:3},
+      bodyStyles:{fontSize:8.5,textColor:GOSC,cellPadding:{top:5,bottom:5,left:3,right:3}},
+      alternateRowStyles:{fillColor:[249,249,249]},
+      columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:28,halign:'center'},3:{cellWidth:13,halign:'center'}},
+      margin:{left:mL,right:mR}
+    })
+    y = doc.lastAutoTable.finalY + 8
+
+    // Observaciones
+    if (o.observaciones) {
+      doc.setFillColor(240,247,241); doc.rect(mL,y-1,cW,6,'F')
+      doc.setDrawColor(...LINEA); doc.setLineWidth(0.3); doc.rect(mL,y-1,cW,6,'S')
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...VERDE); doc.text('OBSERVACIONES',mL+3,y+3.2); y+=11
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...GOSC)
+      const obsLines = doc.splitTextToSize(o.observaciones, cW-4)
+      doc.text(obsLines,mL+2,y)
+    }
+
+    // Pie
+    const pieY=pH-30
+    doc.setDrawColor(180,180,180); doc.setLineWidth(0.5); doc.line(mL,pieY,pW-mR,pieY)
+    doc.addImage(PRESUP_LOGO,'PNG',pW/2-5.5,pieY+3,11,11)
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(150,150,150)
+    doc.text('Indiesel  ·  Laboratorio Diesel  ·  Mar del Plata, Buenos Aires',pW/2,pieY+17,{align:'center'})
+    doc.text('WhatsApp: 223 305-9372   ·   Tel: 223 478-9900',pW/2,pieY+23,{align:'center'})
+
+    const slug = (cli.nombre||'orden').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')
+    doc.save('OrdenTrabajo_Indiesel_'+slug+'.pdf')
+    toast('PDF generado y descargado')
+  })
+}
+
+async function editarPresupuesto(id) {
+  const { data: p, error } = await db
+    .from('presupuestos')
+    .select('*, items_presupuesto(*)')
+    .eq('id', id)
+    .single()
+  if (error || !p) { toast('No se pudo cargar el presupuesto', 'error'); return }
+
+  limpiarPresupuesto()
+  _editandoPresupuestoId = id
+  document.getElementById('presup-titulo').textContent = 'Editar presupuesto'
+
+  // Poblar selector de clientes
+  const sel = document.getElementById('presup-cli-select')
+  sel.innerHTML = '<option value="">— Seleccionar cliente existente —</option>'
+  _clientes.forEach(c => {
+    const opt = document.createElement('option')
+    opt.value = c.id
+    opt.textContent = c.nombre
+    opt.dataset.cuit      = c.cuit      || ''
+    opt.dataset.telefono  = c.telefono  || ''
+    opt.dataset.email     = c.email     || ''
+    opt.dataset.direccion = c.direccion || ''
+    sel.appendChild(opt)
+  })
+
+  // Datos del presupuesto
+  document.getElementById('presup-numero').value         = p.n_presupuesto || ''
+  document.getElementById('presup-fecha').value          = p.fecha          || ''
+  document.getElementById('presup-validez').value        = p.validez_dias   || 30
+  document.getElementById('presup-descuento').value      = p.descuento      || 0
+  document.getElementById('presup-check-iva').checked    = p.iva            || false
+  document.getElementById('presup-tipo-detalle').value   = p.tipo_detalle   || ''
+  if (p.cliente_id) document.getElementById('presup-cli-select').value = p.cliente_id
+
+  // Datos del cliente
+  const cli = p.datos_cliente || {}
+  document.getElementById('presup-cli-nombre').value    = cli.nombre    || ''
+  document.getElementById('presup-cli-cuit').value      = cli.cuit      || ''
+  document.getElementById('presup-cli-telefono').value  = cli.telefono  || ''
+  document.getElementById('presup-cli-email').value     = cli.email     || ''
+  document.getElementById('presup-cli-direccion').value = cli.direccion || ''
+
+  presupSetTipo(p.tipo || 'lab')
+
+  // Cheque: inferir desde forma_pago guardada
+  if (p.forma_pago?.includes('Cheque')) {
+    document.getElementById('presup-check-cheque').checked = true
+  }
+
+  // Cargar ítems
+  ;(p.items_presupuesto || []).forEach(it => {
+    const rowId = ++_presupItemCounter
+    const tr = document.createElement('tr')
+    tr.id = 'presup-item-' + rowId
+    tr.style.borderBottom = '1px solid var(--border)'
+    tr.innerHTML = `
+      <td style="padding:4px 6px;color:var(--text3);font-size:12px" class="presup-num-cell"></td>
+      <td style="padding:4px 3px"><input type="text" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 8px;font-size:13px;color:var(--text)" value="${esc(it.descripcion||'')}"></td>
+      <td style="padding:4px 3px"><input type="number" value="${it.cantidad||1}" min="0" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 4px;font-size:13px;color:var(--text);text-align:center" oninput="presupRecalcular()"></td>
+      <td style="padding:4px 3px"><input type="number" value="${it.precio_unitario||''}" min="0" step="0.01" style="width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:6px 8px;font-size:13px;color:var(--text);text-align:right" oninput="presupRecalcular()"></td>
+      <td style="padding:4px 8px;text-align:right;font-size:13px;font-weight:600;color:var(--accent);white-space:nowrap" id="presup-sub-${rowId}">$ 0,00</td>
+      <td style="padding:4px 3px;text-align:center"><button onclick="presupRemoveItem(${rowId})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text3)'">×</button></td>`
+    document.getElementById('presup-tbody').appendChild(tr)
+  })
+  presupRenumerar()
+  presupRecalcular()
+  presupActualizarPago()
+  openModal('modal-presupuesto')
+}
+
+async function verPresupuesto(id) {
+  const { data: p, error } = await db
+    .from('presupuestos')
+    .select('*, items_presupuesto(*)')
+    .eq('id', id)
+    .single()
+  if (error || !p) { toast('No se pudo cargar el presupuesto', 'error'); return }
+
+  const cli       = p.datos_cliente || {}
+  const items     = p.items_presupuesto || []
+  const desc      = parseFloat(p.descuento) || 0
+  const sub       = items.reduce((a, i) => a + (i.cantidad * i.precio_unitario), 0)
+  const dm        = sub * desc / 100
+  const cd        = sub - dm
+  const ivm       = p.iva ? cd * 0.21 : 0
+  const total     = cd + ivm
+  const medios    = p.forma_pago || '—'
+  const fmt       = n => '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })
+  const fila      = (lbl, val) => val ? `<tr><td style="padding:4px 8px 4px 0;color:#777;font-size:12px;font-weight:600;white-space:nowrap">${lbl}</td><td style="padding:4px 0;font-size:13px">${val}</td></tr>` : ''
+
+  const tipoLabel = p.tipo === 'pla' ? 'Vehículo' : 'Unidad a reparar'
+
+  const itemsHtml = items.length ? items.map((it, i) => `
+    <tr style="background:${i%2===0?'#f9f9f9':'#fff'}">
+      <td style="padding:7px 8px;text-align:center;color:#888;font-size:12px">${i+1}</td>
+      <td style="padding:7px 8px;font-size:13px">${esc(it.descripcion||'')}</td>
+      <td style="padding:7px 8px;text-align:center;font-size:13px">${it.cantidad}</td>
+      <td style="padding:7px 8px;text-align:right;font-size:13px">${fmt(it.precio_unitario)}</td>
+      <td style="padding:7px 8px;text-align:right;font-size:13px;font-weight:700;color:#1a9e3a">${fmt(it.cantidad * it.precio_unitario)}</td>
+    </tr>`).join('') : `<tr><td colspan="5" style="padding:16px;text-align:center;color:#aaa">Sin ítems</td></tr>`
+
+  document.getElementById('presup-preview-content').innerHTML = `
+    <!-- Encabezado -->
+    <div style="background:#1a9e3a;color:#fff;border-radius:8px;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div>
+        <div style="font-size:20px;font-weight:900;letter-spacing:-0.5px">INDIESEL</div>
+        <div style="font-size:11px;opacity:.85;margin-top:2px">Laboratorio Diesel · Mar del Plata, Buenos Aires</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700;letter-spacing:1px">PRESUPUESTO</div>
+        <div style="font-size:12px;opacity:.9;margin-top:2px">N° ${esc(p.n_presupuesto||'—')}</div>
+        <div style="font-size:11px;opacity:.8">${formatFecha(p.fecha)}</div>
+        ${p.updated_at ? `<div style="font-size:10px;opacity:.65;margin-top:3px">Editado: ${new Date(p.updated_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}</div>` : ''}
+      </div>
+    </div>
+
+    <!-- Cliente -->
+    <div style="background:#f5f5f5;border-radius:6px;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#1a9e3a;margin-bottom:10px">Datos del cliente</div>
+      <table style="border-collapse:collapse;width:100%">
+        <tbody>
+          <tr>
+            <td style="width:50%;vertical-align:top">
+              <table style="border-collapse:collapse">
+                ${fila('Cliente:', esc(cli.nombre))}
+                ${fila('CUIT:', esc(cli.cuit))}
+                ${fila('Teléfono:', esc(cli.telefono))}
+              </table>
+            </td>
+            <td style="vertical-align:top">
+              <table style="border-collapse:collapse">
+                ${fila('Email:', esc(cli.email))}
+                ${fila('Dirección:', esc(cli.direccion))}
+                ${fila('Validez:', p.validez_dias ? p.validez_dias + ' días' : '—')}
+              </table>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tipo de trabajo -->
+    ${p.tipo_detalle ? `
+    <div style="background:#f0f7f0;border:1px solid #c8e6c9;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:13px">
+      <span style="color:#1a9e3a;font-weight:700">${tipoLabel}:</span>
+      <span style="margin-left:8px">${esc(p.tipo_detalle)}</span>
+    </div>` : ''}
+
+    <!-- Ítems -->
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e0e0e0;border-radius:6px;overflow:hidden">
+      <thead>
+        <tr style="background:#1a9e3a;color:#fff">
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:center;width:28px">#</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:left">Descripción</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:center;width:50px">Cant.</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:right;width:120px">Precio unit.</th>
+          <th style="padding:9px 8px;font-size:11px;font-weight:700;text-align:right;width:110px">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>${itemsHtml}</tbody>
+    </table>
+
+    <!-- Totales -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+      <div style="min-width:240px">
+        <div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#555;border-bottom:1px solid #eee">
+          <span>Subtotal</span><span>${fmt(sub)}</span>
+        </div>
+        ${desc > 0 ? `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#555;border-bottom:1px solid #eee">
+          <span>Descuento (${desc}%)</span><span style="color:#e53935">- ${fmt(dm)}</span>
+        </div>` : ''}
+        ${p.iva ? `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#555;border-bottom:1px solid #eee">
+          <span>IVA (21%)</span><span>${fmt(ivm)}</span>
+        </div>` : ''}
+        <div style="display:flex;justify-content:space-between;padding:8px 0 4px;font-size:18px;font-weight:800;color:#1a9e3a;border-top:2px solid #1a9e3a;margin-top:2px">
+          <span>TOTAL</span><span>${fmt(total)}</span>
+        </div>
+        ${!p.iva ? '<div style="font-size:11px;color:#aaa;font-style:italic;text-align:right;margin-top:4px">* Los precios no incluyen IVA</div>' : ''}
+      </div>
+    </div>
+
+    <!-- Condiciones -->
+    <div style="background:#f5f5f5;border-radius:6px;padding:12px 16px;margin-bottom:16px;font-size:13px">
+      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#1a9e3a;margin-bottom:8px">Condiciones</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <div><span style="color:#777;font-weight:600">Validez:</span> ${p.validez_dias ? p.validez_dias + ' días' : '—'}</div>
+        <div><span style="color:#777;font-weight:600">Medios de pago:</span> ${esc(medios)}</div>
+      </div>
+    </div>
+
+    <!-- Nota -->
+    <div style="font-size:11px;color:#aaa;font-style:italic">* ${PRESUP_NOTAS}</div>
+  `
+
+  // Conectar botón PDF
+  document.getElementById('presup-preview-pdf-btn').onclick = () => presupPDFDesdeDB(id)
+
+  openModal('modal-presup-preview')
+}
+
+async function presupPDFDesdeDB(id) {
+  const { data: p, error } = await db
+    .from('presupuestos')
+    .select('*, items_presupuesto(*)')
+    .eq('id', id)
+    .single()
+  if (error || !p) { toast('No se pudo cargar el presupuesto', 'error'); return }
+  const cli = p.datos_cliente || {}
+  const pdfData = {
+    numero:       p.n_presupuesto || '—',
+    fecha:        p.fecha ? new Date(p.fecha + 'T12:00:00').toLocaleDateString('es-AR') : '—',
+    vigencia:     p.validez_dias ? p.validez_dias + ' días' : '—',
+    cliente:      cli,
+    items:        p.items_presupuesto || [],
+    descuento:    parseFloat(p.descuento) || 0,
+    iva:          p.iva || false,
+    forma_pago:   p.forma_pago || '',
+    tipo:         p.tipo || 'lab',
+    tipo_detalle: p.tipo_detalle || '',
+    notas:        PRESUP_NOTAS,
+  }
+  presupLoadLibs().then(() => presupBuildPDF(pdfData))
+}
+
+async function aprobarPresupuesto(id) {
+  if (!confirm('¿Marcar como aprobado y crear una orden de trabajo?')) return
+
+  // Cargar presupuesto completo
+  const { data: p, error } = await db
+    .from('presupuestos')
+    .select('*, items_presupuesto(*)')
+    .eq('id', id)
+    .single()
+  if (error || !p) { toast('Error al cargar el presupuesto', 'error'); return }
+
+  // Resolver cliente_id — si no tiene uno registrado, crear el cliente
+  let clienteId = p.cliente_id
+  if (!clienteId && p.datos_cliente?.nombre) {
+    const { data: cli } = await db.from('clientes').insert({
+      nombre:    p.datos_cliente.nombre,
+      telefono:  p.datos_cliente.telefono || null,
+      email:     p.datos_cliente.email    || null,
+      direccion: p.datos_cliente.direccion|| null,
+      cuit:      p.datos_cliente.cuit     || null,
+    }).select().single()
+    clienteId = cli?.id
+    // Actualizar presupuesto con el nuevo cliente_id
+    if (clienteId) await db.from('presupuestos').update({ cliente_id: clienteId }).eq('id', id)
+  }
+
+  // Armar observaciones a partir del presupuesto
+  const lineas = []
+  if (p.tipo_detalle) lineas.push(`Trabajo: ${p.tipo_detalle}`)
+  if (p.items_presupuesto?.length) {
+    lineas.push('Ítems presupuestados:')
+    p.items_presupuesto.forEach(i => {
+      lineas.push(`  - ${i.descripcion} (x${i.cantidad})`)
+    })
+  }
+  const observaciones = lineas.join('\n') || null
+
+  // Crear orden de trabajo
+  const { error: errOrden } = await db.from('ordenes_trabajo').insert({
+    cliente_id:     clienteId || null,
+    presupuesto_id: id,
+    estado:         'en_trabajo',
+    observaciones,
+    fecha_ingreso:  new Date().toISOString().split('T')[0],
+    total:          p.total || null,
+  })
+  if (errOrden) { toast('Error al crear la orden', 'error'); console.error(errOrden); return }
+
+  // Marcar presupuesto como aprobado
+  await db.from('presupuestos').update({ estado: 'aprobado' }).eq('id', id)
+
+  toast('Presupuesto aprobado — orden de trabajo creada')
+  cargarPresupuestos()
+  cargarOrdenes()
+  cargarDashboard()
+}
+
+function presupLoadLibs() {
+  if (window.jspdf) return Promise.resolve()
+  return new Promise((res, rej) => {
+    const s1 = document.createElement('script')
+    s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+    s1.onload = () => {
+      const s2 = document.createElement('script')
+      s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'
+      s2.onload = res; s2.onerror = rej
+      document.head.appendChild(s2)
+    }
+    s1.onerror = rej
+    document.head.appendChild(s1)
+  })
+}
+
+function presupBuildPDF(data) {
+  const { jsPDF } = window.jspdf
+  const doc = new jsPDF('p', 'mm', 'a4')
+  const pW=210, pH=297, mL=18, mR=18, mT=14, cW=pW-mL-mR
+  const VERDE=[26,158,58], GRIS=[110,110,110], GOSC=[40,40,40], LINEA=[210,210,210]
+  let y = mT
+
+  const f2 = n => '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })
+
+  // Banner
+  doc.setFillColor(...VERDE); doc.rect(mL, y, cW, 22, 'F')
+  doc.setTextColor(255,255,255)
+  doc.setFont('helvetica','bold'); doc.setFontSize(17)
+  doc.text('INDIESEL', mL+4, y+12)
+  doc.setFont('helvetica','normal'); doc.setFontSize(8)
+  doc.text('Laboratorio Diesel  ·  Mar del Plata, Buenos Aires', mL+4, y+17.5)
+  doc.setFont('helvetica','bold'); doc.setFontSize(10)
+  doc.text('PRESUPUESTO', pW-mR-3, y+9, {align:'right'})
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5)
+  doc.text('N° ' + data.numero, pW-mR-3, y+14, {align:'right'})
+  doc.text('Fecha: ' + data.fecha, pW-mR-3, y+19, {align:'right'})
+  y += 28
+
+  // Cliente
+  doc.setFillColor(245,245,245); doc.rect(mL, y, cW, 6, 'F')
+  doc.setDrawColor(...LINEA); doc.setLineWidth(0.3); doc.rect(mL, y, cW, 6, 'S')
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...VERDE)
+  doc.text('DATOS DEL CLIENTE', mL+3, y+4); y += 12
+  const cli = data.cliente, ROW_H=8
+  const colAx=mL+2, colAval=mL+25, colBx=mL+cW/2+4, colBval=mL+cW/2+25
+  function drawF(lbl, val, lx, vx, yy) {
+    doc.setFont('helvetica','bold'); doc.setTextColor(...GRIS); doc.text(lbl, lx, yy)
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GOSC); doc.text(val||'—', vx, yy)
+  }
+  doc.setFontSize(8.5)
+  drawF('Cliente:', cli.nombre||'', colAx, colAval, y)
+  drawF('E-mail:', cli.email||'', colBx, colBval, y); y += ROW_H
+  drawF('CUIT / DNI:', cli.cuit||'', colAx, colAval, y)
+  drawF('Dirección:', cli.direccion||'', colBx, colBval, y); y += ROW_H
+  drawF('Teléfono:', cli.telefono||'', colAx, colAval, y); y += ROW_H + 4
+
+  // Tipo de trabajo
+  if (data.tipo_detalle) {
+    const tipoLabel = data.tipo === 'lab' ? 'Unidad a reparar:' : 'Vehículo:'
+    doc.setFillColor(240,247,241); doc.rect(mL, y, cW, 7, 'F')
+    doc.setDrawColor(...LINEA); doc.setLineWidth(0.3); doc.rect(mL, y, cW, 7, 'S')
+    doc.setFontSize(8.5)
+    doc.setFont('helvetica','bold'); doc.setTextColor(...VERDE); doc.text(tipoLabel, mL+3, y+4.8)
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GOSC); doc.text(data.tipo_detalle, mL+38, y+4.8)
+    y += 7
+  }
+  y += 6
+
+  // Tabla ítems
+  let subtotal = 0
+  const tableBody = data.items.map((item, i) => {
+    const cant = parseFloat(item.cantidad)||0, prec = parseFloat(item.precio_unitario)||0
+    const sub = cant*prec; subtotal += sub
+    return [String(i+1), item.descripcion||'', cant%1===0?cant.toFixed(0):String(cant), f2(prec), f2(sub)]
+  })
+  doc.autoTable({
+    startY: y,
+    head: [['#','Descripción del trabajo / servicio / repuesto','Cant.','Precio unit.','Subtotal']],
+    body: tableBody, theme: 'striped',
+    headStyles: { fillColor:VERDE, textColor:[255,255,255], fontStyle:'bold', fontSize:8.5, cellPadding:3 },
+    bodyStyles: { fontSize:8.5, textColor:GOSC, cellPadding:{top:4,bottom:4,left:3,right:3} },
+    alternateRowStyles: { fillColor:[249,249,249] },
+    columnStyles: { 0:{cellWidth:8,halign:'center'}, 1:{cellWidth:'auto'}, 2:{cellWidth:13,halign:'center'}, 3:{cellWidth:30,halign:'right'}, 4:{cellWidth:30,halign:'right',fontStyle:'bold'} },
+    margin: { left:mL, right:mR }
+  })
+  y = doc.lastAutoTable.finalY + 5
+
+  // Totales
+  const desc=parseFloat(data.descuento)||0, dm=subtotal*desc/100, cd=subtotal-dm
+  const ivm=data.iva?cd*0.21:0, total=cd+ivm
+  const tR=pW-mR, lX=tR-58
+  function rowT(lbl, val, col) {
+    col = col||GOSC
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRIS); doc.text(lbl, lX, y, {align:'right'})
+    doc.setFont('helvetica','bold'); doc.setTextColor(...col); doc.text(val, tR, y, {align:'right'})
+    y += 5.5
+  }
+  doc.setFontSize(8.5)
+  rowT('Subtotal:', f2(subtotal))
+  if (desc>0) rowT('Descuento ('+desc+'%):', '- '+f2(dm), [210,50,50])
+  if (data.iva) rowT('IVA (21%):', f2(ivm))
+  doc.setDrawColor(...VERDE); doc.setLineWidth(0.8); doc.line(lX-18, y-1.5, tR, y-1.5); y += 2
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(...VERDE)
+  doc.text('TOTAL:', lX, y+5, {align:'right'}); doc.text(f2(total), tR, y+5, {align:'right'}); y += 11
+  if (!data.iva) { doc.setFont('helvetica','italic'); doc.setFontSize(7.5); doc.setTextColor(160,160,160); doc.text('* Los precios no incluyen IVA', tR, y, {align:'right'}); y += 5 }
+  y += 5
+
+  // Condiciones
+  if (data.vigencia || data.forma_pago) {
+    doc.setFillColor(245,245,245); doc.rect(mL, y-1, cW, 6, 'F')
+    doc.setDrawColor(...LINEA); doc.setLineWidth(0.3); doc.rect(mL, y-1, cW, 6, 'S')
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...VERDE)
+    doc.text('CONDICIONES', mL+3, y+3.2); y += 11; doc.setFontSize(8.5)
+    if (data.vigencia) { doc.setFont('helvetica','bold'); doc.setTextColor(...GRIS); doc.text('Validez del presupuesto:', mL+2, y); doc.setFont('helvetica','normal'); doc.setTextColor(...GOSC); doc.text(data.vigencia, mL+52, y); y += 5.5 }
+    if (data.forma_pago) { doc.setFont('helvetica','bold'); doc.setTextColor(...GRIS); doc.text('Medios de pago:', mL+2, y); doc.setFont('helvetica','normal'); doc.setTextColor(...GOSC); doc.text(data.forma_pago, mL+36, y); y += 5.5 }
+    y += 3
+  }
+
+  // Nota
+  doc.setFont('helvetica','italic'); doc.setFontSize(8); doc.setTextColor(170,170,170)
+  const notaLines = doc.splitTextToSize('* ' + data.notas, cW-4)
+  doc.text(notaLines, mL+2, y); y += notaLines.length * 4.5 + 10
+
+  // Pie
+  const pieY = pH - 30
+  doc.setDrawColor(180,180,180); doc.setLineWidth(0.5); doc.line(mL, pieY, pW-mR, pieY)
+  doc.addImage(PRESUP_LOGO, 'PNG', pW/2-5.5, pieY+3, 11, 11)
+  doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(150,150,150)
+  doc.text('Indiesel  ·  Laboratorio Diesel  ·  Mar del Plata, Buenos Aires', pW/2, pieY+17, {align:'center'})
+  doc.text('WhatsApp: 223 305-9372   ·   Tel: 223 478-9900', pW/2, pieY+23, {align:'center'})
+
+  const slug = (cli.nombre||'cliente').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'')
+  doc.save('Presupuesto_Indiesel_' + data.numero + '_' + slug + '.pdf')
+  toast('PDF generado y descargado')
 }
 
 async function cargarInformes() {
@@ -1455,6 +2679,271 @@ async function cargarInformes() {
       <td style="color:var(--text3)">${Array.isArray(i.resultados) ? i.resultados.length : '—'}</td>
       <td></td>
     </tr>`).join('')
+}
+
+// ════════════════════════════════════════
+// DRAWER: DETALLE DE ORDEN
+// ════════════════════════════════════════
+let _ordenActual = null
+let _itemsOrden  = []   // items ya guardados en DB
+let _itemsNuevos = []   // filas nuevas aún no guardadas
+
+async function abrirOrden(id) {
+  _ordenActual = _ordenes.find(o => o.id === id)
+  if (!_ordenActual) return
+
+  // Título
+  document.getElementById('dr-cliente').textContent  = _ordenActual.clientes?.nombre || '—'
+  const veh = _ordenActual.vehiculos
+  document.getElementById('dr-vehiculo').textContent = veh
+    ? [veh.marca, veh.modelo, veh.patente ? `(${veh.patente})` : ''].filter(Boolean).join(' ')
+    : 'Sin vehículo registrado'
+
+  // Estado
+  actualizarBotonesEstado(_ordenActual.estado)
+
+  // Fechas
+  document.getElementById('dr-fecha-ingreso').value = _ordenActual.fecha_ingreso || ''
+  document.getElementById('dr-fecha-entrega').value = _ordenActual.fecha_entrega || ''
+
+  // Observaciones
+  document.getElementById('dr-obs').value = _ordenActual.observaciones || ''
+
+  // Items
+  _itemsNuevos = []
+  await cargarItemsOrden(id)
+
+  // Abrir
+  document.getElementById('drawer-overlay').classList.add('open')
+  document.getElementById('drawer-orden').classList.add('open')
+}
+
+function cerrarDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open')
+  document.getElementById('drawer-orden').classList.remove('open')
+  _ordenActual = null
+  _itemsOrden  = []
+  _itemsNuevos = []
+}
+
+async function cargarItemsOrden(ordenId) {
+  const { data } = await db
+    .from('items_orden')
+    .select('*')
+    .eq('orden_id', ordenId)
+    .order('created_at', { ascending: true })
+  _itemsOrden = data || []
+  renderItemsOrden()
+}
+
+function renderItemsOrden() {
+  const tbody = document.getElementById('dr-items-tbody')
+  const rows = []
+
+  // Items guardados
+  _itemsOrden.forEach(item => {
+    rows.push(`
+      <tr id="item-row-${item.id}">
+        <td><input type="text" value="${esc(item.descripcion || '')}" onchange="actualizarItemGuardado('${item.id}','descripcion',this.value)"></td>
+        <td><input type="text" value="${esc(item.numero_parte || '')}" onchange="actualizarItemGuardado('${item.id}','numero_parte',this.value)"></td>
+        <td><input type="number" value="${item.cantidad || 1}" min="1" style="text-align:center" onchange="actualizarItemGuardado('${item.id}','cantidad',this.value);recalcularTotal()"></td>
+        <td><input type="number" value="${item.precio_unitario || ''}" placeholder="0" step="0.01" onchange="actualizarItemGuardado('${item.id}','precio_unitario',this.value);recalcularTotal()"></td>
+        <td style="text-align:right;font-size:12px;font-weight:600;color:var(--text3);padding-right:6px" id="sub-${item.id}">
+          ${item.precio_unitario ? '$'+Number(item.precio_unitario * item.cantidad).toLocaleString('es-AR') : '—'}
+        </td>
+        <td><button class="btn btn-danger btn-sm btn-icon" onclick="eliminarItemOrden('${item.id}')"><i class="fa-solid fa-trash"></i></button></td>
+      </tr>`)
+  })
+
+  // Filas nuevas (aún no guardadas)
+  _itemsNuevos.forEach((item, idx) => {
+    rows.push(`
+      <tr id="new-row-${idx}" style="background:rgba(34,197,94,.04)">
+        <td><input type="text" placeholder="Descripción" oninput="_itemsNuevos[${idx}].descripcion=this.value"></td>
+        <td><input type="text" placeholder="0445110231" oninput="_itemsNuevos[${idx}].numero_parte=this.value"></td>
+        <td><input type="number" value="1" min="1" style="text-align:center" oninput="_itemsNuevos[${idx}].cantidad=+this.value;recalcularTotal()"></td>
+        <td><input type="number" placeholder="0" step="0.01" oninput="_itemsNuevos[${idx}].precio_unitario=+this.value;recalcularTotal()"></td>
+        <td style="text-align:right;font-size:12px;font-weight:600;color:var(--text3);padding-right:6px">—</td>
+        <td><button class="btn btn-danger btn-sm btn-icon" onclick="quitarFilaNueva(${idx})"><i class="fa-solid fa-xmark"></i></button></td>
+      </tr>`)
+  })
+
+  tbody.innerHTML = rows.length ? rows.join('') : `
+    <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">
+      Sin items — tocá "Agregar" para sumar trabajos
+    </td></tr>`
+
+  recalcularTotal()
+}
+
+function agregarFilaItem() {
+  _itemsNuevos.push({ descripcion: '', numero_parte: '', cantidad: 1, precio_unitario: 0 })
+  renderItemsOrden()
+  // Focus en el último input agregado
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#dr-items-tbody tr')
+    const last = rows[rows.length - 1]
+    if (last) last.querySelector('input')?.focus()
+  }, 50)
+}
+
+function quitarFilaNueva(idx) {
+  _itemsNuevos.splice(idx, 1)
+  renderItemsOrden()
+}
+
+function actualizarItemGuardado(id, campo, valor) {
+  const item = _itemsOrden.find(i => i.id === id)
+  if (item) item[campo] = campo === 'cantidad' || campo === 'precio_unitario' ? +valor : valor
+  // Actualizar subtotal visual
+  const sub = document.getElementById('sub-' + id)
+  if (sub && item?.precio_unitario) {
+    sub.textContent = '$' + Number(item.precio_unitario * item.cantidad).toLocaleString('es-AR')
+  }
+}
+
+async function eliminarItemOrden(id) {
+  const { error } = await db.from('items_orden').delete().eq('id', id)
+  if (error) { toast('Error al eliminar', 'error'); return }
+  _itemsOrden = _itemsOrden.filter(i => i.id !== id)
+  renderItemsOrden()
+  toast('Item eliminado')
+}
+
+function recalcularTotal() {
+  const totalGuardados = _itemsOrden.reduce((s, i) => s + (i.precio_unitario || 0) * (i.cantidad || 1), 0)
+  const totalNuevos    = _itemsNuevos.reduce((s, i) => s + (i.precio_unitario || 0) * (i.cantidad || 1), 0)
+  const total = totalGuardados + totalNuevos
+  document.getElementById('dr-total').textContent = '$' + total.toLocaleString('es-AR', { minimumFractionDigits: 0 })
+  return total
+}
+
+async function guardarDetalleOrden() {
+  if (!_ordenActual) return
+
+  // 1. Guardar items nuevos
+  const nuevosValidos = _itemsNuevos.filter(i => i.descripcion?.trim())
+  if (nuevosValidos.length) {
+    const payload = nuevosValidos.map(i => ({
+      orden_id:        _ordenActual.id,
+      descripcion:     i.descripcion,
+      numero_parte:    i.numero_parte || null,
+      cantidad:        i.cantidad || 1,
+      precio_unitario: i.precio_unitario || null,
+    }))
+    const { error } = await db.from('items_orden').insert(payload)
+    if (error) { toast('Error al guardar items', 'error'); return }
+
+    // Extras con precio → agregar al presupuesto vinculado
+    const extras = nuevosValidos.filter(i => i.precio_unitario > 0)
+    if (extras.length && _ordenActual.presupuesto_id) {
+      const extrasPayload = extras.map(i => ({
+        presupuesto_id:  _ordenActual.presupuesto_id,
+        descripcion:     i.descripcion,
+        cantidad:        i.cantidad || 1,
+        precio_unitario: i.precio_unitario,
+      }))
+      await db.from('items_presupuesto').insert(extrasPayload)
+
+      // Recalcular y actualizar total del presupuesto
+      const { data: todosItems } = await db
+        .from('items_presupuesto')
+        .select('cantidad,precio_unitario')
+        .eq('presupuesto_id', _ordenActual.presupuesto_id)
+      if (todosItems) {
+        const nuevoTotal = todosItems.reduce((s, i) => s + (i.precio_unitario||0)*(i.cantidad||1), 0)
+        await db.from('presupuestos').update({ total: nuevoTotal, updated_at: new Date().toISOString() }).eq('id', _ordenActual.presupuesto_id)
+      }
+
+      // Aviso prominente
+      toast(`⚠️ Se sumaron ${extras.length} extra${extras.length>1?'s':''} al presupuesto — notificá al cliente`, 'warn', 6000)
+    }
+
+    _itemsNuevos = []
+  }
+
+  // 2. Actualizar items existentes
+  for (const item of _itemsOrden) {
+    await db.from('items_orden').update({
+      descripcion:     item.descripcion,
+      numero_parte:    item.numero_parte,
+      cantidad:        item.cantidad,
+      precio_unitario: item.precio_unitario,
+    }).eq('id', item.id)
+  }
+
+  // 3. Calcular y guardar total + datos de la orden
+  const total = recalcularTotal()
+  const { error } = await db.from('ordenes_trabajo').update({
+    estado:          _ordenActual.estado,
+    observaciones:   document.getElementById('dr-obs').value.trim() || null,
+    fecha_ingreso:   document.getElementById('dr-fecha-ingreso').value || null,
+    fecha_entrega:   document.getElementById('dr-fecha-entrega').value || null,
+    total:           total || null,
+  }).eq('id', _ordenActual.id)
+
+  if (error) { toast('Error al guardar orden', 'error'); return }
+
+  // Sincronizar total al presupuesto vinculado
+  if (_ordenActual.presupuesto_id && total) {
+    await db.from('presupuestos').update({ total }).eq('id', _ordenActual.presupuesto_id)
+  }
+
+  toast('Orden guardada')
+  await cargarItemsOrden(_ordenActual.id)
+  cargarOrdenes()
+  cargarPresupuestos()
+  cargarDashboard()
+}
+
+async function cambiarEstado(estado) {
+  if (!_ordenActual) return
+  if (estado === 'entregado') {
+    document.getElementById('input-fecha-entrega').value = new Date().toISOString().slice(0, 10)
+    openModal('modal-confirmar-entrega')
+    return
+  }
+  const { error } = await db.from('ordenes_trabajo').update({ estado }).eq('id', _ordenActual.id)
+  if (error) { toast('Error al cambiar estado', 'error'); return }
+  _ordenActual.estado = estado
+  actualizarBotonesEstado(estado)
+  cerrarDrawer()
+  cargarOrdenes()
+  cargarDashboard()
+  toast('Estado actualizado')
+}
+
+async function confirmarEntrega() {
+  if (!_ordenActual) return
+  const fechaEntrega = document.getElementById('input-fecha-entrega').value
+  const { error } = await db.from('ordenes_trabajo').update({
+    estado: 'entregado',
+    fecha_entrega: fechaEntrega || null,
+  }).eq('id', _ordenActual.id)
+  if (error) { toast('Error al confirmar entrega', 'error'); return }
+  closeModal('modal-confirmar-entrega')
+  cerrarDrawer()
+  cargarOrdenes()
+  cargarDashboard()
+  toast('Orden entregada')
+}
+
+function actualizarBotonesEstado(estado) {
+  document.querySelectorAll('#dr-estados .status-btn').forEach(btn => {
+    btn.classList.remove('active')
+    if (btn.classList.contains('s-' + estado)) btn.classList.add('active')
+  })
+}
+
+async function eliminarOrdenActual() {
+  if (!_ordenActual) return
+  if (!confirm('¿Eliminar esta orden? Se perderán todos los items.')) return
+  const { error } = await db.from('ordenes_trabajo').delete().eq('id', _ordenActual.id)
+  if (error) { toast('Error al eliminar', 'error'); return }
+  toast('Orden eliminada')
+  cerrarDrawer()
+  cargarOrdenes()
+  cargarDashboard()
 }
 
 // ════════════════════════════════════════
