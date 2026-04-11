@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(ls -la /c/Indiesel/.*)",
-      "Bash(file /c/Indiesel/*.*)"
+      "Bash(file /c/Indiesel/*.*)",
+      "Bash(node:*)"
     ]
   }
 }
