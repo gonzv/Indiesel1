@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Indiesel · Sistema de Gestión</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+/* ══════════════════════════════════════════
+   VARIABLES & RESET
+══════════════════════════════════════════ */
+:root {
+  --bg:        #0f172a;
+  --bg2:       #1e293b;
+  --bg3:       #334155;
+  --surface:   #1e293b;
+  --border:    #334155;
+  --accent:    #22c55e;
+  --accent-d:  #16a34a;
+  --accent-l:  #dcfce7;
+  --text:      #f1f5f9;
+  --text2:     #94a3b8;
+  --text3:     #64748b;
+  --danger:    #ef4444;
+  --warn:      #f59e0b;
+  --info:      #3b82f6;
+  --radius:    14px;
+  --radius-sm: 8px;
+  --shadow:    0 4px 24px rgba(0,0,0,0.35);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+  --nav-w:     240px;
+  --nav-h:     64px;
+  --transition: .22s cubic-bezier(.4,0,.2,1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
+
+/* ══════════════════════════════════════════
+   SCROLLBAR
+══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg3); border-radius: 99px; }
+
+/* ══════════════════════════════════════════
+   SIDEBAR — desktop
+══════════════════════════════════════════ */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: var(--nav-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 100;
+  transition: transform var(--transition);
+}
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-circle {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-d));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900; color: white;
+  flex-shrink: 0; letter-spacing: -1px;
+  box-shadow: 0 0 20px rgba(34,197,94,.3);
+}
+.sidebar-logo .brand { line-height: 1.2; }
+.sidebar-logo .brand h1 { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--text); }
+.sidebar-logo .brand p  { font-size: 10px; color: var(--text3); margin-top: 1px; }
+
+.sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
+.nav-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text3);
+  padding: 12px 10px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 14px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 500; color: var(--text2);
+  transition: all var(--transition); cursor: pointer;
+  border: none; background: none; width: 100%; text-align: left;
+  margin-bottom: 2px;
+}
+.nav-item i { width: 18px; text-align: center; font-size: 15px; }
+.nav-item:hover  { background: var(--bg3); color: var(--text); }
+.nav-item.active { background: rgba(34,197,94,.15); color: var(--accent); font-weight: 600; }
+.nav-item.active i { color: var(--accent); }
+.nav-badge {
+  margin-left: auto; background: var(--accent);
+  color: var(--bg); font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 99px;
+}
+
+.sidebar-footer {
+  padding: 16px 10px;
+  border-top: 1px solid var(--border);
+}
+.sidebar-footer .nav-item { font-size: 13px; }
+
+/* ══════════════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════════════ */
+.main {
+  margin-left: var(--nav-w);
+  min-height: 100vh;
+  transition: margin var(--transition);
+}
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(15,23,42,.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  height: 60px;
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+}
+.topbar-title { font-size: 17px; font-weight: 700; flex: 1; }
+.topbar-subtitle { font-size: 12px; color: var(--text3); font-weight: 400; display: block; margin-top: 1px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.page { padding: 24px; display: none; animation: fadeIn .25s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ══════════════════════════════════════════
+   BOTTOM NAV — mobile
+══════════════════════════════════════════ */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  height: var(--nav-h);
+  z-index: 100;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+.bottom-nav-inner {
+  display: flex; height: 100%;
+  align-items: center; justify-content: space-around;
+}
+.bnav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 12px; border-radius: var(--radius-sm);
+  color: var(--text3); font-size: 10px; font-weight: 600;
+  border: none; background: none; transition: all var(--transition);
+  cursor: pointer; text-transform: uppercase; letter-spacing: .3px;
+  min-width: 52px;
+}
+.bnav-item i { font-size: 18px; }
+.bnav-item.active { color: var(--accent); }
+.bnav-item.active i { text-shadow: 0 0 12px rgba(34,197,94,.5); }
+
+/* ══════════════════════════════════════════
+   CARDS & SURFACES
+══════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.card-header h3 { font-size: 14px; font-weight: 700; }
+.card-header p  { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.card-body { padding: 20px; }
+.card-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   STAT CARDS — DASHBOARD
+══════════════════════════════════════════ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+  transition: border-color var(--transition), transform var(--transition);
+  cursor: default;
+}
+.stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.stat-top { display: flex; align-items: center; justify-content: space-between; }
+.stat-label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+.stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; }
+.stat-value { font-size: 30px; font-weight: 800; line-height: 1; }
+.stat-sub { font-size: 12px; color: var(--text3); }
+.stat-green  { background: rgba(34,197,94,.12);  color: var(--accent); }
+.stat-blue   { background: rgba(59,130,246,.12);  color: var(--info); }
+.stat-amber  { background: rgba(245,158,11,.12);  color: var(--warn); }
+.stat-red    { background: rgba(239,68,68,.12);   color: var(--danger); }
+
+/* ══════════════════════════════════════════
+   GRID LAYOUTS
+══════════════════════════════════════════ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+/* ══════════════════════════════════════════
+   FORMS
+══════════════════════════════════════════ */
+.form-grid   { display: grid; gap: 14px; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--text3);
+}
+.field input, .field select, .field textarea {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  font-size: 14px; color: var(--text);
+  transition: border-color var(--transition);
+  width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+}
+.field select option { background: var(--bg2); }
+.field textarea { resize: vertical; min-height: 80px; }
+.field input::placeholder { color: var(--text3); }
+
+/* ══════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 600; border: none;
+  transition: all var(--transition); cursor: pointer; white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: var(--bg); }
+.btn-primary:hover { background: var(--accent-d); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(34,197,94,.3); }
+.btn-secondary { background: var(--bg3); color: var(--text); }
+.btn-secondary:hover { background: #475569; }
+.btn-ghost { background: transparent; color: var(--text2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { background: var(--bg3); color: var(--text); }
+.btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+.btn-danger:hover { background: rgba(239,68,68,.25); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-lg { padding: 13px 24px; font-size: 15px; border-radius: var(--radius); width: 100%; justify-content: center; }
+.btn-icon { padding: 8px; width: 36px; height: 36px; justify-content: center; }
+
+/* ══════════════════════════════════════════
+   TABLE
+══════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left; font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text3); padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 13px 14px; border-bottom: 1px solid rgba(51,65,85,.5);
+  vertical-align: middle;
+}
+tbody tr { transition: background var(--transition); }
+tbody tr:hover { background: rgba(255,255,255,.025); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* ══════════════════════════════════════════
+   BADGES / PILLS
+══════════════════════════════════════════ */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+}
+.badge-green  { background: rgba(34,197,94,.15);  color: var(--accent); }
+.badge-amber  { background: rgba(245,158,11,.15);  color: var(--warn); }
+.badge-blue   { background: rgba(59,130,246,.15);  color: var(--info); }
+.badge-red    { background: rgba(239,68,68,.15);   color: var(--danger); }
+.badge-gray   { background: rgba(100,116,139,.15); color: var(--text3); }
+
+/* ══════════════════════════════════════════
+   SEARCH BAR
+══════════════════════════════════════════ */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 0 14px;
+  transition: border-color var(--transition);
+}
+.search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,197,94,.1); }
+.search-bar i { color: var(--text3); font-size: 13px; }
+.search-bar input {
+  border: none; background: none; padding: 10px 0;
+  font-size: 14px; color: var(--text); width: 100%;
+}
+.search-bar input:focus { outline: none; }
+.search-bar input::placeholder { color: var(--text3); }
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 60px 20px; text-align: center; gap: 12px;
+}
+.empty-icon {
+  width: 64px; height: 64px; border-radius: 18px;
+  background: var(--bg3); display: flex; align-items: center;
+  justify-content: center; font-size: 26px; margin-bottom: 4px;
+}
+.empty-state h3 { font-size: 16px; font-weight: 700; }
+.empty-state p  { font-size: 13px; color: var(--text3); max-width: 260px; line-height: 1.5; }
+
+/* ══════════════════════════════════════════
+   MODAL
+══════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  z-index: 200; display: none;
+  align-items: center; justify-content: center;
+  padding: 16px;
+  animation: fadeIn .15s ease;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); width: 100%; max-width: 520px;
+  box-shadow: var(--shadow); overflow: hidden;
+  animation: slideUp .2s cubic-bezier(.4,0,.2,1);
+  max-height: 90vh; display: flex; flex-direction: column;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-header {
+  padding: 20px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.modal-header h2 { font-size: 16px; font-weight: 700; }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer {
+  padding: 16px 24px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   TOAST NOTIFICATION
+══════════════════════════════════════════ */
+#toast-container {
+  position: fixed; bottom: 80px; right: 20px;
+  z-index: 999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px 18px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  box-shadow: var(--shadow); display: flex; align-items: center; gap: 10px;
+  animation: toastIn .3s ease; pointer-events: all;
+  max-width: 320px;
+}
+.toast.success { border-color: var(--accent); }
+.toast.success i { color: var(--accent); }
+.toast.error   { border-color: var(--danger); }
+.toast.error   i { color: var(--danger); }
+.toast.out { animation: toastOut .3s ease forwards; }
+@keyframes toastIn  { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
+@keyframes toastOut { to   { opacity:0; transform: translateX(20px); } }
+
+/* ══════════════════════════════════════════
+   SKELETON LOADER
+══════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg2) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: none; }
+  .main { margin-left: 0; padding-bottom: var(--nav-h); }
+  .bottom-nav { display: flex; }
+  .topbar { padding: 0 16px; }
+  .page { padding: 16px; }
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  #toast-container { bottom: calc(var(--nav-h) + 8px); right: 12px; left: 12px; }
+  .toast { max-width: 100%; }
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal { border-radius: var(--radius) var(--radius) 0 0; max-height: 92vh; }
+}
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════════════════
+   SIDEBAR OVERLAY (mobile)
+══════════════════════════════════════════ */
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.5); z-index: 99;
+}
+.sidebar-overlay.open { display: block; }
+
+/* ══════════════════════════════════════════
+   MISC
+══════════════════════════════════════════ */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+.text-muted { color: var(--text3); }
+.text-sm { font-size: 12px; }
+.font-bold { font-weight: 700; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-circle">ID</div>
+    <div class="brand">
+      <h1>INDIESEL</h1>
+      <p>Laboratorio Diesel · MdP</p>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <button class="nav-item active" onclick="navigate('dashboard')">
+      <i class="fa-solid fa-chart-pie"></i> Dashboard
+    </button>
+    <button class="nav-item" onclick="navigate('clientes')">
+      <i class="fa-solid fa-users"></i> Clientes
+    </button>
+    <button class="nav-item" onclick="navigate('ordenes')">
+      <i class="fa-solid fa-wrench"></i> Órdenes de trabajo
+    </button>
+
+    <div class="nav-section-label">Documentos</div>
+    <button class="nav-item" onclick="navigate('presupuestos')">
+      <i class="fa-solid fa-file-invoice-dollar"></i> Presupuestos
+    </button>
+    <button class="nav-item" onclick="navigate('informes')">
+      <i class="fa-solid fa-flask"></i> Informes de prueba
+    </button>
+
+    <div class="nav-section-label">Inventario</div>
+    <button class="nav-item" onclick="navigate('stock')">
+      <i class="fa-solid fa-boxes-stacked"></i> Stock
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="nav-item" onclick="navigate('config')">
+      <i class="fa-solid fa-gear"></i> Configuración
+    </button>
+  </div>
+</aside>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="btn btn-icon btn-ghost" id="menu-btn" onclick="toggleSidebar()" style="display:none">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <div style="flex:1">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+    </div>
+    <div class="topbar-actions" id="topbar-actions"></div>
+  </div>
+
+  <!-- ═══ PAGE: DASHBOARD ═══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Clientes</span>
+          <div class="stat-icon stat-blue"><i class="fa-solid fa-users"></i></div>
+        </div>
+        <div class="stat-value" id="stat-clientes">—</div>
+        <div class="stat-sub">registrados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Órdenes activas</span>
+          <div class="stat-icon stat-amber"><i class="fa-solid fa-wrench"></i></div>
+        </div>
+        <div class="stat-value" id="stat-ordenes">—</div>
+        <div class="stat-sub">en proceso</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Stock items</span>
+          <div class="stat-icon stat-green"><i class="fa-solid fa-boxes-stacked"></i></div>
+        </div>
+        <div class="stat-value" id="stat-stock">—</div>
+        <div class="stat-sub">en inventario</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top">
+          <span class="stat-label">Presupuestos</span>
+          <div class="stat-icon stat-red"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        </div>
+        <div class="stat-value" id="stat-presupuestos">—</div>
+        <div class="stat-sub">pendientes</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:16px">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(34,197,94,.12);color:var(--accent)">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div>
+            <h3>Últimas órdenes</h3>
+            <p>Actividad reciente del taller</p>
+          </div>
+        </div>
+        <div class="card-body" id="dash-ultimas-ordenes">
+          <div class="empty-state" style="padding:30px 16px">
+            <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
+            <p>No hay órdenes aún</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(59,130,246,.12);color:var(--info)">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <h3>Acceso rápido</h3>
+            <p>Acciones frecuentes</p>
+          </div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('clientes');openModal('modal-cliente')">
+            <i class="fa-solid fa-user-plus" style="color:var(--info)"></i> Nuevo cliente
+          </button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('ordenes');openModal('modal-orden')">
+            <i class="fa-solid fa-plus" style="color:var(--accent)"></i> Nueva orden de trabajo
+          </button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('presupuestos')">
+            <i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn)"></i> Nuevo presupuesto
+          </button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="window.open('index.html','_blank')">
+            <i class="fa-solid fa-flask" style="color:var(--danger)"></i> Generar informe PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: CLIENTES ═══ -->
+  <div class="page" id="page-clientes">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:360px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar cliente..." id="search-clientes" oninput="filtrarClientes()">
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-cliente')">
+        <i class="fa-solid fa-plus"></i> Nuevo cliente
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Email</th>
+              <th>Dirección</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-clientes">
+            <tr><td colspan="5">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-users"></i></div>
+                <h3>Sin clientes</h3>
+                <p>Agregá tu primer cliente para empezar</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: ÓRDENES ═══ -->
+  <div class="page" id="page-ordenes">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:360px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar orden..." id="search-ordenes" oninput="filtrarOrdenes()">
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-orden')">
+        <i class="fa-solid fa-plus"></i> Nueva orden
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Vehículo</th>
+              <th>Ingreso</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-ordenes">
+            <tr><td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
+                <h3>Sin órdenes</h3>
+                <p>Creá la primera orden de trabajo</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: PRESUPUESTOS ═══ -->
+  <div class="page" id="page-presupuestos">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:360px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar presupuesto...">
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-presupuesto')">
+        <i class="fa-solid fa-plus"></i> Nuevo presupuesto
+      </button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N°</th><th>Cliente</th><th>Fecha</th><th>Validez</th><th>Estado</th><th>Total</th><th></th></tr>
+          </thead>
+          <tbody id="tabla-presupuestos">
+            <tr><td colspan="7">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <h3>Sin presupuestos</h3>
+                <p>Creá el primer presupuesto</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: INFORMES ═══ -->
+  <div class="page" id="page-informes">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:360px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar informe...">
+      </div>
+      <button class="btn btn-primary" onclick="window.open('index.html','_blank')">
+        <i class="fa-solid fa-file-arrow-up"></i> Generar informe PDF
+      </button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>N°</th><th>Cliente</th><th>Vehículo</th><th>Fecha</th><th>Inyectores</th><th></th></tr>
+          </thead>
+          <tbody id="tabla-informes">
+            <tr><td colspan="6">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-flask"></i></div>
+                <h3>Sin informes</h3>
+                <p>Los informes guardados aparecen acá</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: STOCK ═══ -->
+  <div class="page" id="page-stock">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:360px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar producto..." id="search-stock" oninput="filtrarStock()">
+      </div>
+      <button class="btn btn-primary" onclick="openModal('modal-stock')">
+        <i class="fa-solid fa-plus"></i> Agregar item
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código</th>
+              <th>Descripción</th>
+              <th>Categoría</th>
+              <th>Tipo</th>
+              <th>Stock</th>
+              <th>P. Costo</th>
+              <th>P. Venta</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-stock">
+            <tr><td colspan="8">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+                <h3>Sin items</h3>
+                <p>Agregá el primer producto al inventario</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: CONFIG ═══ -->
+  <div class="page" id="page-config">
+    <div class="card" style="max-width:520px">
+      <div class="card-header">
+        <div class="card-icon stat-green"><i class="fa-solid fa-database"></i></div>
+        <div><h3>Conexión Supabase</h3><p>Estado de la base de datos</p></div>
+      </div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label>URL del proyecto</label>
+          <input type="text" value="https://lzotsrfrkwoxvimlxmgb.supabase.co" readonly style="font-size:12px;color:var(--text3)">
+        </div>
+        <div id="db-status" style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text3)">
+          <i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent)"></i> Verificando conexión...
+        </div>
+        <button class="btn btn-secondary btn-sm" style="align-self:flex-start" onclick="checkConnection()">
+          <i class="fa-solid fa-rotate"></i> Reconectar
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════ BOTTOM NAV (mobile) ═══════════════════════ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bnav-item active" id="bnav-dashboard"    onclick="navigate('dashboard')">
+      <i class="fa-solid fa-chart-pie"></i> Inicio
+    </button>
+    <button class="bnav-item" id="bnav-clientes"   onclick="navigate('clientes')">
+      <i class="fa-solid fa-users"></i> Clientes
+    </button>
+    <button class="bnav-item" id="bnav-ordenes"    onclick="navigate('ordenes')">
+      <i class="fa-solid fa-wrench"></i> Órdenes
+    </button>
+    <button class="bnav-item" id="bnav-stock"      onclick="navigate('stock')">
+      <i class="fa-solid fa-boxes-stacked"></i> Stock
+    </button>
+    <button class="bnav-item" id="bnav-presupuestos" onclick="navigate('presupuestos')">
+      <i class="fa-solid fa-file-invoice-dollar"></i> Presup.
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+
+<!-- Modal: Nuevo Cliente -->
+<div class="modal-overlay" id="modal-cliente">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-user-plus" style="color:var(--info);margin-right:8px"></i>Nuevo cliente</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-cliente')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:14px">
+        <div class="field"><label>Nombre *</label>
+          <input type="text" id="cli-nombre" placeholder="Juan García / Transportes S.A."></div>
+        <div class="form-grid-2">
+          <div class="field"><label>Teléfono</label>
+            <input type="tel" id="cli-telefono" placeholder="223-456-7890"></div>
+          <div class="field"><label>Email</label>
+            <input type="email" id="cli-email" placeholder="cliente@mail.com"></div>
+        </div>
+        <div class="field"><label>Dirección</label>
+          <input type="text" id="cli-direccion" placeholder="Calle 123, Mar del Plata"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-cliente')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarCliente()">
+        <i class="fa-solid fa-check"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nueva Orden -->
+<div class="modal-overlay" id="modal-orden">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-wrench" style="color:var(--accent);margin-right:8px"></i>Nueva orden de trabajo</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-orden')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:14px">
+        <div class="field"><label>Cliente *</label>
+          <select id="ord-cliente">
+            <option value="">— Seleccionar cliente —</option>
+          </select>
+        </div>
+        <div class="form-grid-2">
+          <div class="field"><label>Marca vehículo</label>
+            <input type="text" id="ord-marca" placeholder="Ej: Chevrolet"></div>
+          <div class="field"><label>Modelo</label>
+            <input type="text" id="ord-modelo" placeholder="Ej: S10 2.8"></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="field"><label>Patente</label>
+            <input type="text" id="ord-patente" placeholder="AB 123 CD"></div>
+          <div class="field"><label>Año</label>
+            <input type="number" id="ord-anio" placeholder="2020"></div>
+        </div>
+        <div class="field"><label>Estado</label>
+          <select id="ord-estado">
+            <option value="presupuestado">Presupuestado</option>
+            <option value="en_trabajo">En trabajo</option>
+            <option value="listo">Listo</option>
+            <option value="entregado">Entregado</option>
+          </select>
+        </div>
+        <div class="field"><label>Observaciones</label>
+          <textarea id="ord-obs" placeholder="Detalles del trabajo..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-orden')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarOrden()">
+        <i class="fa-solid fa-check"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Stock -->
+<div class="modal-overlay" id="modal-stock">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-boxes-stacked" style="color:var(--accent);margin-right:8px"></i>Agregar item al stock</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-stock')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:14px">
+        <div class="form-grid-2">
+          <div class="field"><label>Código</label>
+            <input type="text" id="stk-codigo" placeholder="INY-001"></div>
+          <div class="field"><label>Categoría</label>
+            <select id="stk-categoria">
+              <option value="inyector">Inyector</option>
+              <option value="sello">Sello</option>
+              <option value="resorte">Resorte</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Descripción *</label>
+          <input type="text" id="stk-descripcion" placeholder="Ej: Inyector Bosch 0445110231"></div>
+        <div class="form-grid-2">
+          <div class="field"><label>Tipo</label>
+            <select id="stk-tipo">
+              <option value="reparacion">Reparación</option>
+              <option value="venta">Venta</option>
+            </select>
+          </div>
+          <div class="field"><label>Cantidad</label>
+            <input type="number" id="stk-cantidad" value="1" min="0"></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="field"><label>Precio costo</label>
+            <input type="number" id="stk-costo" placeholder="0.00" step="0.01"></div>
+          <div class="field"><label>Precio venta</label>
+            <input type="number" id="stk-venta" placeholder="0.00" step="0.01"></div>
+        </div>
+        <div class="field"><label>Proveedor</label>
+          <input type="text" id="stk-proveedor" placeholder="Nombre del proveedor"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-stock')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarStock()">
+        <i class="fa-solid fa-check"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Presupuesto -->
+<div class="modal-overlay" id="modal-presupuesto">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn);margin-right:8px"></i>Nuevo presupuesto</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-presupuesto')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text3);font-size:13px">Próximamente — el módulo completo de presupuestos va a estar acá.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-presupuesto')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ════════════════════════════════════════
+// SUPABASE INIT
+// ════════════════════════════════════════
+const SUPABASE_URL = 'https://lzotsrfrkwoxvimlxmgb.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx6b3RzcmZya3dveHZpbWx4bWdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjI5NDcsImV4cCI6MjA5MTQ5ODk0N30.fD3P8LRhHH7OwkJe9ht4s5At09f454MoKGNcac5KonM'
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// ════════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════════
+const pageNames = {
+  dashboard: 'Dashboard',
+  clientes: 'Clientes',
+  ordenes: 'Órdenes de trabajo',
+  presupuestos: 'Presupuestos',
+  informes: 'Informes de prueba',
+  stock: 'Stock',
+  config: 'Configuración',
+}
+
+let currentPage = 'dashboard'
+
+function navigate(page) {
+  // Ocultar páginas
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'))
+  document.querySelectorAll('.bnav-item').forEach(n => n.classList.remove('active'))
+
+  // Mostrar página
+  const el = document.getElementById('page-' + page)
+  if (el) el.classList.add('active')
+
+  // Activar nav items
+  const navItem = document.querySelector(`.nav-item[onclick="navigate('${page}')"]`)
+  if (navItem) navItem.classList.add('active')
+  const bnavItem = document.getElementById('bnav-' + page)
+  if (bnavItem) bnavItem.classList.add('active')
+
+  // Topbar
+  document.getElementById('topbar-title').textContent = pageNames[page] || page
+  document.getElementById('topbar-actions').innerHTML = ''
+
+  currentPage = page
+  closeSidebar()
+
+  // Cargar datos
+  if (page === 'clientes')      cargarClientes()
+  if (page === 'ordenes')       cargarOrdenes()
+  if (page === 'stock')         cargarStock()
+  if (page === 'presupuestos')  cargarPresupuestos()
+  if (page === 'informes')      cargarInformes()
+  if (page === 'dashboard')     cargarDashboard()
+}
+
+// ════════════════════════════════════════
+// SIDEBAR MOBILE
+// ════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open')
+  document.getElementById('sidebar-overlay').classList.toggle('open')
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open')
+  document.getElementById('sidebar-overlay').classList.remove('open')
+}
+
+// Mostrar botón menú en mobile
+function checkMobile() {
+  const isMobile = window.innerWidth <= 768
+  document.getElementById('menu-btn').style.display = isMobile ? 'flex' : 'none'
+}
+window.addEventListener('resize', checkMobile)
+checkMobile()
+
+// ════════════════════════════════════════
+// MODALS
+// ════════════════════════════════════════
+function openModal(id) {
+  document.getElementById(id).classList.add('open')
+  // Si es modal de orden, cargar lista de clientes
+  if (id === 'modal-orden') cargarClientesSelect()
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open')
+}
+// Cerrar al click en overlay
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) closeModal(this.id)
+  })
+})
+
+// ════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════
+function toast(msg, type = 'success') {
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation' }
+  const t = document.createElement('div')
+  t.className = `toast ${type}`
+  t.innerHTML = `<i class="fa-solid ${icons[type]}"></i> ${msg}`
+  document.getElementById('toast-container').appendChild(t)
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300) }, 3000)
+}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+async function cargarDashboard() {
+  try {
+    const [{ count: c1 }, { count: c2 }, { count: c3 }, { count: c4 }] = await Promise.all([
+      db.from('clientes').select('*', { count: 'exact', head: true }),
+      db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).in('estado', ['en_trabajo','presupuestado']),
+      db.from('stock').select('*', { count: 'exact', head: true }),
+      db.from('presupuestos').select('*', { count: 'exact', head: true }).eq('estado','pendiente'),
+    ])
+    document.getElementById('stat-clientes').textContent     = c1 ?? 0
+    document.getElementById('stat-ordenes').textContent      = c2 ?? 0
+    document.getElementById('stat-stock').textContent        = c3 ?? 0
+    document.getElementById('stat-presupuestos').textContent = c4 ?? 0
+
+    // Últimas órdenes
+    const { data: ordenes } = await db
+      .from('ordenes_trabajo')
+      .select('*, clientes(nombre)')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    const cont = document.getElementById('dash-ultimas-ordenes')
+    if (!ordenes || ordenes.length === 0) {
+      cont.innerHTML = `<div class="empty-state" style="padding:30px 16px">
+        <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
+        <p>No hay órdenes aún</p></div>`
+      return
+    }
+    cont.innerHTML = ordenes.map(o => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:13px;font-weight:600">${o.clientes?.nombre || '—'}</div>
+          <div style="font-size:11px;color:var(--text3)">${o.vehiculo_desc || ''} · ${formatFecha(o.fecha_ingreso)}</div>
+        </div>
+        ${badgeEstado(o.estado)}
+      </div>`).join('')
+  } catch(e) {
+    console.error(e)
+  }
+}
+
+// ════════════════════════════════════════
+// CLIENTES
+// ════════════════════════════════════════
+let _clientes = []
+
+async function cargarClientes() {
+  const tbody = document.getElementById('tabla-clientes')
+  tbody.innerHTML = `<tr><td colspan="5" style="padding:20px"><div class="skeleton" style="height:40px"></div></td></tr>`
+
+  const { data, error } = await db.from('clientes').select('*').order('nombre')
+  if (error) { toast('Error al cargar clientes', 'error'); return }
+
+  _clientes = data || []
+  renderClientes(_clientes)
+}
+
+function renderClientes(lista) {
+  const tbody = document.getElementById('tabla-clientes')
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-users"></i></div>
+      <h3>Sin clientes</h3><p>Agregá tu primer cliente</p>
+    </div></td></tr>`
+    return
+  }
+  tbody.innerHTML = lista.map(c => `
+    <tr>
+      <td><span style="font-weight:600">${esc(c.nombre)}</span></td>
+      <td>${esc(c.telefono || '—')}</td>
+      <td style="color:var(--text3)">${esc(c.email || '—')}</td>
+      <td style="color:var(--text3)">${esc(c.direccion || '—')}</td>
+      <td style="text-align:right">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="editarCliente('${c.id}')" title="Editar">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="eliminarCliente('${c.id}')" title="Eliminar">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    </tr>`).join('')
+}
+
+function filtrarClientes() {
+  const q = document.getElementById('search-clientes').value.toLowerCase()
+  renderClientes(_clientes.filter(c =>
+    c.nombre?.toLowerCase().includes(q) ||
+    c.telefono?.includes(q) ||
+    c.email?.toLowerCase().includes(q)
+  ))
+}
+
+async function guardarCliente() {
+  const nombre = document.getElementById('cli-nombre').value.trim()
+  if (!nombre) { toast('El nombre es obligatorio', 'error'); return }
+
+  const payload = {
+    nombre,
+    telefono: document.getElementById('cli-telefono').value.trim() || null,
+    email:    document.getElementById('cli-email').value.trim() || null,
+    direccion:document.getElementById('cli-direccion').value.trim() || null,
+  }
+
+  const { error } = await db.from('clientes').insert(payload)
+  if (error) { toast('Error al guardar', 'error'); return }
+
+  toast('Cliente guardado')
+  closeModal('modal-cliente')
+  limpiarFormCliente()
+  cargarClientes()
+  cargarDashboard()
+}
+
+function limpiarFormCliente() {
+  ['cli-nombre','cli-telefono','cli-email','cli-direccion'].forEach(id => {
+    document.getElementById(id).value = ''
+  })
+}
+
+async function eliminarCliente(id) {
+  if (!confirm('¿Eliminar este cliente?')) return
+  const { error } = await db.from('clientes').delete().eq('id', id)
+  if (error) { toast('Error al eliminar', 'error'); return }
+  toast('Cliente eliminado')
+  cargarClientes()
+  cargarDashboard()
+}
+
+function editarCliente(id) {
+  // TODO en próxima iteración
+  toast('Edición próximamente', 'error')
+}
+
+// ════════════════════════════════════════
+// ÓRDENES
+// ════════════════════════════════════════
+let _ordenes = []
+
+async function cargarOrdenes() {
+  const tbody = document.getElementById('tabla-ordenes')
+  tbody.innerHTML = `<tr><td colspan="7" style="padding:20px"><div class="skeleton" style="height:40px"></div></td></tr>`
+
+  const { data, error } = await db
+    .from('ordenes_trabajo')
+    .select('*, clientes(nombre), vehiculos(marca,modelo,patente)')
+    .order('created_at', { ascending: false })
+
+  if (error) { toast('Error al cargar órdenes', 'error'); return }
+  _ordenes = data || []
+  renderOrdenes(_ordenes)
+}
+
+function renderOrdenes(lista) {
+  const tbody = document.getElementById('tabla-ordenes')
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
+      <h3>Sin órdenes</h3><p>Creá la primera orden de trabajo</p>
+    </div></td></tr>`
+    return
+  }
+  tbody.innerHTML = lista.map((o, i) => `
+    <tr>
+      <td style="color:var(--text3);font-size:12px">#${String(_ordenes.length - i).padStart(4,'0')}</td>
+      <td style="font-weight:600">${esc(o.clientes?.nombre || '—')}</td>
+      <td style="color:var(--text3)">${esc(o.vehiculos ? `${o.vehiculos.marca} ${o.vehiculos.modelo}` : o.vehiculo_desc || '—')}</td>
+      <td style="color:var(--text3)">${formatFecha(o.fecha_ingreso)}</td>
+      <td>${badgeEstado(o.estado)}</td>
+      <td style="font-weight:600">${o.total ? '$'+Number(o.total).toLocaleString('es-AR') : '—'}</td>
+      <td style="text-align:right">
+        <button class="btn btn-danger btn-sm btn-icon" onclick="eliminarOrden('${o.id}')">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    </tr>`).join('')
+}
+
+function filtrarOrdenes() {
+  const q = document.getElementById('search-ordenes').value.toLowerCase()
+  renderOrdenes(_ordenes.filter(o =>
+    o.clientes?.nombre?.toLowerCase().includes(q) ||
+    o.estado?.includes(q)
+  ))
+}
+
+async function cargarClientesSelect() {
+  const sel = document.getElementById('ord-cliente')
+  const { data } = await db.from('clientes').select('id,nombre').order('nombre')
+  sel.innerHTML = '<option value="">— Seleccionar cliente —</option>' +
+    (data || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')
+}
+
+async function guardarOrden() {
+  const clienteId = document.getElementById('ord-cliente').value
+  if (!clienteId) { toast('Seleccioná un cliente', 'error'); return }
+
+  // Crear vehículo si hay datos
+  let vehiculoId = null
+  const marca = document.getElementById('ord-marca').value.trim()
+  const modelo = document.getElementById('ord-modelo').value.trim()
+  const patente = document.getElementById('ord-patente').value.trim()
+  const anio = document.getElementById('ord-anio').value
+
+  if (marca || modelo || patente) {
+    const { data: veh } = await db.from('vehiculos').insert({
+      cliente_id: clienteId,
+      marca: marca || null,
+      modelo: modelo || null,
+      patente: patente || null,
+      año: anio ? parseInt(anio) : null,
+    }).select().single()
+    vehiculoId = veh?.id
+  }
+
+  const { error } = await db.from('ordenes_trabajo').insert({
+    cliente_id: clienteId,
+    vehiculo_id: vehiculoId,
+    estado: document.getElementById('ord-estado').value,
+    observaciones: document.getElementById('ord-obs').value.trim() || null,
+    fecha_ingreso: new Date().toISOString().split('T')[0],
+  })
+
+  if (error) { toast('Error al guardar', 'error'); return }
+
+  toast('Orden creada')
+  closeModal('modal-orden')
+  limpiarFormOrden()
+  cargarOrdenes()
+  cargarDashboard()
+}
+
+function limpiarFormOrden() {
+  ['ord-cliente','ord-marca','ord-modelo','ord-patente','ord-anio','ord-obs'].forEach(id => {
+    document.getElementById(id).value = ''
+  })
+  document.getElementById('ord-estado').value = 'presupuestado'
+}
+
+async function eliminarOrden(id) {
+  if (!confirm('¿Eliminar esta orden?')) return
+  const { error } = await db.from('ordenes_trabajo').delete().eq('id', id)
+  if (error) { toast('Error al eliminar', 'error'); return }
+  toast('Orden eliminada')
+  cargarOrdenes()
+  cargarDashboard()
+}
+
+// ════════════════════════════════════════
+// STOCK
+// ════════════════════════════════════════
+let _stock = []
+
+async function cargarStock() {
+  const tbody = document.getElementById('tabla-stock')
+  tbody.innerHTML = `<tr><td colspan="8" style="padding:20px"><div class="skeleton" style="height:40px"></div></td></tr>`
+
+  const { data, error } = await db.from('stock').select('*').order('descripcion')
+  if (error) { toast('Error al cargar stock', 'error'); return }
+  _stock = data || []
+  renderStock(_stock)
+}
+
+function renderStock(lista) {
+  const tbody = document.getElementById('tabla-stock')
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+      <h3>Sin items</h3><p>Agregá el primer producto al inventario</p>
+    </div></td></tr>`
+    return
+  }
+  tbody.innerHTML = lista.map(s => `
+    <tr>
+      <td style="color:var(--text3);font-size:12px">${esc(s.codigo || '—')}</td>
+      <td style="font-weight:600">${esc(s.descripcion)}</td>
+      <td><span class="badge badge-gray">${esc(s.categoria || '—')}</span></td>
+      <td><span class="badge ${s.tipo === 'venta' ? 'badge-blue' : 'badge-green'}">${s.tipo || 'reparacion'}</span></td>
+      <td style="font-weight:700;color:${s.cantidad <= 2 ? 'var(--danger)' : 'var(--text)'}">${s.cantidad}</td>
+      <td style="color:var(--text3)">${s.precio_costo ? '$'+Number(s.precio_costo).toLocaleString('es-AR') : '—'}</td>
+      <td style="font-weight:600">${s.precio_venta ? '$'+Number(s.precio_venta).toLocaleString('es-AR') : '—'}</td>
+      <td style="text-align:right">
+        <button class="btn btn-danger btn-sm btn-icon" onclick="eliminarStock('${s.id}')">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    </tr>`).join('')
+}
+
+function filtrarStock() {
+  const q = document.getElementById('search-stock').value.toLowerCase()
+  renderStock(_stock.filter(s =>
+    s.descripcion?.toLowerCase().includes(q) ||
+    s.codigo?.toLowerCase().includes(q) ||
+    s.categoria?.toLowerCase().includes(q)
+  ))
+}
+
+async function guardarStock() {
+  const desc = document.getElementById('stk-descripcion').value.trim()
+  if (!desc) { toast('La descripción es obligatoria', 'error'); return }
+
+  const { error } = await db.from('stock').insert({
+    codigo:      document.getElementById('stk-codigo').value.trim() || null,
+    descripcion: desc,
+    categoria:   document.getElementById('stk-categoria').value,
+    tipo:        document.getElementById('stk-tipo').value,
+    cantidad:    parseInt(document.getElementById('stk-cantidad').value) || 0,
+    precio_costo:parseFloat(document.getElementById('stk-costo').value) || null,
+    precio_venta:parseFloat(document.getElementById('stk-venta').value) || null,
+    proveedor:   document.getElementById('stk-proveedor').value.trim() || null,
+  })
+
+  if (error) { toast('Error al guardar', 'error'); return }
+  toast('Item agregado al stock')
+  closeModal('modal-stock')
+  limpiarFormStock()
+  cargarStock()
+  cargarDashboard()
+}
+
+function limpiarFormStock() {
+  ['stk-codigo','stk-descripcion','stk-costo','stk-venta','stk-proveedor'].forEach(id => {
+    document.getElementById(id).value = ''
+  })
+  document.getElementById('stk-cantidad').value = '1'
+}
+
+async function eliminarStock(id) {
+  if (!confirm('¿Eliminar este item del stock?')) return
+  const { error } = await db.from('stock').delete().eq('id', id)
+  if (error) { toast('Error al eliminar', 'error'); return }
+  toast('Item eliminado')
+  cargarStock()
+  cargarDashboard()
+}
+
+// ════════════════════════════════════════
+// PRESUPUESTOS / INFORMES (base)
+// ════════════════════════════════════════
+async function cargarPresupuestos() {
+  const { data } = await db.from('presupuestos').select('*, clientes(nombre), vehiculos(marca,modelo)').order('created_at', { ascending: false })
+  const tbody = document.getElementById('tabla-presupuestos')
+  if (!data?.length) { tbody.innerHTML = emptyRow(7, 'fa-file-invoice-dollar', 'Sin presupuestos', 'Creá el primer presupuesto'); return }
+  tbody.innerHTML = data.map(p => `
+    <tr>
+      <td style="color:var(--text3)">#${esc(p.n_presupuesto || '—')}</td>
+      <td style="font-weight:600">${esc(p.clientes?.nombre || '—')}</td>
+      <td style="color:var(--text3)">${formatFecha(p.fecha)}</td>
+      <td style="color:var(--text3)">${p.validez_dias ? p.validez_dias + ' días' : '—'}</td>
+      <td>${badgeEstado(p.estado)}</td>
+      <td style="font-weight:600">${p.total ? '$'+Number(p.total).toLocaleString('es-AR') : '—'}</td>
+      <td></td>
+    </tr>`).join('')
+}
+
+async function cargarInformes() {
+  const { data } = await db.from('informes_prueba').select('*, clientes(nombre)').order('created_at', { ascending: false })
+  const tbody = document.getElementById('tabla-informes')
+  if (!data?.length) { tbody.innerHTML = emptyRow(6, 'fa-flask', 'Sin informes', 'Los informes guardados aparecen acá'); return }
+  tbody.innerHTML = data.map(i => `
+    <tr>
+      <td style="color:var(--text3)">#${esc(i.n_informe || '—')}</td>
+      <td style="font-weight:600">${esc(i.clientes?.nombre || '—')}</td>
+      <td style="color:var(--text3)">${esc(i.vehiculo || '—')}</td>
+      <td style="color:var(--text3)">${formatFecha(i.fecha)}</td>
+      <td style="color:var(--text3)">${Array.isArray(i.resultados) ? i.resultados.length : '—'}</td>
+      <td></td>
+    </tr>`).join('')
+}
+
+// ════════════════════════════════════════
+// CONEXIÓN DB
+// ════════════════════════════════════════
+async function checkConnection() {
+  const el = document.getElementById('db-status')
+  el.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color:var(--accent)"></i> Verificando...`
+  try {
+    const { error } = await db.from('clientes').select('id').limit(1)
+    if (error) throw error
+    el.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent)"></i> <span style="color:var(--text)">Conectado a Supabase</span>`
+  } catch {
+    el.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color:var(--danger)"></i> <span style="color:var(--danger)">Sin conexión</span>`
+  }
+}
+
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+function esc(s) {
+  if (!s) return ''
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+}
+
+function formatFecha(f) {
+  if (!f) return '—'
+  const d = new Date(f + 'T12:00:00')
+  return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' })
+}
+
+function badgeEstado(estado) {
+  const map = {
+    presupuestado: ['badge-amber', 'Presupuestado'],
+    en_trabajo:    ['badge-blue',  'En trabajo'],
+    listo:         ['badge-green', 'Listo'],
+    entregado:     ['badge-gray',  'Entregado'],
+    pendiente:     ['badge-amber', 'Pendiente'],
+    aprobado:      ['badge-green', 'Aprobado'],
+    rechazado:     ['badge-red',   'Rechazado'],
+  }
+  const [cls, label] = map[estado] || ['badge-gray', estado || '—']
+  return `<span class="badge ${cls}">${label}</span>`
+}
+
+function emptyRow(cols, icon, title, desc) {
+  return `<tr><td colspan="${cols}"><div class="empty-state">
+    <div class="empty-icon"><i class="fa-solid ${icon}"></i></div>
+    <h3>${title}</h3><p>${desc}</p>
+  </div></td></tr>`
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  cargarDashboard()
+  checkConnection()
+})
+</script>
+</body>
+</html>

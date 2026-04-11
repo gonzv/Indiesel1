@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indiesel</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root {
+  --verde: #1a9e3a; --verde-l: #e8f5ec; --verde-d: #147a2d;
+  --gris: #555; --borde: #ddd; --rojo: #e53935;
+  --sombra: 0 1px 4px rgba(0,0,0,0.09);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+       background: #f0f2f0; color: #1a1a2e; }
+
+/* ── HEADER ── */
+.app-header {
+  background: var(--verde); color: white;
+  padding: 0 20px; height: 54px;
+  display: flex; align-items: center; gap: 14px;
+  position: sticky; top: 0; z-index: 20;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.app-header .brand h1 { font-size: 20px; font-weight: 800; letter-spacing: 1.5px; }
+.app-header .brand p  { font-size: 10px; opacity: 0.75; }
+.logo-icon { height: 36px; border-radius: 8px; flex-shrink: 0; }
+.logo-text { height: 20px; filter: brightness(0) invert(1); display: block; margin-bottom: 2px; }
+.tabs { margin-left: auto; display: flex; gap: 4px; }
+.tab-btn {
+  padding: 7px 18px; border: none; border-radius: 20px; cursor: pointer;
+  font-size: 13px; font-weight: 600; transition: all .15s;
+  background: rgba(255,255,255,.2); color: white;
+}
+.tab-btn.active { background: white; color: var(--verde); }
+.tab-btn:hover:not(.active) { background: rgba(255,255,255,.35); }
+
+/* ── LAYOUT ── */
+.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+.section    { display: none; }
+.section.active { display: block; }
+
+/* ── CARDS ── */
+.card { background: white; border-radius: 12px; padding: 18px 20px;
+        margin-bottom: 14px; box-shadow: var(--sombra); overflow: hidden; }
+.card-header-green {
+  background: var(--verde); color: white;
+  padding: 9px 16px; font-size: 13px; font-weight: 700; letter-spacing: .4px;
+  margin: -18px -20px 16px; display: flex; align-items: center; gap: 8px;
+}
+.card-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .7px; color: var(--verde);
+  margin-bottom: 14px; padding-bottom: 8px; border-bottom: 2px solid var(--verde-l);
+}
+
+/* ── GRIDS ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.g-3-1-1 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+@media(max-width:580px){.g2,.g3,.g-3-1-1{grid-template-columns:1fr;}}
+
+/* ── FIELDS ── */
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 11px; font-weight: 600; color: #888;
+               text-transform: uppercase; letter-spacing: .3px; }
+.field input, .field select, .field textarea {
+  padding: 9px 11px; border: 1.5px solid var(--borde);
+  border-radius: 8px; font-size: 14px; color: #1a1a2e;
+  background: #fafafa; transition: border-color .15s; width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none; border-color: var(--verde); background: white;
+}
+.field textarea { resize: vertical; min-height: 56px; }
+
+/* ── BOTONES ── */
+.btn-add {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 10px;
+  border: 2px dashed var(--verde); border-radius: 10px;
+  background: transparent; color: var(--verde-d);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  margin-top: 4px; transition: background .15s;
+}
+.btn-add:hover { background: var(--verde-l); }
+.btn-generate {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 15px;
+  background: var(--verde); color: white;
+  border: none; border-radius: 12px;
+  font-size: 16px; font-weight: 700; cursor: pointer;
+  letter-spacing: .5px; transition: background .15s; margin-top: 4px;
+}
+.btn-generate:hover  { background: var(--verde-d); }
+.btn-generate:active { background: #0f5e22; }
+.btn-del {
+  background: none; border: none; color: #ccc;
+  font-size: 20px; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+}
+.btn-del:hover { color: var(--rojo); }
+.btn-remove {
+  background: #fff0f0; color: #c00; border: 1px solid #f5c0c0;
+  border-radius: 6px; padding: 5px 11px; font-size: 12px; cursor: pointer; font-weight: 600;
+}
+.btn-remove:hover { background: #ffe0e0; }
+
+/* ── INFORME: INYECTORES ── */
+.inj-card {
+  background: #f5fff7; border: 1.5px solid #b5e0bf;
+  border-radius: 10px; padding: 14px 16px; margin-bottom: 12px;
+}
+.inj-header { display: flex; justify-content: space-between; align-items: center;
+              margin-bottom: 12px; }
+.inj-title  { font-size: 13px; font-weight: 700; color: var(--verde-d); }
+.pruebas-wrap { overflow-x: auto; }
+.pruebas-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 420px; }
+.pruebas-table th {
+  text-align: left; font-size: 10px; font-weight: 700;
+  color: #aaa; text-transform: uppercase; padding: 4px 6px 7px;
+}
+.pruebas-table td { padding: 3px 5px; border-top: 1px solid #eef; }
+.pruebas-table .p-nombre { font-weight: 600; color: #333; white-space: nowrap; font-size: 12px; }
+.pruebas-table .p-hint   { font-size: 10px; color: #aaa; font-weight: 400; }
+.pruebas-table input[type="number"],
+.pruebas-table input[type="text"] {
+  width: 100%; padding: 5px 7px; border: 1.5px solid var(--borde);
+  border-radius: 6px; font-size: 13px; background: white;
+}
+.pruebas-table input:focus { outline: none; border-color: var(--verde); }
+.pruebas-table input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: var(--verde); cursor: pointer;
+}
+.ok-cell { text-align: center; }
+.hint-img { font-size: 11px; color: #aaa; margin-top: 3px; }
+
+/* ── PRESUPUESTO ── */
+.num-row { display: flex; align-items: center; gap: 12px;
+           background: var(--verde-l); border: 1.5px solid var(--verde);
+           border-radius: 8px; padding: 12px 16px; }
+.num-row .field { flex: 1; }
+.num-row input  { background: white; }
+.items-table { width: 100%; border-collapse: collapse; }
+.items-table th { background: var(--verde); color: white;
+                  font-size: 11px; font-weight: 700; padding: 9px 7px;
+                  text-align: left; text-transform: uppercase; letter-spacing: .3px; }
+.items-table td { padding: 4px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; }
+.items-table tr:nth-child(even) td { background: #fafafa; }
+.items-table input { border: 1px solid #e0e0e0; border-radius: 4px;
+                     padding: 6px 7px; font-size: 13px; }
+.items-table input:focus { border-color: var(--verde); outline: none; }
+.subtotal-cell { text-align: right; font-size: 13px; font-weight: 600;
+                 color: var(--verde-d); padding-right: 8px; white-space: nowrap; }
+.totales-box   { margin-top: 14px; display: flex; justify-content: flex-end; }
+.totales-inner { min-width: 260px; }
+.total-row { display: flex; justify-content: space-between; align-items: center;
+             padding: 5px 0; font-size: 13px; color: var(--gris);
+             border-bottom: 1px solid #f0f0f0; }
+.total-row.final { border-top: 2px solid var(--verde); border-bottom: none;
+                   margin-top: 6px; padding-top: 8px; font-size: 18px;
+                   font-weight: 800; color: var(--verde); }
+.sin-iva-nota { margin-top: 7px; font-size: 11px; color: #aaa;
+                font-style: italic; text-align: right; }
+.check-row { display: flex; align-items: center; gap: 8px; font-size: 13px;
+             cursor: pointer; padding: 6px 0; }
+.check-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer;
+                                  accent-color: var(--verde); }
+.nota-fija { font-size: 12px; color: #aaa; font-style: italic; }
+.status-bar { background: var(--verde-l); border: 1px solid var(--verde);
+              border-radius: 8px; padding: 12px 18px; font-size: 13px;
+              color: var(--verde-d); display: none; align-items: center; gap: 10px; }
+.status-bar.show  { display: flex; }
+.status-bar.error { background: #fdecea; border-color: var(--rojo); color: var(--rojo); }
+.spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4);
+           border-top-color: white; border-radius: 50%;
+           animation: spin .7s linear infinite; display: none; }
+.spinner.show { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════ HEADER ════════════════════════════════ -->
+<header class="app-header">
+  <div class="brand">
+    <h1 style="letter-spacing:1.5px;line-height:1;">INDIESEL</h1>
+    <p>Laboratorio Diesel · Mar del Plata</p>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" id="tab-informe"     onclick="showTab('informe')">Informe</button>
+    <button class="tab-btn"        id="tab-presupuesto" onclick="showTab('presupuesto')">Presupuesto</button>
+  </nav>
+</header>
+
+<!-- ════════════════════════════ SECCIÓN INFORME ═══════════════════════════ -->
+<div class="container section active" id="section-informe">
+
+  <div class="card">
+    <div class="card-title">Datos del informe</div>
+    <div class="g-3-1-1">
+      <div class="field">
+        <label>Vehículo</label>
+        <input type="text" id="inf_vehiculo" placeholder="Ej: Chevrolet S10 2.8 MWM">
+      </div>
+      <div class="field">
+        <label>Fecha</label>
+        <input type="text" id="inf_fecha">
+      </div>
+      <div class="field">
+        <label>N° Informe</label>
+        <input type="text" id="inf_ninforme" placeholder="0001">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Inyectores</div>
+    <div id="inf_inj-container"></div>
+    <button class="btn-add" onclick="injAgregar()">+ Agregar inyector</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Configuración (firma y logo — se guardan automáticamente)</div>
+    <div class="g2">
+      <div class="field">
+        <label>Firma (PNG)</label>
+        <input type="file" id="inf_firma-file" accept="image/*" onchange="infGuardarImg('firma',this)">
+        <span class="hint-img" id="inf_firma-status"></span>
+      </div>
+      <div class="field">
+        <label>Logo Indiesel (PNG gris)</label>
+        <input type="file" id="inf_logo-file" accept="image/*" onchange="infGuardarImg('logo',this)">
+        <span class="hint-img" id="inf_logo-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" onclick="generarInforme()">⬇ Generar Informe PDF</button>
+</div>
+
+<!-- ══════════════════════════ SECCIÓN PRESUPUESTO ═════════════════════════ -->
+<div class="container section" id="section-presupuesto">
+
+  <div class="card">
+    <div class="card-header-green">📄 Datos del presupuesto</div>
+    <div class="num-row">
+      <div class="field"><label>N° Presupuesto</label><input type="text" id="numero" value="001"></div>
+      <div class="field"><label>Fecha</label><input type="text" id="pres_fecha"></div>
+      <div class="field"><label>Validez</label><input type="text" id="vigencia" value="30 días"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-green">👤 Datos del cliente</div>
+    <div style="display:flex;flex-direction:column;gap:12px;padding-top:4px;">
+      <div class="g2">
+        <div class="field"><label>Nombre / Empresa</label><input type="text" id="cli_nombre" placeholder="Juan García / Transportes S.A."></div>
+        <div class="field"><label>CUIT / DNI</label><input type="text" id="cli_cuit" placeholder="20-12345678-5"></div>
+      </div>
+      <div class="g3">
+        <div class="field"><label>Teléfono</label><input type="text" id="cli_telefono" placeholder="223-456-7890"></div>
+        <div class="field"><label>E-mail</label><input type="email" id="cli_email" placeholder="cliente@mail.com"></div>
+        <div class="field"><label>Dirección</label><input type="text" id="cli_direccion" placeholder="Calle 123, MdP"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-green">🔧 Tipo de trabajo</div>
+    <div style="display:flex;gap:0;border:1.5px solid var(--verde);border-radius:8px;overflow:hidden;margin-bottom:14px;">
+      <button id="btn-lab" onclick="setTipo('lab')"
+        style="flex:1;padding:11px 0;font-size:14px;font-weight:700;border:none;cursor:pointer;
+               background:var(--verde);color:white;transition:all .15s;">⚙ Laboratorio</button>
+      <button id="btn-pla" onclick="setTipo('pla')"
+        style="flex:1;padding:11px 0;font-size:14px;font-weight:700;border:none;cursor:pointer;
+               background:white;color:var(--gris);border-left:1.5px solid var(--verde);transition:all .15s;">🚗 Playa</button>
+    </div>
+    <div id="campo-tipo" class="field">
+      <label id="label-tipo">Unidad a reparar</label>
+      <input type="text" id="tipo_detalle" placeholder="Ej: 3 inyectores VW Amarok, Bomba inyectora Peugeot 206...">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-green">🔩 Ítems / Servicios</div>
+    <div style="overflow-x:auto;">
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th style="width:30px">#</th>
+            <th>Descripción del trabajo / servicio / repuesto</th>
+            <th style="width:72px;text-align:center">Cant.</th>
+            <th style="width:130px;text-align:right">Precio unit. ($)</th>
+            <th style="width:115px;text-align:right">Subtotal</th>
+            <th style="width:34px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-items"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn-add" onclick="addItem()">+ Agregar ítem</button>
+    </div>
+    <div class="totales-box">
+      <div class="totales-inner">
+        <div class="total-row"><span>Subtotal</span><span id="t-sub">$ 0,00</span></div>
+        <div class="total-row" id="row-desc" style="display:none"><span id="label-desc">Descuento</span><span id="t-desc" style="color:var(--rojo)">- $ 0,00</span></div>
+        <div class="total-row" id="row-iva"  style="display:none"><span>IVA (21%)</span><span id="t-iva">$ 0,00</span></div>
+        <div class="total-row final"><span>TOTAL</span><span id="t-total">$ 0,00</span></div>
+        <div class="sin-iva-nota" id="sin-iva-nota">* Los precios no incluyen IVA</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-green">💰 Condiciones de pago</div>
+    <div class="g2">
+      <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
+        <div class="check-row">
+          <input type="checkbox" id="check_iva" onchange="recalcular();actualizarPago()">
+          <label for="check_iva" style="text-transform:none;font-size:13px;font-weight:500">Agregar IVA (21%)</label>
+        </div>
+        <div class="field">
+          <label>Descuento (%)</label>
+          <input type="number" id="descuento" value="0" min="0" max="100" step="1" oninput="recalcular()" style="max-width:120px;">
+        </div>
+        <div class="check-row">
+          <input type="checkbox" id="check_cheque" onchange="actualizarPago()">
+          <label for="check_cheque" style="text-transform:none;font-size:13px;font-weight:500">Aceptar cheque para este cliente</label>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div class="field">
+          <label>Medios de pago aceptados</label>
+          <div id="medios-pago-display" style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:6px;
+               padding:10px 12px;font-size:13px;color:#444;line-height:1.7;min-height:44px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-green">📋 Observaciones</div>
+    <p class="nota-fija">* El presupuesto no incluye repuestos adicionales que puedan surgir durante la reparación.</p>
+  </div>
+
+  <div class="status-bar" id="status-bar"><span id="status-msg"></span></div>
+
+  <button class="btn-generate" id="btn-gen" onclick="generarPresupuesto()">
+    <div class="spinner" id="spinner"></div>
+    <span>⬇ Generar Presupuesto PDF</span>
+  </button>
+
+</div>
+
+<datalist id="fab-list">
+  <option value="Bosch"><option value="Delphi"><option value="Denso">
+  <option value="Siemens"><option value="Continental"><option value="Magneti Marelli">
+  <option value="Stanadyne">
+</datalist>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// NAVEGACIÓN POR TABS
+// ════════════════════════════════════════════════════════════
+function showTab(tab) {
+  ['informe','presupuesto'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('section-' + t).classList.toggle('active', t === tab);
+  });
+}
+
+// ════════════════════════════════════════════════════════════
+// LOGO GRIS (compartido)
+// ════════════════════════════════════════════════════════════
+const LOGO_GRIS = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA08AAANDCAYAAAB1/CRhAAApKUlEQVR4nO3dyZLbzLEGULRCz80FX1xe6KfVAweAAKpyOCfiLuzFNdWsysoPCYDLAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA333M/gAA77per38+/+fL5aKmAQCn+T37AwBs9T00EcftuxFkAajI4QaksSY0adrniRJqrQEAzuKAAVLY0phrnseLEpyesS4A2MtBAoT1bkOuSZ4jQ4Daw7oCwEEAhHNEE67RHa96eHrFmgOoT6EHwji6+dbMjtU9PD1iHQLU4W17wFQabqr7vMYFKYDcFHFgilGhSbM6jiB8DGsWIC4FGhhqRoOtGR1DeDqetQsQi9v2gCE01rDds30jWAGMp/ACp4kUmDSa54v0fXdjfQOModgCp4jYSGswzxXxO8e6BziS2/aAQ2mgIZZHe1KoAthOeAIOITRBLvf2rEAF8JzwBOwiNEEdt/0sRAHcpzgCm2UOTJrC82ReF7xm7wAsy6/ZHwDIJXuDnP3zwyz2DoDJE/BC1YbJVfTjVV0rrGNPAR145gm4SyMMbPG5ZghSQFWKG/BDl+CkwTtWl3XDe+w3oAKTJ2BZFo0vcC5v8gMqEJ6gOaEJGMntfUBmihY0JTT9pXk7jjXFHvYikIFCBY1obu/TtB3D+uIo9iQQldv2oAmNLZCFW/uAqBQkKExgWk+Dtp/1xij2KzDLr9kfADiHRnYbfy/I47q9/rFngRnctgeFaCaATtzeB4ym0EABQtNxNGDvsw6JwB4GzmTyBIlpVgG++l4XhSngSJ55gqQEp3P4u0Itno8CjmTyBIloAADe4/ko4AgmT5CE4ARwDNMo4F2uvEBgDvd5XJneznolO/seeEWRgIA0oTFopLaxbqnC3gceURwgEM1nPJqo9axfqrH/ge+8MAIC0HQCxHOrzUIUcKMYwCQCUx4ap3WsabpQE6AvkycYTIMJkJuJFPRl08MgQlNumqTXrHG6Ug+gD5MnOJFmEqA+P8ALfdjgcAKhqSZN0XPWPfyjXkBNv2Z/AKjEr9bX5rsF1lIvoCZXReAADsleXFG+zz6Ax9QNqMEzT7CDZhGANbyhD2oQnmAjgQmAd3m5BOTmmSfYQHBiWawD4BhqCeRj8gQvONwAOItJFORi8gRPCE48Iu1eM4QoIAetB3Cej1/oVwCQi9v2gCE01rDds30jWAGMp/ACp4kUmDSa54v0fXdjfQOModgCp4jYSGswzxXxO8e6BziS2/aAQ2mgIZZHe1KoAthOeAIOITRBLvf2rEAF8JzwBOwiNEEdt/0sRAHcpzgCm2UOTJrC82ReF7xm7wAsy6/ZHwDIJXuDnP3zwyz2DoDJE/BC1YbJVfTjVV0rrGNPAR145gm4SyMMbPG5ZghSQFWKG/BDl+CkwTtWl3XDe+w3oAKTJ2BZFo0vcC5v8gMqEJ6gOaEJGMntfUBmihY0JTT9pXk7jjXFHvYikIFCBY1obu/TtB3D+uIo9iQQldv2oAmNLZCFW/uAqBQkKExgWk+Dtp/1xij2KzDLr9kfADiHRnYbfy/I47q9/rFngRnctgeFaCaATtzeB4ym0EABQtNxNGDvsw6JwB4GzmTyBIlpVgG++l4XhSngSJ55gqQEp3P4u0Itno8CjmTyBIloAADe4/ko4AgmT5CE4ARwDNMo4F2uvEBgDvd5XJneznolO/seeEWRgIA0oTFopLaxbqnC3gceURwgEM1nPJqo9axfqrH/ge+8MAIC0HQCxHOrzUIUcKMYwCQCUx4ap3WsabpQE6AvkycYTIMJkJuJFPRl08MgQlNumqTXrHG6Ug+gD5MnOJFmEqA+P8ALfdjgcAKhqSZN0XPWPfyjXkBNv2Z/AKjEr9bX5rsF1lIvoCZXReAADsleXFG+zz6Ax9QNqMEzT7CDZhGANbyhD2oQnmAjgQmAd3m5BOTmmSfYQHBiWawD4BhqCeRj8gQvONwAOItJFORi8gRPCE48Iu1eM4QoIAetB3Cej1/oVwCQi9v2gCE01rDds30jWAGMp/ACp4kUmDSa54v0fXdjfQOModgCp4jYSGswzxXxO8e6BziS2/aAQ2mgIZZHe1KoAthOeAIOITRBLvf2rEAF8JzwBOwiNEEdt/0sRAHcpzgCm2UOTJrC82ReF7xm7wAsy6/ZHwDIJXuDnP3zwyz2DoDJE/BC1YbJVfTjVV0rrGNPAR145gm4SyMMbPG5ZghSQFWKG/BDl+CkwTtWl3XDe+w3oAKTJ2BZFo0vcC5v8gMqEJ6gOaEJGMntfUBmihY0JTT9pXk7jjXFHvYikIFCBY1obu/TtB3D+uIo9iQQldv2oAmNLZCFW/uAqBQkKExgWk+Dtp/1xij2KzDLr9kfADiHRnYbfy/I47q9/rFngRnctgeFaCaATtzeB4ym0EABQtNxNGDvsw6JwB4GzmTyBIlpVgG++l4XhSngSJ55gqQEp3P4u0Itno8CjmTyBIloAADe4/ko4AgmT5CE4ARwDNMo4F2uvEBgDvd5XJneznolO/seeEWRgIA0oTFopLaxbqnC3gceURwgEM1nPJqo9axfqrH/ge+8MAIC0HQCxHOrzUIUcKMYwCQCUx4ap3WsabpQE6AvkycYTIMJkJuJFPRl08MgQlNumqTXrHG6Ug+gD5MnOJFmEqA+P8ALfdjgcAKhqSZN0XPWPfyjXkBNv2Z/AKjEr9bX5rsF1lIvoCZXReAADsleXFG+zz6Ax9QNqMEzT7CDZhGANbyhD2oQnmAjgQmAd3m5BOTmmSfYQHBiWawD4BhqCeRj8gQvONwAOItJFORi8gRPCE48Iu1eM4QoIAetB3Cej1/oVwCQi9v2gCE01rDds30jWAGMp/ACp4kUmDSa54v0fXdjfQOModgCp';
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+const PRUEBAS = [
+  { nombre:'Estanqueidad',  hint:'LEAK',  ref:'35.0+-35.0' },
+  { nombre:'Plena carga',   hint:'VL',    ref:'62.2+-4.2'  },
+  { nombre:'Retorno',       hint:'VL(R)', ref:'30.0+-25.0' },
+  { nombre:'Emisiones',     hint:'EM',    ref:'17.2+-3.0'  },
+  { nombre:'Ralenti',       hint:'LL',    ref:'4.4+-2.0'   },
+  { nombre:'Pre-inyeccion', hint:'VE',    ref:'1.7+-1.3'   },
+];
+
+let injCount = 0;
+
+window.onload = () => {
+  const now = new Date();
+  const p = n => String(n).padStart(2,'0');
+  const fechaStr = `${p(now.getDate())}/${p(now.getMonth()+1)}/${now.getFullYear()} - ${p(now.getHours())}:${p(now.getMinutes())} hs`;
+  const fechaCorta = `${p(now.getDate())}/${p(now.getMonth()+1)}/${now.getFullYear()}`;
+
+  // Informe
+  document.getElementById('inf_fecha').value = fechaStr;
+  const lastN = parseInt(localStorage.getItem('ind_n') || '0');
+  document.getElementById('inf_ninforme').value = String(lastN+1).padStart(4,'0');
+  if (localStorage.getItem('ind_firma')) document.getElementById('inf_firma-status').textContent = '✓ Cargada';
+  if (localStorage.getItem('ind_logo'))  document.getElementById('inf_logo-status').textContent  = '✓ Cargado';
+  injAgregar();
+
+  // Presupuesto
+  document.getElementById('pres_fecha').value = fechaCorta;
+  addItem(); addItem();
+  actualizarPago();
+};
+
+// ════════════════════════════════════════════════════════════
+// INFORME – INYECTORES
+// ════════════════════════════════════════════════════════════
+function injAgregar() {
+  injCount++;
+  const id = injCount;
+  const rows = PRUEBAS.map((p,i) => `
+    <tr>
+      <td class="p-nombre">${p.nombre} <span class="p-hint">${p.hint}</span></td>
+      <td style="width:80px"><input type="number" step="0.1" min="0" id="i${id}v${i}" placeholder="0.0"></td>
+      <td style="width:110px"><input type="text" id="i${id}r${i}" value="${p.ref}"></td>
+      <td class="ok-cell" style="width:40px"><input type="checkbox" id="i${id}o${i}" checked></td>
+    </tr>`).join('');
+  const div = document.createElement('div');
+  div.className = 'inj-card'; div.id = `inj-${id}`;
+  div.innerHTML = `
+    <div class="inj-header">
+      <span class="inj-title">Inyector ${id}</span>
+      <button class="btn-remove" onclick="document.getElementById('inj-${id}').remove()">Eliminar</button>
+    </div>
+    <div class="g2" style="margin-bottom:12px">
+      <div class="field"><label>N° de Parte (PN)</label><input type="text" id="i${id}pn" placeholder="Ej: 0445110231"></div>
+      <div class="field"><label>Fabricante</label><input type="text" id="i${id}fab" placeholder="Ej: Bosch" list="fab-list"></div>
+    </div>
+    <div class="pruebas-wrap">
+      <table class="pruebas-table">
+        <thead><tr><th>Prueba</th><th>Valor</th><th>Referencia</th><th style="text-align:center">OK</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('inf_inj-container').appendChild(div);
+}
+
+function infGuardarImg(tipo, input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    localStorage.setItem(`ind_${tipo}`, e.target.result);
+    document.getElementById(`inf_${tipo}-status`).textContent = '✓ Guardado';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+// ════════════════════════════════════════════════════════════
+// INFORME – GENERAR PDF
+// ════════════════════════════════════════════════════════════
+function generarInforme() {
+  if (!window.jspdf) { alert('jsPDF no cargó.'); return; }
+
+  // Leer form
+  const vehiculo = document.getElementById('inf_vehiculo').value || '—';
+  const fecha    = document.getElementById('inf_fecha').value    || '—';
+  const nInforme = document.getElementById('inf_ninforme').value || '0001';
+  const inyectores = [];
+  document.querySelectorAll('.inj-card').forEach(card => {
+    const id = card.id.replace('inj-','');
+    inyectores.push({
+      pn:  document.getElementById(`i${id}pn`)?.value  || '—',
+      fab: document.getElementById(`i${id}fab`)?.value || '—',
+      pruebas: PRUEBAS.map((p,i) => ({
+        nombre: p.nombre,
+        val:    parseFloat(document.getElementById(`i${id}v${i}`)?.value) || 0,
+        ref:    document.getElementById(`i${id}r${i}`)?.value || p.ref,
+        ok:     document.getElementById(`i${id}o${i}`)?.checked ?? true,
+      }))
+    });
+  });
+  if (!inyectores.length) { alert('Agregá al menos un inyector.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W = 210, H = 297, M = 13;
+  const pt = p => p * 0.352778;
+
+  function parseRef(r) {
+    const sep = r.includes('+-') ? '+-' : r.includes('±') ? '±' : null;
+    if (!sep) return [null,null];
+    const [c,t] = r.split(sep);
+    return [parseFloat(c)-parseFloat(t), parseFloat(c)+parseFloat(t)];
+  }
+  function refDisp(r) { return r.replace('+-','±'); }
+  function barPct(val,ref) {
+    const [mn,mx] = parseRef(ref);
+    if (mn===null||mx===mn) return 0.5;
+    const rng=mx-mn, mar=rng*0.30, tot=rng+2*mar;
+    return Math.max(0.01,Math.min(0.99,(val-(mn-mar))/tot));
+  }
+  function drawBar(x,y,w,h,pct,ref) {
+    const [mn,mx] = parseRef(ref);
+    let zs,ze;
+    if (mn!==null&&mx!==mn) { const rng=mx-mn,mar=rng*0.30,tot=rng+2*mar; zs=mar/tot; ze=(mar+rng)/tot; }
+    else { zs=0.25; ze=0.75; }
+    doc.setFillColor(240,240,240); doc.setDrawColor(187,187,187); doc.setLineWidth(0.14);
+    doc.rect(x,y,w,h,'FD');
+    const zx=x+zs*w, zw=(ze-zs)*w;
+    doc.setFillColor(206,206,206); doc.rect(zx,y,zw,h,'F');
+    doc.setDrawColor(85,85,85); doc.setLineWidth(0.25);
+    doc.line(zx,y-0.53,zx,y+h+0.53); doc.line(zx+zw,y-0.53,zx+zw,y+h+0.53);
+    doc.setDrawColor(0,0,0); doc.setLineWidth(0.70);
+    const mx2=x+pct*w; doc.line(mx2,y-0.88,mx2,y+h+0.88);
+  }
+
+  // Encabezado
+  doc.setFont('helvetica','bold'); doc.setFontSize(24); doc.setTextColor(0,0,0);
+  doc.text('INDIESEL',W/2,pt(44),{align:'center'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(102,102,102);
+  doc.text('Laboratorio Diesel',W/2,pt(57),{align:'center'});
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(0,0,0);
+  doc.text('INFORME DE PRUEBA DE INYECTORES',W/2,pt(73),{align:'center'});
+  doc.setDrawColor(0,0,0); doc.setLineWidth(0.21);
+  doc.line(M,pt(80),W-M,pt(80));
+
+  // Tabla info
+  let y = pt(96); const rowH = pt(15);
+  const lW=pt(72), tblW=lW+pt(165), tblX=(W-tblW)/2;
+  [['Fecha:',fecha],['Vehiculo:',vehiculo],['N° Informe:',nInforme]].forEach(([lbl,val],i) => {
+    if(i%2===0){doc.setFillColor(248,248,248);doc.rect(tblX-2.12,y-1.41,tblW+4.23,rowH,'F');}
+    doc.setFont('helvetica','normal');doc.setFontSize(9.5);
+    doc.setTextColor(102,102,102);doc.text(lbl,tblX,y);
+    doc.setTextColor(0,0,0);doc.text(String(val),tblX+lW,y);
+    doc.setDrawColor(221,221,221);doc.setLineWidth(0.11);
+    doc.line(tblX-2.12,y-1.41,tblX+tblW+2.12,y-1.41);
+    y+=rowH;
+  });
+  doc.setDrawColor(0,0,0);doc.setLineWidth(0.21);doc.line(M,y-0.71,W-M,y-0.71);
+  y+=pt(15);
+  doc.setFont('helvetica','bold');doc.setFontSize(12);doc.text('RESULTADOS DE PRUEBA',M,y);
+  y+=pt(14);
+
+  // Grilla inyectores
+  const FOOTER_H=pt(90), availPt=(H-FOOTER_H-y)/0.352778;
+  const n=inyectores.length, cols=n>1?2:1, gapMm=pt(12);
+  const colW=(W-M*2-gapMm*(cols-1))/cols;
+  const colXArr=Array.from({length:cols},(_,i)=>M+i*(colW+gapMm));
+  const nPerCol=Math.ceil(n/cols), nTests=inyectores[0].pruebas.length;
+  const fixedPt=nPerCol*(12+18+15+9+8);
+  const rowHPt=Math.max(13,Math.min(19,(availPt-fixedPt)/Math.max(nPerCol*nTests,1)));
+  const barHPt=Math.max(5,rowHPt*0.40);
+  const TITLE_H=pt(12),PN_H=pt(18),BADGE_H=pt(15),SUBHDR_H=pt(9),BLOCK=pt(8);
+  const ROW_H=pt(rowHPt),BAR_H=pt(barHPt);
+  const NAME_W=colW*0.27,VAL_W=colW*0.11,REF_W=colW*0.22,SYM_W=colW*0.09;
+  const BAR_W=colW-NAME_W-VAL_W-REF_W-SYM_W-pt(2);
+  const gridY=y, colYArr=Array(cols).fill(y);
+
+  inyectores.forEach((inj,idx) => {
+    const col=idx%cols, cx=colXArr[col];
+    let cy=colYArr[col];
+    const okAll=inj.pruebas.every(p=>p.ok);
+    if(colYArr[col]>gridY+0.5){
+      cy-=pt(4);doc.setDrawColor(204,204,204);doc.setLineWidth(0.14);
+      doc.line(cx,cy+pt(2),cx+colW,cy+pt(2));cy-=pt(4);
+    }
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(0,0,0);
+    doc.text(`INYECTOR ${idx+1}`,cx,cy);cy+=TITLE_H;
+    doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(68,68,68);
+    doc.text(`Nro de inyector: ${inj.pn}   Fabricante: ${inj.fab}`,cx,cy);cy+=PN_H;
+    doc.setLineWidth(0.21);doc.setDrawColor(0,0,0);
+    doc.setFillColor(okAll?232:204,okAll?232:204,okAll?232:204);
+    doc.rect(cx,cy-1.06,colW,4.59,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(0,0,0);
+    doc.text(okAll?'APROBADO':'REQUIERE REPARACION',cx+colW/2,cy+0.53,{align:'center'});cy+=BADGE_H;
+    const barX=cx+NAME_W+VAL_W+REF_W, symX=cx+colW;
+    doc.setFont('helvetica','normal');doc.setFontSize(5.5);doc.setTextColor(170,170,170);
+    doc.text('PRUEBA',cx,cy);doc.text('VALOR',cx+NAME_W,cy);
+    doc.text('REFERENCIA',cx+NAME_W+VAL_W,cy);doc.text('RANGO',barX,cy);cy+=SUBHDR_H;
+    inj.pruebas.forEach(p => {
+      const ry=cy;
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(51,51,51);doc.text(p.nombre,cx,ry);
+      doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(0,0,0);doc.text(String(p.val),cx+NAME_W,ry);
+      doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(119,119,119);doc.text(refDisp(p.ref),cx+NAME_W+VAL_W,ry);
+      const pct=barPct(p.val,p.ref), bary=ry-BAR_H+pt(1.5);
+      drawBar(barX,bary,BAR_W,BAR_H,pct,p.ref);
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(0,0,0);
+      doc.text(p.ok?'OK':'X',symX,bary+BAR_H/2-pt(3.5),{align:'right'});
+      cy+=ROW_H;
+    });
+    colYArr[col]=cy+BLOCK;
+    if(col===cols-1){const maxY=Math.max(...colYArr);colYArr.fill(maxY);}
+  });
+
+  // Observación
+  let oy=Math.max(...colYArr)-1.41;
+  doc.setLineWidth(0.18);doc.setDrawColor(0,0,0);doc.line(M,oy,W-M,oy);oy+=pt(14);
+  const fallidas=inyectores.map((inj,i)=>({n:i+1,ko:!inj.pruebas.every(p=>p.ok)})).filter(x=>x.ko).map(x=>x.n);
+  let obs = !fallidas.length
+    ? 'Todos los inyectores aprobaron las pruebas. Se encuentran dentro de los parametros de fabrica.'
+    : `Inyector${fallidas.length>1?'es':''} ${fallidas.join(', ')}: resultado${fallidas.length>1?'s':''} fuera de rango. Requier${fallidas.length>1?'en':'e'} reparacion.`;
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(0,0,0);doc.text('OBSERVACION',M,oy);oy+=pt(12);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(51,51,51);
+  doc.text(doc.splitTextToSize(obs,W-M*2),M,oy);
+
+  // Pie de página
+  const firmaW=25, firmaH=firmaW*(255/671);
+  const firmaData=localStorage.getItem('ind_firma');
+  if(firmaData) doc.addImage(firmaData,'PNG',M,H-pt(52)-firmaH,firmaW,firmaH);
+  doc.setDrawColor(0,0,0);doc.setLineWidth(0.18);doc.line(M,H-pt(49),M+firmaW,H-pt(49));
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(0,0,0);
+  doc.text('Gonzalo De Pilato',M,H-pt(41));doc.text('Tecnico Responsable',M,H-pt(33));
+  const logoData=localStorage.getItem('ind_logo');
+  if(logoData) doc.addImage(logoData,'PNG',W/2-14,H-pt(38)-28,28,28);
+  else { doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(160,160,160);doc.text('INDIESEL',W/2,H-pt(38)-12,{align:'center'}); }
+  doc.setDrawColor(170,170,170);doc.setLineWidth(0.14);doc.line(M,H-pt(32),W-M,H-pt(32));
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(0,0,0);
+  doc.text('WhatsApp: 2233059372  |  Tel: 223 478-9900',W/2,H-pt(22),{align:'center'});
+  doc.text('Mar del Plata, Argentina',W/2,H-pt(13),{align:'center'});
+
+  doc.save(`Indiesel_Informe_${nInforme}.pdf`);
+  const num=parseInt(nInforme); if(!isNaN(num)) localStorage.setItem('ind_n',num);
+}
+
+// ════════════════════════════════════════════════════════════
+// PRESUPUESTO – ITEMS
+// ════════════════════════════════════════════════════════════
+let itemCounter = 0;
+
+function addItem(desc,cant,precio) {
+  desc=desc!==undefined?desc:''; cant=cant!==undefined?cant:1; precio=precio!==undefined?precio:'';
+  itemCounter++;
+  const id=itemCounter, tbody=document.getElementById('tbody-items');
+  const tr=document.createElement('tr'); tr.id='item-'+id;
+  const inp0=document.createElement('input'); inp0.type='text'; inp0.value=desc; inp0.style.width='100%';
+  inp0.placeholder='Ej: Reparación y calibrado de inyector, limpieza ultrasónica...';
+  inp0.addEventListener('input',recalcular);
+  const inp1=document.createElement('input'); inp1.type='number'; inp1.value=cant; inp1.min='0.01'; inp1.step='1';
+  inp1.style.cssText='width:62px;text-align:center'; inp1.addEventListener('input',recalcular);
+  const inp2=document.createElement('input'); inp2.type='number'; inp2.value=precio; inp2.min='0'; inp2.step='500';
+  inp2.placeholder='0'; inp2.style.cssText='width:120px;text-align:right'; inp2.addEventListener('input',recalcular);
+  const tdNum=document.createElement('td'); tdNum.className='num-cell';
+  tdNum.style.cssText='text-align:center;color:#bbb;font-size:12px;font-weight:600';
+  const tdDesc=document.createElement('td'); tdDesc.appendChild(inp0);
+  const tdCant=document.createElement('td'); tdCant.appendChild(inp1);
+  const tdPrec=document.createElement('td'); tdPrec.appendChild(inp2);
+  const tdSub=document.createElement('td'); tdSub.className='subtotal-cell'; tdSub.id='sub-'+id; tdSub.textContent='$ 0,00';
+  const btnDel=document.createElement('button'); btnDel.className='btn-del'; btnDel.title='Eliminar'; btnDel.textContent='×';
+  btnDel.addEventListener('click',()=>removeItem(id));
+  const tdDel=document.createElement('td'); tdDel.appendChild(btnDel);
+  tr.appendChild(tdNum);tr.appendChild(tdDesc);tr.appendChild(tdCant);
+  tr.appendChild(tdPrec);tr.appendChild(tdSub);tr.appendChild(tdDel);
+  tbody.appendChild(tr); renumerar(); recalcular();
+}
+function removeItem(id){const el=document.getElementById('item-'+id);if(el)el.remove();renumerar();recalcular();}
+function renumerar(){document.querySelectorAll('#tbody-items tr').forEach((tr,i)=>{tr.querySelector('.num-cell').textContent=i+1;});}
+function getItems(){
+  const items=[];
+  document.querySelectorAll('#tbody-items tr').forEach(tr=>{
+    const inputs=tr.querySelectorAll('input');
+    const desc=inputs[0].value.trim(), cant=parseFloat(inputs[1].value)||0, prec=parseFloat(inputs[2].value)||0;
+    if(desc||prec>0) items.push({descripcion:desc,cantidad:cant,precio_unitario:prec});
+  });
+  return items;
+}
+function fmt(n){return '$ '+n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function recalcular(){
+  let sub=0;
+  document.querySelectorAll('#tbody-items tr').forEach(tr=>{
+    const inputs=tr.querySelectorAll('input');
+    const c=parseFloat(inputs[1]&&inputs[1].value)||0, p=parseFloat(inputs[2]&&inputs[2].value)||0, s=c*p;
+    sub+=s;
+    const m=tr.id.match(/item-(\d+)/);
+    if(m){const el=document.getElementById('sub-'+m[1]);if(el)el.textContent=fmt(s);}
+  });
+  const desc=parseFloat(document.getElementById('descuento').value)||0;
+  const iva=document.getElementById('check_iva').checked;
+  const dm=sub*desc/100, cd=sub-dm, ivm=iva?cd*0.21:0, tot=cd+ivm;
+  document.getElementById('t-sub').textContent=fmt(sub);
+  const rd=document.getElementById('row-desc');
+  if(desc>0){rd.style.display='flex';document.getElementById('label-desc').textContent='Descuento ('+desc+'%)';document.getElementById('t-desc').textContent='- '+fmt(dm);}
+  else rd.style.display='none';
+  const ri=document.getElementById('row-iva');
+  if(iva){ri.style.display='flex';document.getElementById('t-iva').textContent=fmt(ivm);}else ri.style.display='none';
+  document.getElementById('t-total').textContent=fmt(tot);
+  document.getElementById('sin-iva-nota').style.display=iva?'none':'block';
+}
+function getMediosPago(){
+  const iva=document.getElementById('check_iva').checked, cheque=document.getElementById('check_cheque').checked;
+  const m=iva?['Transferencia bancaria','Efectivo','Tarjeta de crédito o débito']:['Efectivo','Transferencia bancaria'];
+  if(cheque)m.push('Cheque'); return m;
+}
+function actualizarPago(){document.getElementById('medios-pago-display').textContent=getMediosPago().join('  ·  ');}
+let tipoActual='lab';
+function setTipo(t){
+  tipoActual=t;
+  const btnLab=document.getElementById('btn-lab'), btnPla=document.getElementById('btn-pla');
+  const lbl=document.getElementById('label-tipo'), inp=document.getElementById('tipo_detalle');
+  if(t==='lab'){
+    btnLab.style.background='var(--verde)';btnLab.style.color='white';
+    btnPla.style.background='white';btnPla.style.color='var(--gris)';
+    lbl.textContent='Unidad a reparar';inp.placeholder='Ej: 3 inyectores VW Amarok, Bomba inyectora Peugeot 206...';
+  } else {
+    btnPla.style.background='var(--verde)';btnPla.style.color='white';
+    btnLab.style.background='white';btnLab.style.color='var(--gris)';
+    lbl.textContent='Vehículo';inp.placeholder='Ej: Ford Ranger 2019, VW Amarok TDI...';
+  }
+}
+function showStatus(tipo,msg){
+  const bar=document.getElementById('status-bar');
+  document.getElementById('status-msg').textContent=msg;
+  bar.className='status-bar show'+(tipo==='error'?' error':'');
+  setTimeout(()=>bar.classList.remove('show'),7000);
+}
+
+// ════════════════════════════════════════════════════════════
+// PRESUPUESTO – GENERAR PDF
+// ════════════════════════════════════════════════════════════
+function generarPresupuesto(){
+  const btn=document.getElementById('btn-gen'), spinner=document.getElementById('spinner');
+  const items=getItems();
+  if(!items.length){showStatus('error','⚠️ Agregá al menos un ítem.');return;}
+  const data={
+    numero:   document.getElementById('numero').value||'001',
+    fecha:    document.getElementById('pres_fecha').value,
+    vigencia: document.getElementById('vigencia').value,
+    cliente:{
+      nombre:   document.getElementById('cli_nombre').value,
+      cuit:     document.getElementById('cli_cuit').value,
+      telefono: document.getElementById('cli_telefono').value,
+      email:    document.getElementById('cli_email').value,
+      direccion:document.getElementById('cli_direccion').value
+    },
+    items, descuento:parseFloat(document.getElementById('descuento').value)||0,
+    iva:document.getElementById('check_iva').checked,
+    forma_pago:getMediosPago().join(' / '),
+    tipo:tipoActual, tipo_detalle:document.getElementById('tipo_detalle').value,
+    notas:'El presupuesto no incluye repuestos adicionales que puedan surgir durante la reparación.'
+  };
+  btn.disabled=true; spinner.classList.add('show');
+  try { buildPresupuestoPDF(data); }
+  catch(e){ showStatus('error','Error: '+e.message); console.error(e); }
+  finally  { btn.disabled=false; spinner.classList.remove('show'); }
+}
+
+function buildPresupuestoPDF(data){
+  const { jsPDF } = window.jspdf;
+  const doc=new jsPDF('p','mm','a4');
+  const pW=210,pH=297,mL=18,mR=18,mT=14,cW=pW-mL-mR;
+  const VERDE=[26,158,58],GRIS=[110,110,110],GRIS_OSC=[40,40,40],LINEA=[210,210,210];
+  let y=mT;
+  function fmt2(n){return '$ '+n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+  // Banner
+  const hH=22;
+  doc.setFillColor(VERDE[0],VERDE[1],VERDE[2]); doc.rect(mL,y,cW,hH,'F');
+  doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(17);
+  doc.text('INDIESEL',mL+4,y+12);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.text('Laboratorio Diesel  ·  Mar del Plata, Buenos Aires',mL+4,y+17.5);
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('PRESUPUESTO',pW-mR-3,y+9,{align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text('N° '+data.numero,pW-mR-3,y+14,{align:'right'});
+  doc.text('Fecha: '+data.fecha,pW-mR-3,y+19,{align:'right'});
+  y+=hH+6;
+
+  // Cliente
+  doc.setFillColor(245,245,245); doc.rect(mL,y,cW,6,'F');
+  doc.setDrawColor(LINEA[0],LINEA[1],LINEA[2]); doc.setLineWidth(0.3); doc.rect(mL,y,cW,6,'S');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+  doc.text('DATOS DEL CLIENTE',mL+3,y+4); y+=12;
+  const cli=data.cliente, ROW_H=8;
+  const colAx=mL+2,colAval=mL+25,colBx=mL+cW/2+4,colBval=mL+cW/2+25;
+  function drawF(lbl,val,lx,vx,yy){
+    doc.setFont('helvetica','bold');doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);doc.text(lbl,lx,yy);
+    doc.setFont('helvetica','normal');doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);doc.text(val||'—',vx,yy);
+  }
+  doc.setFontSize(8.5);
+  drawF('Cliente:',cli.nombre,colAx,colAval,y); drawF('E-mail:',cli.email,colBx,colBval,y); y+=ROW_H;
+  drawF('CUIT / DNI:',cli.cuit,colAx,colAval,y); drawF('Dirección:',cli.direccion,colBx,colBval,y); y+=ROW_H;
+  drawF('Teléfono:',cli.telefono,colAx,colAval,y); y+=ROW_H+4;
+
+  // Tipo de trabajo
+  if(data.tipo_detalle){
+    const tipoLabel=data.tipo==='lab'?'Unidad a reparar:':'Vehículo:';
+    doc.setFillColor(240,247,241); doc.rect(mL,y,cW,7,'F');
+    doc.setDrawColor(LINEA[0],LINEA[1],LINEA[2]); doc.setLineWidth(0.3); doc.rect(mL,y,cW,7,'S');
+    doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+    doc.text(tipoLabel,mL+3,y+4.8);
+    doc.setFont('helvetica','normal'); doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);
+    doc.text(data.tipo_detalle,mL+38,y+4.8); y+=7;
+  }
+  y+=6;
+
+  // Tabla items
+  let subtotal=0;
+  const tableBody=data.items.map((item,i)=>{
+    const cant=parseFloat(item.cantidad)||0, prec=parseFloat(item.precio_unitario)||0, sub=cant*prec;
+    subtotal+=sub;
+    return [String(i+1),item.descripcion||'',cant%1===0?cant.toFixed(0):String(cant),fmt2(prec),fmt2(sub)];
+  });
+  doc.autoTable({
+    startY:y,
+    head:[['#','Descripción del trabajo / servicio / repuesto','Cant.','Precio unit.','Subtotal']],
+    body:tableBody, theme:'striped',
+    headStyles:{fillColor:VERDE,textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,cellPadding:3},
+    bodyStyles:{fontSize:8.5,textColor:GRIS_OSC,cellPadding:{top:4,bottom:4,left:3,right:3}},
+    alternateRowStyles:{fillColor:[249,249,249]},
+    columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:13,halign:'center'},3:{cellWidth:30,halign:'right'},4:{cellWidth:30,halign:'right',fontStyle:'bold'}},
+    margin:{left:mL,right:mR}
+  });
+  y=doc.lastAutoTable.finalY+5;
+
+  // Totales
+  const desc=parseFloat(data.descuento)||0, dm=subtotal*desc/100, cd=subtotal-dm;
+  const ivm=data.iva?cd*0.21:0, total=cd+ivm;
+  const tR=pW-mR, lX=tR-58;
+  function rowT(lbl,val,col){
+    col=col||GRIS_OSC;
+    doc.setFont('helvetica','normal');doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);doc.text(lbl,lX,y,{align:'right'});
+    doc.setFont('helvetica','bold');doc.setTextColor(col[0],col[1],col[2]);doc.text(val,tR,y,{align:'right'});y+=5.5;
+  }
+  doc.setFontSize(8.5);
+  rowT('Subtotal:',fmt2(subtotal));
+  if(desc>0) rowT('Descuento ('+desc+'%):','- '+fmt2(dm),[210,50,50]);
+  if(data.iva) rowT('IVA (21%):',fmt2(ivm));
+  doc.setDrawColor(VERDE[0],VERDE[1],VERDE[2]);doc.setLineWidth(0.8);doc.line(lX-18,y-1.5,tR,y-1.5);y+=2;
+  doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+  doc.text('TOTAL:',lX,y+5,{align:'right'});doc.text(fmt2(total),tR,y+5,{align:'right'});y+=11;
+  if(!data.iva){doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(160,160,160);doc.text('* Los precios no incluyen IVA',tR,y,{align:'right'});y+=5;}
+  y+=5;
+
+  // Condiciones
+  if(data.vigencia||data.forma_pago){
+    doc.setFillColor(245,245,245);doc.rect(mL,y-1,cW,6,'F');
+    doc.setDrawColor(LINEA[0],LINEA[1],LINEA[2]);doc.setLineWidth(0.3);doc.rect(mL,y-1,cW,6,'S');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+    doc.text('CONDICIONES',mL+3,y+3.2);y+=11;doc.setFontSize(8.5);
+    if(data.vigencia){doc.setFont('helvetica','bold');doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);doc.text('Validez del presupuesto:',mL+2,y);doc.setFont('helvetica','normal');doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);doc.text(data.vigencia,mL+52,y);y+=5.5;}
+    if(data.forma_pago){doc.setFont('helvetica','bold');doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);doc.text('Medios de pago:',mL+2,y);doc.setFont('helvetica','normal');doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);doc.text(data.forma_pago,mL+36,y);y+=5.5;}
+    y+=3;
+  }
+
+  // Nota fija
+  doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(170,170,170);
+  const notaLines=doc.splitTextToSize('* '+data.notas,cW-4);
+  doc.text(notaLines,mL+2,y);y+=notaLines.length*4.5+10;
+
+  // Pie
+  const pieY=pH-30;
+  doc.setDrawColor(180,180,180);doc.setLineWidth(0.5);doc.line(mL,pieY,pW-mR,pieY);
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(150,150,150);
+  const lSzPie=11;
+  try { doc.addImage(LOGO_GRIS,'PNG',pW/2-lSzPie/2,pieY+3,lSzPie,lSzPie); } catch(e){}
+  doc.text('Indiesel  ·  Laboratorio Diesel  ·  Mar del Plata, Buenos Aires',pW/2,pieY+17,{align:'center'});
+  doc.text('WhatsApp: 223 305-9372   ·   Tel: 223 478-9900',pW/2,pieY+23,{align:'center'});
+
+  const slug=(data.cliente.nombre||'cliente').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  doc.save('Presupuesto_Indiesel_'+data.numero+'_'+slug+'.pdf');
+  showStatus('ok','✅ PDF generado y descargado correctamente.');
+}
+</script>
+</body>
+</html>

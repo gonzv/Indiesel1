@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indiesel – Informe de Prueba</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+        }
+
+        .app-header {
+            background: #0d7377;
+            color: white;
+            padding: 14px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        }
+        .app-header h1 { font-size: 20px; font-weight: 800; letter-spacing: 2px; }
+        .app-header p  { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+
+        .container { max-width: 860px; margin: 0 auto; padding: 16px; }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #0d7377;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e0f0f0;
+        }
+
+        .grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media(max-width:580px) {
+            .grid-3, .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .field { display: flex; flex-direction: column; gap: 4px; }
+        .field label {
+            font-size: 11px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.3px; color: #888;
+        }
+        .field input, .field select {
+            padding: 9px 11px;
+            border: 1.5px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #1a1a2e;
+            background: #fafafa;
+            transition: border-color 0.15s;
+        }
+        .field input:focus, .field select:focus {
+            outline: none; border-color: #0d7377; background: white;
+        }
+
+        /* ── Inyector ── */
+        .inj-card {
+            background: #f7fffe;
+            border: 1.5px solid #b8e0e0;
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+        }
+        .inj-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 12px;
+        }
+        .inj-title { font-size: 13px; font-weight: 700; color: #0d7377; }
+
+        .btn-remove {
+            background: #fff0f0; color: #c00; border: 1px solid #f5c0c0;
+            border-radius: 6px; padding: 5px 11px; font-size: 12px;
+            cursor: pointer; font-weight: 600;
+        }
+        .btn-remove:hover { background: #ffe0e0; }
+
+        /* ── Tabla de pruebas ── */
+        .pruebas-wrap { overflow-x: auto; }
+        .pruebas-table {
+            width: 100%; border-collapse: collapse; font-size: 13px; min-width: 420px;
+        }
+        .pruebas-table th {
+            text-align: left; font-size: 10px; font-weight: 700;
+            color: #aaa; text-transform: uppercase; padding: 4px 6px 7px;
+        }
+        .pruebas-table td { padding: 3px 5px; border-top: 1px solid #eef; }
+        .pruebas-table .p-nombre { font-weight: 600; color: #333; white-space: nowrap; font-size: 12px; }
+        .pruebas-table .p-hint   { font-size: 10px; color: #aaa; font-weight: 400; }
+
+        .pruebas-table input[type="number"],
+        .pruebas-table input[type="text"] {
+            width: 100%; padding: 5px 7px;
+            border: 1.5px solid #ddd; border-radius: 6px;
+            font-size: 13px; background: white;
+        }
+        .pruebas-table input:focus { outline: none; border-color: #0d7377; }
+        .pruebas-table input[type="checkbox"] {
+            width: 18px; height: 18px; accent-color: #0d7377; cursor: pointer;
+        }
+        .ok-cell { text-align: center; }
+
+        /* ── Botones ── */
+        .btn-add {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; padding: 11px;
+            border: 2px dashed #0d7377; border-radius: 10px;
+            background: transparent; color: #0d7377;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            margin-top: 4px; transition: background 0.15s;
+        }
+        .btn-add:hover { background: #e8f5f5; }
+
+        .btn-generate {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            width: 100%; padding: 15px;
+            background: #0d7377; color: white;
+            border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            letter-spacing: 0.5px; transition: background 0.15s; margin-top: 4px;
+        }
+        .btn-generate:hover  { background: #0a5e62; }
+        .btn-generate:active { background: #084f52; }
+
+        .hint-img { font-size: 11px; color: #aaa; margin-top: 3px; }
+    </style>
+</head>
+<body>
+
+<header class="app-header">
+    <h1>INDIESEL</h1>
+    <p>Informe de Prueba de Inyectores</p>
+</header>
+
+<div class="container">
+
+    <!-- Datos del informe -->
+    <div class="card">
+        <div class="card-title">Datos del informe</div>
+        <div class="grid-3">
+            <div class="field">
+                <label>Vehículo</label>
+                <input type="text" id="vehiculo" placeholder="Ej: Chevrolet S10 2.8 MWM" />
+            </div>
+            <div class="field">
+                <label>Fecha</label>
+                <input type="text" id="fecha" />
+            </div>
+            <div class="field">
+                <label>N° Informe</label>
+                <input type="text" id="ninforme" placeholder="0001" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Inyectores -->
+    <div class="card">
+        <div class="card-title">Inyectores</div>
+        <div id="inj-container"></div>
+        <button class="btn-add" onclick="agregarInyector()">+ Agregar inyector</button>
+    </div>
+
+    <!-- Config imagen -->
+    <div class="card">
+        <div class="card-title">Configuración (se guarda automáticamente)</div>
+        <div class="grid-2">
+            <div class="field">
+                <label>Firma (PNG)</label>
+                <input type="file" id="firma-file" accept="image/png,image/jpeg" onchange="guardarImg('firma',this)" />
+                <span class="hint-img" id="firma-status"></span>
+            </div>
+            <div class="field">
+                <label>Logo Indiesel (PNG gris)</label>
+                <input type="file" id="logo-file" accept="image/png,image/jpeg" onchange="guardarImg('logo',this)" />
+                <span class="hint-img" id="logo-status"></span>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-generate" onclick="generarPDF()">
+        ⬇ Generar PDF
+    </button>
+
+</div>
+
+<datalist id="fab-list">
+    <option value="Bosch"><option value="Delphi"><option value="Denso">
+    <option value="Siemens"><option value="Continental"><option value="Magneti Marelli">
+    <option value="Stanadyne">
+</datalist>
+
+<script>
+// ── Pruebas por defecto ──────────────────────────────────────
+const PRUEBAS = [
+    { nombre: 'Estanqueidad',   hint: 'LEAK',   ref: '35.0+-35.0' },
+    { nombre: 'Plena carga',    hint: 'VL',     ref: '62.2+-4.2'  },
+    { nombre: 'Retorno',        hint: 'VL(R)',  ref: '30.0+-25.0' },
+    { nombre: 'Emisiones',      hint: 'EM',     ref: '17.2+-3.0'  },
+    { nombre: 'Ralenti',        hint: 'LL',     ref: '4.4+-2.0'   },
+    { nombre: 'Pre-inyeccion',  hint: 'VE',     ref: '1.7+-1.3'   },
+];
+
+let injCount = 0;
+
+// ── Init ─────────────────────────────────────────────────────
+window.onload = () => {
+    const now = new Date();
+    const p = n => String(n).padStart(2,'0');
+    document.getElementById('fecha').value =
+        `${p(now.getDate())}/${p(now.getMonth()+1)}/${now.getFullYear()} - ${p(now.getHours())}:${p(now.getMinutes())} hs`;
+
+    const last = parseInt(localStorage.getItem('ind_n') || '0');
+    document.getElementById('ninforme').value = String(last + 1).padStart(4,'0');
+
+    if (localStorage.getItem('ind_firma')) document.getElementById('firma-status').textContent = '✓ Cargada';
+    if (localStorage.getItem('ind_logo'))  document.getElementById('logo-status').textContent  = '✓ Cargado';
+
+    agregarInyector();
+};
+
+// ── Inyectores ───────────────────────────────────────────────
+function agregarInyector() {
+    injCount++;
+    const id = injCount;
+    const rows = PRUEBAS.map((p, i) => `
+        <tr>
+            <td class="p-nombre">${p.nombre} <span class="p-hint">${p.hint}</span></td>
+            <td style="width:80px"><input type="number" step="0.1" min="0" id="i${id}v${i}" placeholder="0.0"></td>
+            <td style="width:110px"><input type="text" id="i${id}r${i}" value="${p.ref}"></td>
+            <td class="ok-cell" style="width:40px"><input type="checkbox" id="i${id}o${i}" checked></td>
+        </tr>`).join('');
+
+    const div = document.createElement('div');
+    div.className = 'inj-card';
+    div.id = `inj-${id}`;
+    div.innerHTML = `
+        <div class="inj-header">
+            <span class="inj-title">Inyector ${id}</span>
+            <button class="btn-remove" onclick="document.getElementById('inj-${id}').remove()">Eliminar</button>
+        </div>
+        <div class="grid-2" style="margin-bottom:12px">
+            <div class="field">
+                <label>N° de Parte (PN)</label>
+                <input type="text" id="i${id}pn" placeholder="Ej: 0445110231">
+            </div>
+            <div class="field">
+                <label>Fabricante</label>
+                <input type="text" id="i${id}fab" placeholder="Ej: Bosch" list="fab-list">
+            </div>
+        </div>
+        <div class="pruebas-wrap">
+            <table class="pruebas-table">
+                <thead><tr>
+                    <th>Prueba</th><th>Valor</th><th>Referencia</th>
+                    <th style="text-align:center">OK</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>`;
+    document.getElementById('inj-container').appendChild(div);
+}
+
+// ── Imágenes ─────────────────────────────────────────────────
+function guardarImg(tipo, input) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        localStorage.setItem(`ind_${tipo}`, e.target.result);
+        document.getElementById(`${tipo}-status`).textContent = '✓ Guardado';
+    };
+    reader.readAsDataURL(input.files[0]);
+}
+
+// ── Leer formulario ──────────────────────────────────────────
+function leerForm() {
+    const vehiculo  = document.getElementById('vehiculo').value  || '—';
+    const fecha     = document.getElementById('fecha').value     || '—';
+    const nInforme  = document.getElementById('ninforme').value  || '0001';
+
+    const inyectores = [];
+    document.querySelectorAll('.inj-card').forEach(card => {
+        const id = card.id.replace('inj-','');
+        const pruebas = PRUEBAS.map((p, i) => ({
+            nombre: p.nombre,
+            val:    parseFloat(document.getElementById(`i${id}v${i}`)?.value) || 0,
+            ref:    document.getElementById(`i${id}r${i}`)?.value || p.ref,
+            ok:     document.getElementById(`i${id}o${i}`)?.checked ?? true,
+        }));
+        inyectores.push({
+            pn:  document.getElementById(`i${id}pn`)?.value  || '—',
+            fab: document.getElementById(`i${id}fab`)?.value || '—',
+            pruebas,
+        });
+    });
+
+    return { vehiculo, fecha, nInforme, inyectores };
+}
+
+// ── PDF ──────────────────────────────────────────────────────
+function generarPDF() {
+    if (!window.jspdf) { alert('jsPDF no cargó. Revisá tu conexión.'); return; }
+
+    const { vehiculo, fecha, nInforme, inyectores } = leerForm();
+    if (!inyectores.length) { alert('Agregá al menos un inyector.'); return; }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    const W = 210, H = 297, M = 13;
+    const pt = p => p * 0.352778;  // puntos → mm
+
+    // helpers
+    function parseRef(r) {
+        const sep = r.includes('+-') ? '+-' : r.includes('±') ? '±' : null;
+        if (!sep) return [null, null];
+        const [c, t] = r.split(sep);
+        return [parseFloat(c) - parseFloat(t), parseFloat(c) + parseFloat(t)];
+    }
+    function refDisp(r) { return r.replace('+-','±'); }
+    function barPct(val, ref) {
+        const [mn, mx] = parseRef(ref);
+        if (mn === null || mx === mn) return 0.5;
+        const rng = mx - mn, mar = rng * 0.30, tot = rng + 2 * mar;
+        return Math.max(0.01, Math.min(0.99, (val - (mn - mar)) / tot));
+    }
+
+    function drawBar(x, y, w, h, pct, ref) {
+        const [mn, mx] = parseRef(ref);
+        let zs, ze;
+        if (mn !== null && mx !== mn) {
+            const rng = mx - mn, mar = rng * 0.30, tot = rng + 2 * mar;
+            zs = mar / tot; ze = (mar + rng) / tot;
+        } else { zs = 0.25; ze = 0.75; }
+
+        doc.setFillColor(240,240,240); doc.setDrawColor(187,187,187); doc.setLineWidth(0.14);
+        doc.rect(x, y, w, h, 'FD');
+
+        const zx = x + zs * w, zw = (ze - zs) * w;
+        doc.setFillColor(206,206,206); doc.rect(zx, y, zw, h, 'F');
+
+        doc.setDrawColor(85,85,85); doc.setLineWidth(0.25);
+        doc.line(zx,      y-0.53, zx,      y+h+0.53);
+        doc.line(zx+zw,   y-0.53, zx+zw,   y+h+0.53);
+
+        doc.setDrawColor(0,0,0); doc.setLineWidth(0.70);
+        const mx2 = x + pct * w;
+        doc.line(mx2, y-0.88, mx2, y+h+0.88);
+    }
+
+    // ── ENCABEZADO ──
+    doc.setFont('helvetica','bold'); doc.setFontSize(24);
+    doc.setTextColor(0,0,0);
+    doc.text('INDIESEL', W/2, pt(44), {align:'center'});
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    doc.setTextColor(102,102,102);
+    doc.text('Laboratorio Diesel', W/2, pt(57), {align:'center'});
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(14);
+    doc.setTextColor(0,0,0);
+    doc.text('INFORME DE PRUEBA DE INYECTORES', W/2, pt(73), {align:'center'});
+
+    doc.setDrawColor(0,0,0); doc.setLineWidth(0.21);
+    doc.line(M, pt(80), W-M, pt(80));
+
+    // ── TABLA INFO ──
+    let y = pt(96);
+    const rowH = pt(15);
+    const labelW = pt(72), valW = pt(165);
+    const tblW = labelW + valW, tblX = (W - tblW) / 2;
+
+    [['Fecha:', fecha], ['Vehiculo:', vehiculo], ['N° Informe:', nInforme]].forEach(([lbl, val], i) => {
+        if (i % 2 === 0) {
+            doc.setFillColor(248,248,248);
+            doc.rect(tblX-2.12, y-1.41, tblW+4.23, rowH, 'F');
+        }
+        doc.setFont('helvetica','normal'); doc.setFontSize(9.5);
+        doc.setTextColor(102,102,102); doc.text(lbl, tblX, y);
+        doc.setTextColor(0,0,0);       doc.text(String(val), tblX+labelW, y);
+        doc.setDrawColor(221,221,221); doc.setLineWidth(0.11);
+        doc.line(tblX-2.12, y-1.41, tblX+tblW+2.12, y-1.41);
+        y += rowH;
+    });
+
+    doc.setDrawColor(0,0,0); doc.setLineWidth(0.21);
+    doc.line(M, y-0.71, W-M, y-0.71);
+    y += pt(15);
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(12);
+    doc.text('RESULTADOS DE PRUEBA', M, y);
+    y += pt(14);
+
+    // ── GRILLA DE INYECTORES ──
+    const FOOTER_H = pt(90);
+    const availPt   = (H - FOOTER_H - y) / 0.352778;
+    const n         = inyectores.length;
+    const cols      = n > 1 ? 2 : 1;
+    const gapMm     = pt(12);
+    const colW      = (W - M*2 - gapMm*(cols-1)) / cols;
+    const colXArr   = Array.from({length:cols}, (_,i) => M + i*(colW+gapMm));
+
+    const nPerCol   = Math.ceil(n / cols);
+    const nTests    = inyectores[0].pruebas.length;
+    const fixedPt   = nPerCol * (12+18+15+9+8);
+    const rowTotal  = nPerCol * nTests;
+    const rowHPt    = Math.max(13, Math.min(19, (availPt - fixedPt) / Math.max(rowTotal,1)));
+    const barHPt    = Math.max(5, rowHPt * 0.40);
+
+    const TITLE_H  = pt(12), PN_H  = pt(18), BADGE_H  = pt(15);
+    const SUBHDR_H = pt(9),  BLOCK = pt(8),  ROW_H    = pt(rowHPt), BAR_H = pt(barHPt);
+
+    const NAME_W = colW*0.27, VAL_W = colW*0.11, REF_W = colW*0.22;
+    const SYM_W  = colW*0.09, BAR_W = colW - NAME_W - VAL_W - REF_W - SYM_W - pt(2);
+
+    const gridY  = y;
+    const colYArr = Array(cols).fill(y);
+
+    inyectores.forEach((inj, idx) => {
+        const col = idx % cols;
+        const cx  = colXArr[col];
+        let cy    = colYArr[col];
+        const okAll = inj.pruebas.every(p => p.ok);
+
+        // separador entre inyectores de la misma columna
+        if (colYArr[col] > gridY + 0.5) {
+            cy -= pt(4);
+            doc.setDrawColor(204,204,204); doc.setLineWidth(0.14);
+            doc.line(cx, cy+pt(2), cx+colW, cy+pt(2));
+            cy -= pt(4);
+        }
+
+        // Título inyector
+        doc.setFont('helvetica','bold'); doc.setFontSize(10);
+        doc.setTextColor(0,0,0);
+        doc.text(`INYECTOR ${idx+1}`, cx, cy);
+        cy += TITLE_H;
+
+        // PN / Fabricante
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        doc.setTextColor(68,68,68);
+        doc.text(`Nro de inyector: ${inj.pn}   Fabricante: ${inj.fab}`, cx, cy);
+        cy += PN_H;
+
+        // Badge
+        doc.setLineWidth(0.21); doc.setDrawColor(0,0,0);
+        doc.setFillColor(okAll?232:204, okAll?232:204, okAll?232:204);
+        doc.rect(cx, cy-1.06, colW, 4.59, 'FD');
+        doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(0,0,0);
+        doc.text(okAll?'APROBADO':'REQUIERE REPARACION', cx+colW/2, cy+0.53, {align:'center'});
+        cy += BADGE_H;
+
+        // Cabeceras columnas
+        const barX = cx + NAME_W + VAL_W + REF_W;
+        const symX = cx + colW;
+        doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(170,170,170);
+        doc.text('PRUEBA',     cx,              cy);
+        doc.text('VALOR',      cx+NAME_W,       cy);
+        doc.text('REFERENCIA', cx+NAME_W+VAL_W, cy);
+        doc.text('RANGO',      barX,            cy);
+        cy += SUBHDR_H;
+
+        // Filas de pruebas
+        inj.pruebas.forEach(p => {
+            const ry = cy;
+
+            doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(51,51,51);
+            doc.text(p.nombre, cx, ry);
+
+            doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(0,0,0);
+            doc.text(String(p.val), cx+NAME_W, ry);
+
+            doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(119,119,119);
+            doc.text(refDisp(p.ref), cx+NAME_W+VAL_W, ry);
+
+            const pct  = barPct(p.val, p.ref);
+            const bary = ry - BAR_H + pt(1.5);
+            drawBar(barX, bary, BAR_W, BAR_H, pct, p.ref);
+
+            doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(0,0,0);
+            doc.text(p.ok?'OK':'X', symX, bary+BAR_H/2-pt(3.5), {align:'right'});
+
+            cy += ROW_H;
+        });
+
+        colYArr[col] = cy + BLOCK;
+
+        if (col === cols-1) {
+            const maxY = Math.max(...colYArr);
+            colYArr.fill(maxY);
+        }
+    });
+
+    // ── OBSERVACIÓN ──
+    let oy = Math.max(...colYArr) - 1.41;
+    doc.setLineWidth(0.18); doc.setDrawColor(0,0,0);
+    doc.line(M, oy, W-M, oy);
+    oy += pt(14);
+
+    const fallidas = inyectores
+        .map((inj,i) => ({n:i+1, ko: !inj.pruebas.every(p=>p.ok)}))
+        .filter(x=>x.ko).map(x=>x.n);
+
+    let obs;
+    if (!fallidas.length) {
+        obs = 'Todos los inyectores aprobaron las pruebas. Se encuentran dentro de los parametros de fabrica.';
+    } else {
+        const pl = fallidas.length > 1;
+        obs = `Inyector${pl?'es':''} ${fallidas.join(', ')}: resultado${pl?'s':''} fuera de rango. Requier${pl?'en':'e'} reparacion.`;
+    }
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(0,0,0);
+    doc.text('OBSERVACION', M, oy);
+    oy += pt(12);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(51,51,51);
+    doc.text(doc.splitTextToSize(obs, W-M*2), M, oy);
+
+    // ── PIE DE PÁGINA ──
+    const firmaW = 25, firmaH = firmaW*(255/671);
+    const firmaData = localStorage.getItem('ind_firma');
+    if (firmaData) {
+        doc.addImage(firmaData, 'PNG', M, H-pt(52)-firmaH, firmaW, firmaH);
+    }
+    doc.setDrawColor(0,0,0); doc.setLineWidth(0.18);
+    doc.line(M, H-pt(49), M+firmaW, H-pt(49));
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(0,0,0);
+    doc.text('Gonzalo De Pilato',  M, H-pt(41));
+    doc.text('Tecnico Responsable', M, H-pt(33));
+
+    const logoData = localStorage.getItem('ind_logo');
+    const logoSz = 28;
+    if (logoData) {
+        doc.addImage(logoData, 'PNG', W/2-logoSz/2, H-pt(38)-logoSz, logoSz, logoSz);
+    } else {
+        doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(160,160,160);
+        doc.text('INDIESEL', W/2, H-pt(38)-logoSz/2+2, {align:'center'});
+    }
+
+    doc.setDrawColor(170,170,170); doc.setLineWidth(0.14);
+    doc.line(M, H-pt(32), W-M, H-pt(32));
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(0,0,0);
+    doc.text('WhatsApp: 2233059372  |  Tel: 223 478-9900', W/2, H-pt(22), {align:'center'});
+    doc.text('Mar del Plata, Argentina', W/2, H-pt(13), {align:'center'});
+
+    // ── GUARDAR ──
+    doc.save(`Indiesel_Informe_${nInforme}.pdf`);
+
+    const num = parseInt(nInforme);
+    if (!isNaN(num)) localStorage.setItem('ind_n', num);
+}
+</script>
+</body>
+</html>

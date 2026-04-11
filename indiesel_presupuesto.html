@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Indiesel · Generador de Presupuestos</title>
+<style>
+  :root {
+    --verde: #1a9e3a; --verde-light: #e8f5ec; --verde-dark: #147a2d;
+    --gris: #555; --borde: #ddd; --rojo: #e53935;
+    --sombra: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f2f0; color: #333; min-height: 100vh; }
+  .topbar { background: var(--verde); color: white; display: flex; align-items: center; gap: 14px; padding: 0 24px; height: 56px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+  .topbar-logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .topbar-sub  { font-size: 12px; opacity: 0.85; }
+  .topbar-badge { margin-left: auto; background: white; color: var(--verde); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .main { max-width: 900px; margin: 24px auto; padding: 0 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+  .card { background: white; border-radius: 10px; box-shadow: var(--sombra); overflow: hidden; }
+  .card-header { background: var(--verde); color: white; padding: 10px 18px; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 18px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .grid2,.grid3 { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 11px; font-weight: 600; color: var(--gris); text-transform: uppercase; letter-spacing: 0.4px; }
+  input, textarea { border: 1.5px solid var(--borde); border-radius: 6px; padding: 8px 10px; font-size: 14px; color: #222; background: white; transition: border-color .15s; width: 100%; }
+  input:focus, textarea:focus { outline: none; border-color: var(--verde); box-shadow: 0 0 0 3px rgba(26,158,58,.12); }
+  textarea { resize: vertical; min-height: 60px; }
+  .num-row { display: flex; align-items: center; gap: 12px; background: var(--verde-light); border: 1.5px solid var(--verde); border-radius: 8px; padding: 12px 16px; }
+  .num-row .field { flex: 1; }
+  .num-row input { background: white; }
+  .items-table { width: 100%; border-collapse: collapse; }
+  .items-table th { background: var(--verde); color: white; font-size: 11px; font-weight: 700; padding: 9px 7px; text-align: left; text-transform: uppercase; letter-spacing: .3px; }
+  .items-table td { padding: 4px 4px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; }
+  .items-table tr:nth-child(even) td { background: #fafafa; }
+  .items-table input { border: 1px solid #e0e0e0; border-radius: 4px; padding: 6px 7px; font-size: 13px; }
+  .items-table input:focus { border-color: var(--verde); }
+  .subtotal-cell { text-align: right; font-size: 13px; font-weight: 600; color: var(--verde-dark); padding-right: 8px; white-space: nowrap; }
+  .btn-del { background: none; border: none; color: #ccc; font-size: 20px; cursor: pointer; padding: 2px 6px; border-radius: 4px; line-height: 1; transition: color .15s; }
+  .btn-del:hover { color: var(--rojo); }
+  .totales-box { margin-top: 14px; display: flex; justify-content: flex-end; }
+  .totales-inner { min-width: 260px; }
+  .total-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; color: var(--gris); border-bottom: 1px solid #f0f0f0; }
+  .total-row.final { border-top: 2px solid var(--verde); border-bottom: none; margin-top: 6px; padding-top: 8px; font-size: 18px; font-weight: 800; color: var(--verde); }
+  .sin-iva-nota { margin-top: 7px; font-size: 11px; color: #aaa; font-style: italic; text-align: right; }
+  .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; padding: 6px 0; }
+  .check-row input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--verde); }
+  .nota-fija { font-size: 12px; color: #aaa; font-style: italic; margin-top: 4px; }
+  .btn-add { background: var(--verde-light); color: var(--verde-dark); border: 1.5px dashed var(--verde); border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; display: flex; align-items: center; gap: 6px; }
+  .btn-add:hover { background: #d4edda; }
+  .btn-generar { background: var(--verde); color: white; border: none; border-radius: 8px; padding: 14px 36px; font-size: 16px; font-weight: 700; cursor: pointer; transition: background .15s, transform .1s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(26,158,58,.3); }
+  .btn-generar:hover { background: var(--verde-dark); transform: translateY(-1px); }
+  .btn-generar:active { transform: translateY(0); }
+  .btn-generar:disabled { background: #aaa; box-shadow: none; cursor: not-allowed; transform: none; }
+  .btn-row { display: flex; justify-content: center; }
+  .status-bar { background: var(--verde-light); border: 1px solid var(--verde); border-radius: 8px; padding: 12px 18px; font-size: 13px; color: var(--verde-dark); display: none; align-items: center; gap: 10px; }
+  .status-bar.show { display: flex; }
+  .status-bar.error { background: #fdecea; border-color: var(--rojo); color: var(--rojo); }
+  .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; display: none; }
+  .spinner.show { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span style="font-size:26px">&#9881;</span>
+  <div>
+    <div class="topbar-logo">Indiesel</div>
+    <div class="topbar-sub">Laboratorio Diesel &middot; Mar del Plata</div>
+  </div>
+  <div class="topbar-badge">Generador de Presupuestos</div>
+</div>
+
+<div class="main">
+
+  <div class="card">
+    <div class="card-header">&#128196; Datos del presupuesto</div>
+    <div class="card-body">
+      <div class="num-row">
+        <div class="field"><label>N&deg; Presupuesto</label><input type="text" id="numero" value="001"></div>
+        <div class="field"><label>Fecha</label><input type="text" id="fecha"></div>
+        <div class="field"><label>Validez</label><input type="text" id="vigencia" value="30 d&iacute;as"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">&#128100; Datos del cliente</div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="grid2">
+        <div class="field"><label>Nombre / Empresa</label><input type="text" id="cli_nombre" placeholder="Juan Garc&iacute;a / Transportes S.A."></div>
+        <div class="field"><label>CUIT / DNI</label><input type="text" id="cli_cuit" placeholder="20-12345678-5"></div>
+      </div>
+      <div class="grid3">
+        <div class="field"><label>Tel&eacute;fono</label><input type="text" id="cli_telefono" placeholder="223-456-7890"></div>
+        <div class="field"><label>E-mail</label><input type="email" id="cli_email" placeholder="cliente@mail.com"></div>
+        <div class="field"><label>Direcci&oacute;n</label><input type="text" id="cli_direccion" placeholder="Calle 123, MdP"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">&#128295; Tipo de trabajo</div>
+    <div class="card-body">
+      <div style="display:flex;gap:0;border:1.5px solid var(--verde);border-radius:8px;overflow:hidden;margin-bottom:14px;">
+        <button id="btn-lab" onclick="setTipo('lab')"
+          style="flex:1;padding:11px 0;font-size:14px;font-weight:700;border:none;cursor:pointer;
+                 background:var(--verde);color:white;transition:all .15s;">
+          &#128297; Laboratorio
+        </button>
+        <button id="btn-pla" onclick="setTipo('pla')"
+          style="flex:1;padding:11px 0;font-size:14px;font-weight:700;border:none;cursor:pointer;
+                 background:white;color:var(--gris);border-left:1.5px solid var(--verde);transition:all .15s;">
+          &#128663; Playa
+        </button>
+      </div>
+      <div id="campo-tipo" class="field">
+        <label id="label-tipo">Unidad a reparar</label>
+        <input type="text" id="tipo_detalle"
+          placeholder="Ej: 3 inyectores VW Amarok, Bomba inyectora Peugeot 206...">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">&#128295; &Iacute;tems / Servicios</div>
+    <div class="card-body">
+      <div style="overflow-x:auto;">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th style="width:30px">#</th>
+              <th>Descripci&oacute;n del trabajo / servicio / repuesto</th>
+              <th style="width:72px;text-align:center">Cant.</th>
+              <th style="width:130px;text-align:right">Precio unit. ($)</th>
+              <th style="width:115px;text-align:right">Subtotal</th>
+              <th style="width:34px"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-items"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn-add" onclick="addItem()">+ Agregar &iacute;tem</button>
+      </div>
+      <div class="totales-box">
+        <div class="totales-inner">
+          <div class="total-row"><span>Subtotal</span><span id="t-sub">$ 0,00</span></div>
+          <div class="total-row" id="row-desc" style="display:none"><span id="label-desc">Descuento</span><span id="t-desc" style="color:var(--rojo)">- $ 0,00</span></div>
+          <div class="total-row" id="row-iva"  style="display:none"><span>IVA (21%)</span><span id="t-iva">$ 0,00</span></div>
+          <div class="total-row final"><span>TOTAL</span><span id="t-total">$ 0,00</span></div>
+          <div class="sin-iva-nota" id="sin-iva-nota">* Los precios no incluyen IVA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">&#128176; Condiciones de pago</div>
+    <div class="card-body">
+      <div class="grid2">
+        <div style="display:flex;flex-direction:column;gap:10px;padding-top:4px;">
+          <div class="check-row">
+            <input type="checkbox" id="check_iva" onchange="recalcular();actualizarPago()">
+            <label for="check_iva" style="text-transform:none;font-size:13px;cursor:pointer;font-weight:500">Agregar IVA (21%)</label>
+          </div>
+          <div class="field">
+            <label>Descuento (%)</label>
+            <input type="number" id="descuento" value="0" min="0" max="100" step="1" oninput="recalcular()" style="max-width:120px;">
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="check_cheque" onchange="actualizarPago()">
+            <label for="check_cheque" style="text-transform:none;font-size:13px;cursor:pointer;font-weight:500">Aceptar cheque para este cliente</label>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label>Medios de pago aceptados</label>
+          <div id="medios-pago-display" style="background:#f5f5f5;border:1.5px solid #ddd;border-radius:6px;padding:10px 12px;font-size:13px;color:#444;line-height:1.7;min-height:44px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">&#128203; Observaciones</div>
+    <div class="card-body">
+      <p class="nota-fija">* El presupuesto no incluye repuestos adicionales que puedan surgir durante la reparaci&oacute;n.</p>
+      <p style="font-size:11px;color:#ccc;margin-top:6px;">Este texto aparece siempre en el PDF.</p>
+    </div>
+  </div>
+
+  <div class="status-bar" id="status-bar"><span id="status-msg"></span></div>
+
+  <div class="btn-row">
+    <button class="btn-generar" id="btn-gen" onclick="generarPDF()">
+      <div class="spinner" id="spinner"></div>
+      <span>&#128424;</span>
+      <span>Generar PDF</span>
+    </button>
+  </div>
+
+</div>
+<script>
+const NOTAS_FIJAS = 'El presupuesto no incluye repuestos adicionales que puedan surgir durante la reparaci\u00f3n.';
+const LOGO_GRIS = 'data:image/png;base64,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';
+
+let itemCounter = 0;
+
+(function() {
+  const d = new Date();
+  document.getElementById('fecha').value =
+    String(d.getDate()).padStart(2,'0') + '/' +
+    String(d.getMonth()+1).padStart(2,'0') + '/' + d.getFullYear();
+})();
+
+function addItem(desc, cant, precio) {
+  desc   = desc   !== undefined ? desc   : '';
+  cant   = cant   !== undefined ? cant   : 1;
+  precio = precio !== undefined ? precio : '';
+  itemCounter++;
+  var id = itemCounter;
+  var tbody = document.getElementById('tbody-items');
+  var tr = document.createElement('tr');
+  tr.id = 'item-' + id;
+  var inp0 = document.createElement('input');
+  inp0.type = 'text'; inp0.value = desc; inp0.style.width = '100%';
+  inp0.placeholder = 'Ej: Reparaci\u00f3n y calibrado de inyector, limpieza ultras\u00f3nica, cambio de tobera...';
+  inp0.addEventListener('input', recalcular);
+  var inp1 = document.createElement('input');
+  inp1.type = 'number'; inp1.value = cant; inp1.min = '0.01'; inp1.step = '1';
+  inp1.style.cssText = 'width:62px;text-align:center';
+  inp1.addEventListener('input', recalcular);
+  var inp2 = document.createElement('input');
+  inp2.type = 'number'; inp2.value = precio; inp2.min = '0'; inp2.step = '500';
+  inp2.placeholder = '0'; inp2.style.cssText = 'width:120px;text-align:right';
+  inp2.addEventListener('input', recalcular);
+  var tdNum = document.createElement('td');
+  tdNum.className = 'num-cell';
+  tdNum.style.cssText = 'text-align:center;color:#bbb;font-size:12px;font-weight:600';
+  var tdDesc = document.createElement('td'); tdDesc.appendChild(inp0);
+  var tdCant = document.createElement('td'); tdCant.appendChild(inp1);
+  var tdPrec = document.createElement('td'); tdPrec.appendChild(inp2);
+  var tdSub  = document.createElement('td');
+  tdSub.className = 'subtotal-cell'; tdSub.id = 'sub-' + id; tdSub.textContent = '$ 0,00';
+  var btnDel = document.createElement('button');
+  btnDel.className = 'btn-del'; btnDel.title = 'Eliminar'; btnDel.textContent = '\u00d7';
+  btnDel.addEventListener('click', function() { removeItem(id); });
+  var tdDel = document.createElement('td'); tdDel.appendChild(btnDel);
+  tr.appendChild(tdNum); tr.appendChild(tdDesc); tr.appendChild(tdCant);
+  tr.appendChild(tdPrec); tr.appendChild(tdSub); tr.appendChild(tdDel);
+  tbody.appendChild(tr);
+  renumerar(); recalcular();
+}
+
+function removeItem(id) {
+  var el = document.getElementById('item-' + id);
+  if (el) el.remove();
+  renumerar(); recalcular();
+}
+
+function renumerar() {
+  document.querySelectorAll('#tbody-items tr').forEach(function(tr, i) {
+    tr.querySelector('.num-cell').textContent = i + 1;
+  });
+}
+
+function getItems() {
+  var items = [];
+  document.querySelectorAll('#tbody-items tr').forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    var desc = inputs[0].value.trim();
+    var cant = parseFloat(inputs[1].value) || 0;
+    var prec = parseFloat(inputs[2].value) || 0;
+    if (desc || prec > 0) items.push({ descripcion: desc, cantidad: cant, precio_unitario: prec });
+  });
+  return items;
+}
+
+function fmt(n) {
+  return '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function recalcular() {
+  var sub = 0;
+  document.querySelectorAll('#tbody-items tr').forEach(function(tr) {
+    var inputs = tr.querySelectorAll('input');
+    var c = parseFloat(inputs[1] && inputs[1].value) || 0;
+    var p = parseFloat(inputs[2] && inputs[2].value) || 0;
+    var s = c * p; sub += s;
+    var m = tr.id.match(/item-(\d+)/);
+    if (m) { var el = document.getElementById('sub-' + m[1]); if (el) el.textContent = fmt(s); }
+  });
+  var desc = parseFloat(document.getElementById('descuento').value) || 0;
+  var iva  = document.getElementById('check_iva').checked;
+  var dm   = sub * desc / 100;
+  var cd   = sub - dm;
+  var ivm  = iva ? cd * 0.21 : 0;
+  var tot  = cd + ivm;
+  document.getElementById('t-sub').textContent = fmt(sub);
+  var rd = document.getElementById('row-desc');
+  if (desc > 0) {
+    rd.style.display = 'flex';
+    document.getElementById('label-desc').textContent = 'Descuento (' + desc + '%)';
+    document.getElementById('t-desc').textContent = '- ' + fmt(dm);
+  } else { rd.style.display = 'none'; }
+  var ri = document.getElementById('row-iva');
+  if (iva) { ri.style.display = 'flex'; document.getElementById('t-iva').textContent = fmt(ivm); }
+  else { ri.style.display = 'none'; }
+  document.getElementById('t-total').textContent = fmt(tot);
+  document.getElementById('sin-iva-nota').style.display = iva ? 'none' : 'block';
+}
+
+function getMediosPago() {
+  var iva    = document.getElementById('check_iva').checked;
+  var cheque = document.getElementById('check_cheque').checked;
+  var m = iva
+    ? ['Transferencia bancaria', 'Efectivo', 'Tarjeta de cr\u00e9dito o d\u00e9bito']
+    : ['Efectivo', 'Transferencia bancaria'];
+  if (cheque) m.push('Cheque');
+  return m;
+}
+
+function actualizarPago() {
+  document.getElementById('medios-pago-display').textContent = getMediosPago().join('  \u00b7  ');
+}
+
+var tipoActual = 'lab';
+
+function setTipo(t) {
+  tipoActual = t;
+  var btnLab = document.getElementById('btn-lab');
+  var btnPla = document.getElementById('btn-pla');
+  var lbl    = document.getElementById('label-tipo');
+  var inp    = document.getElementById('tipo_detalle');
+  if (t === 'lab') {
+    btnLab.style.background = 'var(--verde)'; btnLab.style.color = 'white';
+    btnPla.style.background = 'white';        btnPla.style.color = 'var(--gris)';
+    lbl.textContent = 'Unidad a reparar';
+    inp.placeholder = 'Ej: 3 inyectores VW Amarok, Bomba inyectora Peugeot 206...';
+  } else {
+    btnPla.style.background = 'var(--verde)'; btnPla.style.color = 'white';
+    btnLab.style.background = 'white';        btnLab.style.color = 'var(--gris)';
+    lbl.textContent = 'Veh\u00edculo';
+    inp.placeholder = 'Ej: Ford Ranger 2019, VW Amarok TDI...';
+  }
+}
+
+
+addItem(); addItem();
+actualizarPago();
+
+function generarPDF() {
+  var btn     = document.getElementById('btn-gen');
+  var spinner = document.getElementById('spinner');
+  var items   = getItems();
+  if (!items.length) { showStatus('error', '\u26a0\ufe0f Agrega al menos un \u00edtem.'); return; }
+  var data = {
+    numero:    document.getElementById('numero').value || '001',
+    fecha:     document.getElementById('fecha').value,
+    vigencia:  document.getElementById('vigencia').value,
+    cliente: {
+      nombre:    document.getElementById('cli_nombre').value,
+      cuit:      document.getElementById('cli_cuit').value,
+      telefono:  document.getElementById('cli_telefono').value,
+      email:     document.getElementById('cli_email').value,
+      direccion: document.getElementById('cli_direccion').value
+    },
+    items:      items,
+    descuento:  parseFloat(document.getElementById('descuento').value) || 0,
+    iva:        document.getElementById('check_iva').checked,
+    forma_pago: getMediosPago().join(' / '),
+    tipo:       tipoActual,
+    tipo_detalle: document.getElementById('tipo_detalle').value,
+    notas:      NOTAS_FIJAS
+  };
+  btn.disabled = true; spinner.classList.add('show');
+  loadLibs().then(function() {
+    try { buildPDF(data); }
+    catch(e) { showStatus('error', 'Error: ' + e.message); console.error(e); }
+    finally  { btn.disabled = false; spinner.classList.remove('show'); }
+  });
+}
+
+function loadLibs() {
+  if (window.jspdf) return Promise.resolve();
+  return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
+    .then(function() {
+      return loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js');
+    });
+}
+
+function loadScript(src) {
+  return new Promise(function(res, rej) {
+    var s = document.createElement('script');
+    s.src = src; s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+function buildPDF(data) {
+  var jsPDF    = window.jspdf.jsPDF;
+  var doc      = new jsPDF('p', 'mm', 'a4');
+  var pW=210, pH=297, mL=18, mR=18, mT=14, cW=pW-mL-mR;
+  var VERDE    = [26,158,58];
+  var GRIS     = [110,110,110];
+  var GRIS_OSC = [40,40,40];
+  var LINEA    = [210,210,210];
+  var y = mT;
+
+  function fmt2(n) {
+    return '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 });
+  }
+
+  // ── BANNER ──────────────────────────────────────────────────
+  var hH = 22;
+  doc.setFillColor(VERDE[0],VERDE[1],VERDE[2]);
+  doc.rect(mL, y, cW, hH, 'F');
+
+  // Texto empresa
+  doc.setTextColor(255,255,255);
+  doc.setFont('helvetica','bold'); doc.setFontSize(17);
+  doc.text('INDIESEL', mL+4, y+12);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.text('Laboratorio Diesel  \u00b7  Mar del Plata, Buenos Aires', mL+4, y+17.5);
+
+  // N° y fecha
+  doc.setFont('helvetica','bold'); doc.setFontSize(10);
+  doc.text('PRESUPUESTO', pW-mR-3, y+9, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+  doc.text('N\u00b0 ' + data.numero, pW-mR-3, y+14, {align:'right'});
+  doc.text('Fecha: ' + data.fecha, pW-mR-3, y+19, {align:'right'});
+  y += hH + 6;
+
+  // ── DATOS DEL CLIENTE ────────────────────────────────────────
+  doc.setFillColor(245,245,245);
+  doc.rect(mL, y, cW, 6, 'F');
+  doc.setDrawColor(LINEA[0],LINEA[1],LINEA[2]); doc.setLineWidth(0.3);
+  doc.rect(mL, y, cW, 6, 'S');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+  doc.text('DATOS DEL CLIENTE', mL+3, y+4);
+  y += 12;  // <-- espacio generoso entre el header y los datos
+
+  var cli    = data.cliente;
+  var ROW_H  = 8;
+  var colAx  = mL+2,  colAval = mL+25;
+  var colBx  = mL+cW/2+4, colBval = mL+cW/2+25;
+
+  function drawF(lbl, val, lx, vx, yy) {
+    doc.setFont('helvetica','bold');   doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);
+    doc.text(lbl, lx, yy);
+    doc.setFont('helvetica','normal'); doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);
+    doc.text(val || '\u2014', vx, yy);
+  }
+  doc.setFontSize(8.5);
+  drawF('Cliente:',         cli.nombre,    colAx, colAval, y);
+  drawF('E-mail:',          cli.email,     colBx, colBval, y);  y += ROW_H;
+  drawF('CUIT / DNI:',      cli.cuit,      colAx, colAval, y);
+  drawF('Direcci\u00f3n:',  cli.direccion, colBx, colBval, y);  y += ROW_H;
+  drawF('Tel\u00e9fono:',   cli.telefono,  colAx, colAval, y);
+  y += ROW_H + 4;
+
+  // ── TIPO DE TRABAJO ──
+  if (data.tipo_detalle) {
+    var tipoLabel = data.tipo === 'lab' ? 'Unidad a reparar:' : 'Vehículo:';
+    doc.setFillColor(240,247,241);
+    doc.rect(mL, y, cW, 7, 'F');
+    doc.setDrawColor(LINEA[0],LINEA[1],LINEA[2]); doc.setLineWidth(0.3);
+    doc.rect(mL, y, cW, 7, 'S');
+    doc.setFontSize(8.5);
+    doc.setFont('helvetica','bold');   doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+    doc.text(tipoLabel, mL+3, y+4.8);
+    doc.setFont('helvetica','normal'); doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);
+    doc.text(data.tipo_detalle, mL+38, y+4.8);
+    y += 7;
+  }
+  y += 6;
+
+  // ── TABLA ITEMS ──────────────────────────────────────────────
+  var subtotal = 0;
+  var tableBody = data.items.map(function(item, i) {
+    var cant = parseFloat(item.cantidad)||0;
+    var prec = parseFloat(item.precio_unitario)||0;
+    var sub  = cant*prec; subtotal += sub;
+    return [String(i+1), item.descripcion||'',
+      cant%1===0 ? cant.toFixed(0) : String(cant), fmt2(prec), fmt2(sub)];
+  });
+
+  doc.autoTable({
+    startY: y,
+    head: [['#','Descripci\u00f3n del trabajo / servicio / repuesto','Cant.','Precio unit.','Subtotal']],
+    body: tableBody,
+    theme: 'striped',
+    headStyles: { fillColor:VERDE, textColor:[255,255,255], fontStyle:'bold', fontSize:8.5, cellPadding:3 },
+    bodyStyles: { fontSize:8.5, textColor:GRIS_OSC, cellPadding:{top:4,bottom:4,left:3,right:3} },
+    alternateRowStyles: { fillColor:[249,249,249] },
+    columnStyles: {
+      0: { cellWidth:8,  halign:'center' },
+      1: { cellWidth:'auto' },
+      2: { cellWidth:13, halign:'center' },
+      3: { cellWidth:30, halign:'right' },
+      4: { cellWidth:30, halign:'right', fontStyle:'bold' }
+    },
+    margin: { left:mL, right:mR }
+  });
+  y = doc.lastAutoTable.finalY + 5;
+
+  // ── TOTALES ──────────────────────────────────────────────────
+  var desc  = parseFloat(data.descuento)||0;
+  var dm    = subtotal*desc/100;
+  var cd    = subtotal-dm;
+  var ivm   = data.iva ? cd*0.21 : 0;
+  var total = cd+ivm;
+  var tR=pW-mR, lX=tR-58;
+
+  function rowT(lbl, val, col) {
+    col = col || GRIS_OSC;
+    doc.setFont('helvetica','normal'); doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);
+    doc.text(lbl, lX, y, {align:'right'});
+    doc.setFont('helvetica','bold');   doc.setTextColor(col[0],col[1],col[2]);
+    doc.text(val, tR, y, {align:'right'});
+    y += 5.5;
+  }
+  doc.setFontSize(8.5);
+  rowT('Subtotal:', fmt2(subtotal));
+  if (desc>0) rowT('Descuento ('+desc+'%):', '- '+fmt2(dm), [210,50,50]);
+  if (data.iva) rowT('IVA (21%):', fmt2(ivm));
+
+  doc.setDrawColor(VERDE[0],VERDE[1],VERDE[2]); doc.setLineWidth(0.8);
+  doc.line(lX-18, y-1.5, tR, y-1.5); y += 2;
+  doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+  doc.text('TOTAL:', lX, y+5, {align:'right'});
+  doc.text(fmt2(total), tR, y+5, {align:'right'}); y += 11;
+
+  if (!data.iva) {
+    doc.setFont('helvetica','italic'); doc.setFontSize(7.5);
+    doc.setTextColor(160,160,160);
+    doc.text('* Los precios no incluyen IVA', tR, y, {align:'right'}); y += 5;
+  }
+  y += 5;
+
+  // ── CONDICIONES ──────────────────────────────────────────────
+  if (data.vigencia || data.forma_pago) {
+    doc.setFillColor(245,245,245);
+    doc.rect(mL, y-1, cW, 6, 'F');
+    doc.setDrawColor(LINEA[0],LINEA[1],LINEA[2]); doc.setLineWidth(0.3);
+    doc.rect(mL, y-1, cW, 6, 'S');
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.setTextColor(VERDE[0],VERDE[1],VERDE[2]);
+    doc.text('CONDICIONES', mL+3, y+3.2); y += 11;
+    doc.setFontSize(8.5);
+    if (data.vigencia) {
+      doc.setFont('helvetica','bold');   doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);
+      doc.text('Validez del presupuesto:', mL+2, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);
+      doc.text(data.vigencia, mL+52, y); y += 5.5;
+    }
+    if (data.forma_pago) {
+      doc.setFont('helvetica','bold');   doc.setTextColor(GRIS[0],GRIS[1],GRIS[2]);
+      doc.text('Medios de pago:', mL+2, y);
+      doc.setFont('helvetica','normal'); doc.setTextColor(GRIS_OSC[0],GRIS_OSC[1],GRIS_OSC[2]);
+      doc.text(data.forma_pago, mL+36, y); y += 5.5;
+    }
+    y += 3;
+  }
+
+  // ── NOTA FIJA ────────────────────────────────────────────────
+  doc.setFont('helvetica','italic'); doc.setFontSize(8);
+  doc.setTextColor(170,170,170);
+  var notaLines = doc.splitTextToSize('* ' + data.notas, cW-4);
+  doc.text(notaLines, mL+2, y);
+  y += notaLines.length * 4.5 + 10;
+
+  // ── PIE CON LOGO AMARILLO ────────────────────────────────────
+  var pieY = pH - 30;
+  doc.setDrawColor(180,180,180); doc.setLineWidth(0.5);
+  doc.line(mL, pieY, pW-mR, pieY);
+
+  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  doc.setTextColor(150,150,150);
+  var lSzPie = 11;
+  doc.addImage(LOGO_GRIS, 'PNG', pW/2 - lSzPie/2, pieY+3, lSzPie, lSzPie);
+  doc.text('Indiesel  \u00b7  Laboratorio Diesel  \u00b7  Mar del Plata, Buenos Aires',
+    pW/2, pieY+17, {align:'center'});
+  doc.setFontSize(7);
+  doc.text('WhatsApp: 223 305-9372   \u00b7   Tel: 223 478-9900',
+    pW/2, pieY+23, {align:'center'});
+
+  // ── GUARDAR ──────────────────────────────────────────────────
+  var slug = (data.cliente.nombre||'cliente').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  doc.save('Presupuesto_Indiesel_' + data.numero + '_' + slug + '.pdf');
+  showStatus('ok', '\u2705 PDF generado y descargado correctamente.');
+}
+
+function showStatus(tipo, msg) {
+  var bar = document.getElementById('status-bar');
+  document.getElementById('status-msg').textContent = msg;
+  bar.className = 'status-bar show' + (tipo==='error' ? ' error' : '');
+  setTimeout(function() { bar.classList.remove('show'); }, 7000);
+}
+</script>
+</body>
+</html>
