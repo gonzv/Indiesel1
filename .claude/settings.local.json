@@ -3,7 +3,13 @@
     "allow": [
       "Bash(ls -la /c/Indiesel/.*)",
       "Bash(file /c/Indiesel/*.*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(gh api:*)",
+      "Skill(update-config)",
+      "Bash(powershell -Command \"[System.Media.SystemSounds]::Asterisk.Play\\(\\); Start-Sleep -Milliseconds 1200\")",
+      "Read(//c/Users/Male y Gonza/.claude/**)",
+      "Bash(ls:*)"
     ]
   }
 }

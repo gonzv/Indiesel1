@@ -477,6 +477,8 @@ tbody tr:last-child td { border-bottom: none; }
 .status-btn.active.s-en_trabajo    { background: rgba(59,130,246,.15); }
 .status-btn.active.s-listo         { background: rgba(34,197,94,.15);  }
 .status-btn.active.s-entregado     { background: rgba(100,116,139,.15);}
+.status-btn.s-sin_presupuestar     { color: var(--danger); border-color: var(--danger); }
+.status-btn.active.s-sin_presupuestar { background: rgba(239,68,68,.15); }
 .items-orden-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .items-orden-table th {
   text-align: left; font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -616,6 +618,82 @@ tbody tr:last-child td { border-bottom: none; }
 .sidebar-user-info { line-height: 1.3; }
 .sidebar-user-info strong { font-size: 13px; font-weight: 700; display: block; }
 .sidebar-user-info span   { font-size: 10px; color: var(--text3); }
+
+/* ══════════════════════════════════════════
+   MODAL INGRESO — Wizard de ingreso
+══════════════════════════════════════════ */
+.tipo-tiles { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.tipo-tile {
+  background:var(--bg); border:2px solid var(--border); border-radius:var(--radius);
+  cursor:pointer; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:10px; padding:22px 12px;
+  font-size:13px; font-weight:700; color:var(--text2);
+  transition:all var(--transition); user-select:none;
+}
+.tipo-tile i { font-size:28px; transition:filter var(--transition); }
+.tipo-tile:hover { border-color:var(--accent); color:var(--text); }
+.tipo-tile.sel { border-color:var(--accent); background:rgba(34,197,94,.1); color:var(--accent); }
+
+.smart-row { position:relative; }
+.smart-row > .smart-icon {
+  position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  color:var(--text3); font-size:13px; pointer-events:none; z-index:1;
+}
+.smart-row input {
+  background:var(--bg); border:1.5px solid var(--border); border-radius:var(--radius-sm);
+  padding:10px 13px 10px 36px; font-size:14px; color:var(--text); width:100%;
+  transition:border-color var(--transition);
+}
+.smart-row input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(34,197,94,.12); }
+.smart-row input::placeholder { color:var(--text3); }
+.smart-dd {
+  position:absolute; top:calc(100% + 4px); left:0; right:0;
+  background:var(--bg2); border:1.5px solid var(--border); border-radius:var(--radius-sm);
+  z-index:310; box-shadow:var(--shadow); display:none; max-height:320px; overflow-y:auto;
+}
+.smart-dd.open { display:block; }
+.smart-item {
+  padding:10px 14px; cursor:pointer; transition:background var(--transition); font-size:13px;
+  border-bottom:1px solid rgba(51,65,85,.4);
+}
+.smart-item:last-child { border-bottom:none; }
+.smart-item:hover { background:var(--bg3); }
+.si-main { font-weight:600; color:var(--text); }
+.si-sub  { font-size:11px; color:var(--text3); margin-top:2px; }
+.smart-item.new-item { color:var(--accent); font-weight:700; border-top:1px solid var(--border); font-size:12px; padding:10px 14px; }
+.smart-pill {
+  display:inline-flex; align-items:center; gap:10px; margin-top:8px;
+  background:rgba(34,197,94,.1); border:1.5px solid rgba(34,197,94,.3);
+  border-radius:99px; padding:7px 14px 7px 12px;
+  font-size:13px; font-weight:600; color:var(--accent);
+}
+.pill-x {
+  background:none; border:none; cursor:pointer; color:var(--text3);
+  font-size:11px; padding:0 2px; line-height:1; transition:color var(--transition);
+}
+.pill-x:hover { color:var(--danger); }
+
+.ingreso-s { display:none; }
+.ingreso-s.on { display:block; animation:fadeIn .18s ease; }
+.step-bar { display:flex; align-items:center; justify-content:center; gap:0; margin-bottom:22px; }
+.sdot {
+  width:26px; height:26px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:800;
+  background:var(--bg3); color:var(--text3); transition:all var(--transition); flex-shrink:0;
+}
+.sdot.on   { background:var(--accent); color:var(--bg); box-shadow:0 0 0 4px rgba(34,197,94,.2); }
+.sdot.done { background:rgba(34,197,94,.2); color:var(--accent); }
+.sline { width:36px; height:2px; background:var(--bg3); transition:background var(--transition); flex-shrink:0; }
+.sline.done { background:var(--accent); }
+.cant-btn {
+  width:38px; height:38px; border-radius:var(--radius-sm);
+  background:var(--bg); border:1.5px solid var(--border);
+  color:var(--text2); font-size:14px; font-weight:700;
+  cursor:pointer; transition:all var(--transition);
+}
+.cant-btn:hover { border-color:var(--accent); color:var(--accent); }
+.cant-btn.sel  { background:var(--accent); color:var(--bg); border-color:var(--accent); }
 </style>
 </head>
 <body>
@@ -623,7 +701,7 @@ tbody tr:last-child td { border-bottom: none; }
 <!-- ═══════════════════════ USER PICKER ═══════════════════════ -->
 <div class="user-picker" id="user-picker">
   <div class="user-picker-header">
-    <img src="logo D indiesel png.jpg" class="pick-logo" alt="Indiesel">
+    <img src="logopng.png" class="pick-logo" alt="Indiesel">
     <h2>¿Quién va a usar el sistema?</h2>
     <p>Seleccioná tu usuario para continuar</p>
   </div>
@@ -652,7 +730,7 @@ tbody tr:last-child td { border-bottom: none; }
 <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <img src="logo D indiesel png.jpg" class="logo-img" alt="Indiesel">
+    <img src="logopng.png" class="logo-img" alt="Indiesel">
     <div class="brand">
       <p>Laboratorio Diesel · MdP</p>
     </div>
@@ -760,6 +838,9 @@ tbody tr:last-child td { border-bottom: none; }
     <!-- Alertas: vehículos sin patente -->
     <div id="dash-sin-patente" style="display:none;margin-bottom:16px"></div>
 
+    <!-- Pendientes de presupuestar -->
+    <div id="dash-sin-presupuestar" style="display:none;margin-bottom:16px"></div>
+
     <div class="grid-2" style="gap:16px">
       <!-- CARD ÚLTIMAS ÓRDENES — visible para empleados, oculto para admin -->
       <!--
@@ -811,6 +892,9 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-primary" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="abrirIngreso()">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i> Agregar ingreso
+          </button>
           <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('clientes');limpiarFormCliente();openModal('modal-cliente')">
             <i class="fa-solid fa-user-plus" style="color:var(--info)"></i> Nuevo cliente
           </button>
@@ -1309,6 +1393,157 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="fa-solid fa-check"></i> Guardar
       </button>
     </div>
+  </div>
+</div>
+
+<!-- Modal: Agregar Ingreso -->
+<div class="modal-overlay" id="modal-ingreso">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div>
+        <h2><i class="fa-solid fa-arrow-right-to-bracket" style="color:var(--accent);margin-right:8px"></i>Agregar ingreso</h2>
+        <span id="ing-subtitulo" style="font-size:12px;color:var(--text3)">¿Qué ingresa hoy al taller?</span>
+      </div>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-ingreso')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="min-height:300px">
+      <!-- Stepper -->
+      <div class="step-bar">
+        <div class="sdot on" id="ing-dot-1">1</div>
+        <div class="sline" id="ing-line-1"></div>
+        <div class="sdot" id="ing-dot-2">2</div>
+        <div class="sline" id="ing-line-2"></div>
+        <div class="sdot" id="ing-dot-3">3</div>
+      </div>
+
+      <!-- STEP 1: Tipo -->
+      <div class="ingreso-s on" id="ing-step-1">
+        <div class="tipo-tiles">
+          <button class="tipo-tile" id="tile-inyector" onclick="ingresoSelecTipo('inyector')">
+            <i class="fa-solid fa-syringe" style="color:#3b82f6"></i>Inyectores
+          </button>
+          <button class="tipo-tile" id="tile-bomba" onclick="ingresoSelecTipo('bomba')">
+            <i class="fa-solid fa-gear" style="color:#f59e0b"></i>Bomba
+          </button>
+          <button class="tipo-tile" id="tile-vehiculo" onclick="ingresoSelecTipo('vehiculo')">
+            <i class="fa-solid fa-car" style="color:#22c55e"></i>Vehículo
+          </button>
+          <button class="tipo-tile" id="tile-otro" onclick="ingresoSelecTipo('otro')">
+            <i class="fa-solid fa-ellipsis" style="color:#94a3b8"></i>Otra cosa
+          </button>
+        </div>
+        <div id="ing-otro-wrap" style="display:none;margin-top:16px">
+          <div class="field">
+            <label>¿Qué es?</label>
+            <input type="text" id="ing-otro-desc" placeholder="Ej: turbo, bomba de agua, inyector común..." oninput="ingresoValidarStep1()">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2:
+           · Para vehiculo  → buscar/registrar vehículo
+           · Para los demás → descripción + buscar cliente -->
+      <div class="ingreso-s" id="ing-step-2">
+
+        <!-- Sub-panel: inyector / bomba / otro -->
+        <div id="ing-s2-noveh">
+          <!-- Sección aplicación: solo inyector/bomba -->
+          <div id="ing-app-wrap" style="display:none;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px" id="ing-app-titulo">Aplicación</div>
+
+            <!-- Modo smart: marca + modelo -->
+            <div id="ing-app-smart">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                <div class="field" style="margin-bottom:0">
+                  <label>Marca</label>
+                  <div style="position:relative">
+                    <div class="smart-row" id="ing-app-marca-row">
+                      <i class="fa-solid fa-magnifying-glass smart-icon"></i>
+                      <input type="text" id="ing-app-marca-search" placeholder="Ford, Peugeot..." oninput="ingresoFiltrarMarca()" autocomplete="off">
+                    </div>
+                    <div class="smart-dd" id="ing-app-marca-dd"></div>
+                  </div>
+                  <div id="ing-app-marca-pill" style="display:none"></div>
+                </div>
+                <div class="field" style="margin-bottom:0">
+                  <label>Modelo *</label>
+                  <div style="position:relative">
+                    <div class="smart-row" id="ing-app-modelo-row">
+                      <i class="fa-solid fa-magnifying-glass smart-icon"></i>
+                      <input type="text" id="ing-app-modelo-search" placeholder="206, S10..." oninput="ingresoFiltrarModelo()" autocomplete="off" disabled style="opacity:.5">
+                    </div>
+                    <div class="smart-dd" id="ing-app-modelo-dd"></div>
+                  </div>
+                  <div id="ing-app-modelo-pill" style="display:none"></div>
+                </div>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--text3);padding:5px 10px" onclick="ingresoAppManual()">
+                <i class="fa-solid fa-pen" style="font-size:10px"></i> No está en la lista
+              </button>
+            </div>
+
+            <!-- Cantidad (solo inyectores) -->
+            <div id="ing-app-cantidad-wrap" style="display:none;margin-top:14px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">Cantidad de inyectores</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="cant-btn" id="ing-cant-1" onclick="ingresoSelecCantidad(1)">1</button>
+                <button class="cant-btn" id="ing-cant-2" onclick="ingresoSelecCantidad(2)">2</button>
+                <button class="cant-btn" id="ing-cant-3" onclick="ingresoSelecCantidad(3)">3</button>
+                <button class="cant-btn" id="ing-cant-4" onclick="ingresoSelecCantidad(4)">4</button>
+                <button class="cant-btn" id="ing-cant-5" onclick="ingresoSelecCantidad(5)">5</button>
+                <button class="cant-btn" id="ing-cant-6" onclick="ingresoSelecCantidad(6)">6</button>
+                <button class="cant-btn" id="ing-cant-7" onclick="ingresoSelecCantidad(7)">7</button>
+                <button class="cant-btn" id="ing-cant-8" onclick="ingresoSelecCantidad(8)">8</button>
+              </div>
+            </div>
+
+            <!-- Modo manual: texto libre -->
+            <div id="ing-app-manual" style="display:none">
+              <div class="field" style="margin-bottom:8px">
+                <label>Referencia</label>
+                <input type="text" id="ing-app-manual-input" placeholder="Ej: Komatsu, motor barco, generador..." autocomplete="off">
+              </div>
+              <button class="btn btn-ghost btn-sm" style="font-size:11px;color:var(--text3);padding:5px 10px" onclick="ingresoAppSmart()">
+                <i class="fa-solid fa-list" style="font-size:10px"></i> Elegir de la lista
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-panel: vehiculo -->
+        <div id="ing-s2-veh" style="display:none">
+          <div class="field" style="margin-bottom:0">
+            <label>Buscar vehículo</label>
+            <div style="position:relative">
+              <div class="smart-row" id="ing-veh-input-row">
+                <i class="fa-solid fa-magnifying-glass smart-icon"></i>
+                <input type="text" id="ing-veh-search" placeholder="Patente, marca, modelo..." oninput="ingresoFiltrarVehiculos()" autocomplete="off">
+              </div>
+              <div class="smart-dd" id="ing-veh-dd"></div>
+            </div>
+            <div id="ing-veh-pill" style="display:none"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- STEP 3: Solo para vehiculo → vincular propietario -->
+      <div class="ingreso-s" id="ing-step-3">
+        <div class="field" style="margin-bottom:0">
+          <label>Propietario / Cliente <span style="font-size:11px;color:var(--text3);text-transform:none;letter-spacing:0">(opcional)</span></label>
+          <div style="position:relative">
+            <div class="smart-row" id="ing-s3cli-row">
+              <i class="fa-solid fa-magnifying-glass smart-icon"></i>
+              <input type="text" id="ing-s3cli-search" placeholder="Buscar por nombre o teléfono..." oninput="ingresoFiltrarClientes('s3cli')" autocomplete="off">
+            </div>
+            <div class="smart-dd" id="ing-s3cli-dd"></div>
+          </div>
+          <div id="ing-s3cli-pill" style="display:none"></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer" id="ing-footer"></div>
   </div>
 </div>
 
@@ -1859,6 +2094,7 @@ tbody tr:last-child td { border-bottom: none; }
     <div>
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px">Estado</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap" id="dr-estados">
+        <button class="status-btn s-sin_presupuestar" onclick="cambiarEstado('sin_presupuestar')">Sin presupuesto</button>
         <button class="status-btn s-presupuestado" onclick="cambiarEstado('presupuestado')">Presupuestado</button>
         <button class="status-btn s-en_trabajo"    onclick="cambiarEstado('en_trabajo')">En trabajo</button>
         <button class="status-btn s-listo"         onclick="cambiarEstado('listo')">Listo</button>
@@ -2129,7 +2365,7 @@ async function cargarDashboard() {
   try {
     const [{ count: c1 }, { count: c2 }, { count: c3 }] = await Promise.all([
       db.from('clientes').select('*', { count: 'exact', head: true }),
-      db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).in('estado', ['en_trabajo','presupuestado']),
+      db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).in('estado', ['sin_presupuestar','en_trabajo','presupuestado']),
       db.from('presupuestos').select('*', { count: 'exact', head: true }).eq('estado','pendiente'),
     ])
     document.getElementById('stat-clientes').textContent     = c1 ?? 0
@@ -2165,6 +2401,45 @@ async function cargarDashboard() {
         </div>`
     } else {
       divSP.style.display = 'none'
+    }
+
+    // Órdenes sin presupuesto (creadas por ingreso)
+    const { data: sinPresup } = await db
+      .from('ordenes_trabajo')
+      .select('id, observaciones, fecha_ingreso, cliente_id, vehiculo_id, clientes(nombre)')
+      .eq('estado', 'sin_presupuestar')
+      .order('created_at', { ascending: false })
+
+    _ordenesPendientesPresup = sinPresup || []
+    const divSinP = document.getElementById('dash-sin-presupuestar')
+    if (sinPresup && sinPresup.length > 0) {
+      divSinP.style.display = 'block'
+      divSinP.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background:rgba(239,68,68,.12);color:var(--danger)">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+              <h3>Pendientes de presupuestar</h3>
+              <p>${sinPresup.length} ingreso${sinPresup.length > 1 ? 's' : ''} esperando presupuesto</p>
+            </div>
+          </div>
+          <div class="card-body" style="padding-top:0;padding-bottom:4px">
+            ${sinPresup.map(o => `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);gap:12px">
+                <div style="min-width:0">
+                  <div style="font-size:14px;font-weight:600">${esc(o.clientes?.nombre || 'Sin cliente')}</div>
+                  <div style="font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.observaciones || '—')} · ${formatFecha(o.fecha_ingreso)}</div>
+                </div>
+                <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="presupuestarOrden('${o.id}')">
+                  <i class="fa-solid fa-file-invoice-dollar"></i> Presupuestar
+                </button>
+              </div>`).join('')}
+          </div>
+        </div>`
+    } else {
+      divSinP.style.display = 'none'
     }
 
     // BLOQUE ÚLTIMAS ÓRDENES — para empleados (descomentar y comentar el de presupuestos)
@@ -2299,8 +2574,14 @@ async function guardarCliente() {
   await cargarClientes()
   cargarDashboard()
 
-  // Al crear un cliente nuevo, preguntar si deja vehículo
+  // Al crear un cliente nuevo: si viene del wizard de ingreso, volver al wizard
   if (!_editandoClienteId && data) {
+    if (_ingFromWizard) {
+      _ingFromWizard = false
+      ingresoSelecCliente(data.id, data.nombre)
+      openModal('modal-ingreso')
+      return
+    }
     _postClienteId = data.id
     _postClienteNombre = data.nombre
     document.getElementById('post-cliente-titulo').textContent = `Cliente guardado — ${data.nombre}`
@@ -2786,6 +3067,11 @@ async function guardarVehiculo() {
     const sel = document.getElementById('dr-vehiculo-sel')
     if (sel) { sel.value = vehiculoGuardado.id; onDrawerVehiculoChange() }
   }
+  if (_vehModalOrigen === 'ingreso' && vehiculoGuardado) {
+    const label = [vehiculoGuardado.patente, vehiculoGuardado.marca, vehiculoGuardado.modelo, vehiculoGuardado.año ? `(${vehiculoGuardado.año})` : ''].filter(Boolean).join(' · ')
+    ingresoSelecVehiculo(vehiculoGuardado.id, label)
+    openModal('modal-ingreso')
+  }
 }
 
 function cerrarModalVehiculo() {
@@ -3229,6 +3515,8 @@ let _presupVehiculoId  = null
 let _presupItemCounter = 0
 let _editandoPresupuestoId = null
 let _presupViendoId    = null
+let _presupOrdenId     = null
+let _ordenesPendientesPresup = []
 
 function abrirNuevoPresupuesto() {
   limpiarPresupuesto()
@@ -3255,8 +3543,28 @@ function abrirNuevoPresupuesto() {
   openModal('modal-presupuesto')
 }
 
+function presupuestarOrden(id) {
+  const o = _ordenesPendientesPresup.find(x => x.id === id)
+  if (!o) return
+  _presupOrdenId = id
+  abrirNuevoPresupuesto()
+  // Pre-llenar cliente
+  if (o.cliente_id) {
+    const sel = document.getElementById('presup-cli-select')
+    sel.value = o.cliente_id
+    presupSeleccionarCliente()
+  }
+  // Pre-llenar descripción
+  if (o.observaciones) {
+    document.getElementById('presup-tipo-detalle').value = o.observaciones
+  }
+  // Tipo: vehículo → planta, otros → lab
+  presupSetTipo(o.vehiculo_id ? 'pla' : 'lab')
+}
+
 function limpiarPresupuesto() {
   _editandoPresupuestoId = null
+  _presupOrdenId = null
   _presupTipoActual = 'lab'
   _presupVehiculoId = null
   document.getElementById('presup-tipo-field').style.display = 'block'
@@ -3445,6 +3753,11 @@ async function guardarPresupuesto(generarPdf) {
     const { data: presup, error } = await db.from('presupuestos').insert(payload).select().single()
     if (error) { toast('Error al guardar presupuesto', 'error'); console.error(error); return }
     presupId = presup.id
+    // Si viene de un ingreso, marcar la orden como presupuestada
+    if (_presupOrdenId) {
+      await db.from('ordenes_trabajo').update({ estado: 'presupuestado' }).eq('id', _presupOrdenId)
+      _presupOrdenId = null
+    }
   }
 
   // Guardar ítems
@@ -3490,8 +3803,8 @@ async function verOrden(id) {
   const total   = items.reduce((s, i) => s + (i.precio_unitario||0)*(i.cantidad||1), 0)
   const cli     = o.clientes || {}
   const veh     = o.vehiculos
-  const estadoMap = { presupuestado:'Presupuestado', en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
-  const estadoColor = { presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
+  const estadoMap = { sin_presupuestar:'Sin presupuesto', presupuestado:'Presupuestado', en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
+  const estadoColor = { sin_presupuestar:'#ef4444', presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
   const fila = (lbl, val) => val ? `<tr><td style="padding:3px 8px 3px 0;color:#777;font-size:12px;font-weight:600;white-space:nowrap">${lbl}</td><td style="padding:3px 0;font-size:13px">${val}</td></tr>` : ''
 
   const trabajoRow = o.observaciones ? `
@@ -4509,6 +4822,7 @@ function formatFecha(f) {
 
 function badgeEstado(estado) {
   const map = {
+    sin_presupuestar: ['badge-red',   'Sin presupuesto'],
     presupuestado: ['badge-amber', 'Presupuestado'],
     en_trabajo:    ['badge-blue',  'En trabajo'],
     listo:         ['badge-green', 'Listo'],
@@ -4873,6 +5187,535 @@ async function generarPDFInforme() {
 
   toast(`Informe #${nInforme} generado`, 'success')
 }
+
+// ════════════════════════════════════════
+// INGRESO — Wizard
+// ════════════════════════════════════════
+let _ingStep = 1
+let _ingTipo = null
+let _ingClienteId = null
+let _ingClienteNombre = ''
+let _ingVehiculoId = null
+let _ingVehiculoLabel = ''
+let _ingFromWizard = false
+
+// El cliente siempre está en el paso 3 (ing-s3cli-*)
+function _ingCliPfx() { return 's3cli' }
+
+function abrirIngreso() {
+  _ingStep = 1; _ingTipo = null
+  _ingClienteId = null; _ingClienteNombre = ''
+  _ingVehiculoId = null; _ingVehiculoLabel = ''
+
+  document.querySelectorAll('.tipo-tile').forEach(t => t.classList.remove('sel'))
+  document.getElementById('ing-otro-wrap').style.display = 'none'
+  document.getElementById('ing-otro-desc').value = ''
+
+  // Reset panel cliente (step 2 non-veh)
+  // Reset panel cliente (step 3)
+  document.getElementById('ing-s3cli-row').style.display = ''
+  document.getElementById('ing-s3cli-search').value = ''
+  document.getElementById('ing-s3cli-dd').classList.remove('open')
+  document.getElementById('ing-s3cli-dd').innerHTML = ''
+  document.getElementById('ing-s3cli-pill').style.display = 'none'
+  document.getElementById('ing-s3cli-pill').innerHTML = ''
+
+  // Reset panel vehículo
+  document.getElementById('ing-veh-input-row').style.display = ''
+  document.getElementById('ing-veh-search').value = ''
+  document.getElementById('ing-veh-dd').classList.remove('open')
+  document.getElementById('ing-veh-dd').innerHTML = ''
+  document.getElementById('ing-veh-pill').style.display = 'none'
+  document.getElementById('ing-veh-pill').innerHTML = ''
+
+  ingresoResetApp()
+  if (!_clientes.length) cargarClientes()
+  if (!_vehiculos.length) cargarVehiculosSelect()
+
+  _ingRenderStep()
+  openModal('modal-ingreso')
+}
+
+function _ingRenderStep() {
+  const esVeh = _ingTipo === 'vehiculo'
+  // El paso 3 (cliente) existe siempre
+  document.getElementById('ing-dot-3').style.display  = ''
+  document.getElementById('ing-line-2').style.display = ''
+
+  ;[1,2,3].forEach(n => {
+    document.getElementById(`ing-step-${n}`).classList.toggle('on', n === _ingStep)
+    const dot = document.getElementById(`ing-dot-${n}`)
+    dot.classList.toggle('on',   n === _ingStep)
+    dot.classList.toggle('done', n < _ingStep)
+    if (n < 3) document.getElementById(`ing-line-${n}`).classList.toggle('done', n < _ingStep)
+  })
+
+  // Paso 2: mostrar sub-panel correcto
+  if (_ingStep === 2) {
+    document.getElementById('ing-s2-noveh').style.display = esVeh ? 'none' : ''
+    document.getElementById('ing-s2-veh').style.display   = esVeh ? '' : 'none'
+    // Sección aplicación solo para inyector/bomba
+    const appWrap  = document.getElementById('ing-app-wrap')
+    const cantWrap = document.getElementById('ing-app-cantidad-wrap')
+    if (_ingTipo === 'inyector') {
+      appWrap.style.display = 'block'; cantWrap.style.display = 'block'
+      document.getElementById('ing-app-titulo').textContent = 'Aplicación de los inyectores'
+      document.getElementById('ing-app-smart').style.display  = _ingAppModoManual ? 'none' : ''
+      document.getElementById('ing-app-manual').style.display = _ingAppModoManual ? '' : 'none'
+    } else if (_ingTipo === 'bomba') {
+      appWrap.style.display = 'block'; cantWrap.style.display = 'none'
+      document.getElementById('ing-app-titulo').textContent = 'Aplicación de la bomba'
+      document.getElementById('ing-app-smart').style.display  = _ingAppModoManual ? 'none' : ''
+      document.getElementById('ing-app-manual').style.display = _ingAppModoManual ? '' : 'none'
+    } else if (_ingTipo === 'otro') {
+      appWrap.style.display = 'block'; cantWrap.style.display = 'none'
+      document.getElementById('ing-app-titulo').textContent = '¿Qué es lo que ingresa?'
+      document.getElementById('ing-app-smart').style.display  = 'none'
+      document.getElementById('ing-app-manual').style.display = ''
+      document.getElementById('ing-app-manual-input').placeholder = 'Ej: turbo, bomba de agua, intercooler...'
+    } else {
+      appWrap.style.display = 'none'
+    }
+  }
+
+  const subs = {
+    1: '¿Qué ingresa hoy al taller?',
+    2: esVeh ? 'Buscar o registrar el vehículo' : (_ingTipo === 'otro' ? '¿Qué es?' : 'Aplicación y cantidad'),
+    3: '¿De quién es?'
+  }
+  document.getElementById('ing-subtitulo').textContent = subs[_ingStep] || ''
+  _ingRenderFooter()
+}
+
+function _ingRenderFooter() {
+  const esVeh = _ingTipo === 'vehiculo'
+  const f = document.getElementById('ing-footer')
+  if (_ingStep === 1) {
+    const ok = !!_ingTipo
+    f.innerHTML = `
+      <button class="btn btn-ghost" onclick="closeModal('modal-ingreso')">Cancelar</button>
+      <button class="btn btn-primary" id="ing-btn-s1" onclick="ingresoNext()" ${ok ? '' : 'disabled'}>
+        Continuar <i class="fa-solid fa-arrow-right"></i>
+      </button>`
+  } else if (_ingStep === 2) {
+    // Vehículo: Continuar deshabilitado hasta elegir vehículo
+    // Resto: Continuar siempre habilitado (app es opcional)
+    const okS2 = esVeh ? !!_ingVehiculoId : true
+    f.innerHTML = `
+      <button class="btn btn-ghost" onclick="ingresoPrev()"><i class="fa-solid fa-arrow-left"></i> Atrás</button>
+      <button class="btn btn-primary" id="ing-btn-s2" onclick="ingresoNext()" ${okS2 ? '' : 'disabled'}>
+        Continuar <i class="fa-solid fa-arrow-right"></i>
+      </button>`
+  } else {
+    // Paso 3: cliente para todos los tipos
+    f.innerHTML = `
+      <button class="btn btn-ghost" onclick="ingresoPrev()"><i class="fa-solid fa-arrow-left"></i> Atrás</button>
+      <button class="btn btn-ghost" onclick="guardarIngreso(true)">Sin cliente</button>
+      <button class="btn btn-primary" id="ing-btn-s3" onclick="guardarIngreso()" ${_ingClienteId ? '' : 'disabled'}>
+        <i class="fa-solid fa-check"></i> Guardar
+      </button>`
+  }
+}
+
+function ingresoSelecTipo(tipo) {
+  _ingTipo = tipo
+  document.querySelectorAll('.tipo-tile').forEach(t => t.classList.remove('sel'))
+  document.getElementById('tile-' + tipo).classList.add('sel')
+  document.getElementById('ing-otro-wrap').style.display = tipo === 'otro' ? 'block' : 'none'
+  // Todos los tipos auto-avanzan al paso 2
+  setTimeout(() => ingresoNext(), 120)
+}
+
+function ingresoValidarStep1() {
+  const btn = document.getElementById('ing-btn-s1')
+  if (!btn) return
+  btn.disabled = !_ingTipo
+}
+
+function ingresoNext() {
+  if (_ingStep === 1) {
+    if (!_ingTipo) return
+    _ingStep = 2
+    _ingRenderStep()
+    const focusId = _ingTipo === 'vehiculo' ? 'ing-veh-search'
+      : (_ingTipo === 'inyector' || _ingTipo === 'bomba') ? 'ing-app-marca-search'
+      : 'ing-app-manual-input'
+    setTimeout(() => document.getElementById(focusId)?.focus(), 80)
+
+  } else if (_ingStep === 2) {
+    if (_ingTipo === 'vehiculo' && !_ingVehiculoId) return
+    _ingStep = 3
+    _ingRenderStep()
+    setTimeout(() => document.getElementById('ing-s3cli-search').focus(), 80)
+  }
+}
+
+function ingresoPrev() {
+  if (_ingStep > 1) { _ingStep--; _ingRenderStep() }
+}
+
+// ── Smart search: clientes (pfx = 'cli' | 's3cli') ──
+function ingresoFiltrarClientes(pfx) {
+  const input = document.getElementById(`ing-${pfx}-search`)
+  const dd    = document.getElementById(`ing-${pfx}-dd`)
+  const q     = input.value.toLowerCase().trim()
+  if (!q) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+
+  const hits = _clientes.filter(c =>
+    c.nombre?.toLowerCase().includes(q) ||
+    c.telefono?.replace(/\s/g,'').includes(q.replace(/\s/g,''))
+  ).slice(0, 8)
+
+  const rawQ = input.value.trim()
+  const rows = hits.map(c => `
+    <div class="smart-item" data-id="${c.id}" data-nombre="${esc(c.nombre)}" data-pfx="${pfx}" onclick="ingresoSelecClienteEl(this)">
+      <div class="si-main">${ingHighlight(esc(c.nombre), q)}</div>
+      ${c.telefono ? `<div class="si-sub"><i class="fa-solid fa-phone" style="font-size:10px;margin-right:4px"></i>${esc(c.telefono)}</div>` : ''}
+    </div>`).join('')
+
+  dd.innerHTML = rows + `
+    <div class="smart-item new-item" data-q="${esc(rawQ)}" data-pfx="${pfx}" onclick="ingresoCrearCliente(this)">
+      <i class="fa-solid fa-user-plus" style="margin-right:7px"></i>Crear cliente "${esc(rawQ)}"
+    </div>`
+  dd.classList.add('open')
+}
+
+function ingresoSelecClienteEl(el) {
+  ingresoSelecCliente(el.dataset.id, el.dataset.nombre, el.dataset.pfx)
+}
+
+function ingresoSelecCliente(id, nombre, pfx) {
+  pfx = pfx || _ingCliPfx()
+  _ingClienteId = id; _ingClienteNombre = nombre
+  document.getElementById(`ing-${pfx}-dd`).classList.remove('open')
+  document.getElementById(`ing-${pfx}-row`).style.display = 'none'
+  const pill = document.getElementById(`ing-${pfx}-pill`)
+  pill.innerHTML = `<div class="smart-pill">
+    <i class="fa-solid fa-user" style="font-size:12px"></i>
+    <span>${esc(nombre)}</span>
+    <button class="pill-x" data-pfx="${pfx}" onclick="ingresoClearCliente(this)" title="Cambiar"><i class="fa-solid fa-xmark"></i></button>
+  </div>`
+  pill.style.display = 'block'
+  // Habilitar botón Guardar en paso 3 (siempre es el paso del cliente)
+  _ingRenderFooter()
+}
+
+function ingresoClearCliente(btn) {
+  const pfx = btn ? btn.dataset.pfx : _ingCliPfx()
+  _ingClienteId = null; _ingClienteNombre = ''
+  document.getElementById(`ing-${pfx}-row`).style.display = ''
+  document.getElementById(`ing-${pfx}-search`).value = ''
+  document.getElementById(`ing-${pfx}-dd`).classList.remove('open')
+  document.getElementById(`ing-${pfx}-pill`).style.display = 'none'
+  document.getElementById(`ing-${pfx}-pill`).innerHTML = ''
+  _ingRenderFooter()
+  setTimeout(() => document.getElementById(`ing-${pfx}-search`).focus(), 50)
+}
+
+function ingresoCrearCliente(el) {
+  const q   = el ? el.dataset.q   : ''
+  const pfx = el ? el.dataset.pfx : _ingCliPfx()
+  _ingFromWizard = true
+  limpiarFormCliente()
+  if (q) document.getElementById('cli-nombre').value = q
+  document.getElementById(`ing-${pfx}-dd`).classList.remove('open')
+  closeModal('modal-ingreso')
+  openModal('modal-cliente')
+}
+
+// ── Smart search: vehículos ─────────────
+function ingresoFiltrarVehiculos() {
+  const q  = document.getElementById('ing-veh-search').value.toLowerCase().trim()
+  const dd = document.getElementById('ing-veh-dd')
+  if (!q) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+
+  const hits = _vehiculos.filter(v => {
+    const txt = [v.patente, v.marca, v.modelo, String(v.año || '')].join(' ').toLowerCase()
+    return txt.includes(q)
+  }).slice(0, 8)
+
+  const rawQ = document.getElementById('ing-veh-search').value.trim()
+  let html = hits.map(v => {
+    const label = [v.patente, v.marca, v.modelo, v.año ? `(${v.año})` : ''].filter(Boolean).join(' · ')
+    const owner = v.clientes?.nombre || ''
+    return `<div class="smart-item" data-id="${v.id}" data-label="${esc(label)}" onclick="ingresoSelecVehiculoEl(this)">
+      <div class="si-main">${ingHighlight(esc(label), q)}</div>
+      ${owner ? `<div class="si-sub"><i class="fa-solid fa-user" style="font-size:10px;margin-right:4px"></i>${esc(owner)}</div>` : ''}
+    </div>`
+  }).join('')
+
+  if (!hits.length)
+    html = `<div class="smart-item" style="color:var(--text3);cursor:default;font-size:12px">Sin resultados para "${esc(rawQ)}"</div>`
+
+  html += `<div class="smart-item new-item" onclick="ingresoCrearVehiculo()">
+    <i class="fa-solid fa-plus" style="margin-right:7px"></i>Registrar nuevo vehículo
+  </div>`
+
+  dd.innerHTML = html
+  dd.classList.add('open')
+}
+
+function ingresoSelecVehiculoEl(el) {
+  ingresoSelecVehiculo(el.dataset.id, el.dataset.label)
+}
+
+function ingresoSelecVehiculo(id, label) {
+  _ingVehiculoId = id; _ingVehiculoLabel = label
+  document.getElementById('ing-veh-dd').classList.remove('open')
+  document.getElementById('ing-veh-input-row').style.display = 'none'
+  const pill = document.getElementById('ing-veh-pill')
+  pill.innerHTML = `<div class="smart-pill">
+    <i class="fa-solid fa-car" style="font-size:12px"></i>
+    <span>${esc(label)}</span>
+    <button class="pill-x" onclick="ingresoClearVehiculo()" title="Cambiar"><i class="fa-solid fa-xmark"></i></button>
+  </div>`
+  pill.style.display = 'block'
+  // Auto-avanzar al paso de cliente
+  setTimeout(() => ingresoNext(), 180)
+}
+
+function ingresoClearVehiculo() {
+  _ingVehiculoId = null; _ingVehiculoLabel = ''
+  document.getElementById('ing-veh-input-row').style.display = ''
+  document.getElementById('ing-veh-search').value = ''
+  document.getElementById('ing-veh-dd').classList.remove('open')
+  document.getElementById('ing-veh-pill').style.display = 'none'
+  document.getElementById('ing-veh-pill').innerHTML = ''
+  _ingRenderFooter()
+  setTimeout(() => document.getElementById('ing-veh-search').focus(), 50)
+}
+
+// ── Highlight de coincidencias ──────────
+function ingHighlight(text, q) {
+  if (!q) return text
+  const safe = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return text.replace(new RegExp(`(${safe})`, 'gi'),
+    '<mark style="background:rgba(34,197,94,.25);color:var(--accent);border-radius:2px;padding:0 1px">$1</mark>')
+}
+
+// ── Crear vehículo desde el wizard ──────
+function ingresoCrearVehiculo() {
+  document.getElementById('ing-veh-dd').classList.remove('open')
+  closeModal('modal-ingreso')
+  abrirNuevoVehiculo('ingreso')
+}
+
+// ── Helper capitalización ────────────────
+function toCapFirst(s) {
+  if (!s) return s
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+// ── Sección aplicación (inyector/bomba) ──
+let _ingAppMarcaId     = null
+let _ingAppMarcaNombre = ''
+let _ingAppModeloNombre = ''
+let _ingAppModelos     = []
+let _ingAppModoManual  = false
+let _ingCantidad       = 1
+
+function ingresoResetApp() {
+  _ingAppMarcaId = null; _ingAppMarcaNombre = ''; _ingAppModeloNombre = ''; _ingAppModelos = []; _ingAppModoManual = false; _ingCantidad = 1
+  ;['ing-app-marca-row','ing-app-modelo-row'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = '' })
+  ;['ing-app-marca-search','ing-app-modelo-search'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '' })
+  const mInp = document.getElementById('ing-app-modelo-search'); if (mInp) { mInp.disabled = true; mInp.style.opacity = '.5' }
+  ;['ing-app-marca-dd','ing-app-modelo-dd'].forEach(id => { const el = document.getElementById(id); if (el) { el.classList.remove('open'); el.innerHTML = '' } })
+  ;['ing-app-marca-pill','ing-app-modelo-pill'].forEach(id => { const el = document.getElementById(id); if (el) { el.style.display = 'none'; el.innerHTML = '' } })
+  const mi = document.getElementById('ing-app-manual-input'); if (mi) mi.value = ''
+  document.getElementById('ing-app-smart').style.display  = ''
+  document.getElementById('ing-app-manual').style.display = 'none'
+  // Reset cantidad buttons
+  document.querySelectorAll('.cant-btn').forEach(b => b.classList.remove('sel'))
+  document.getElementById('ing-cant-1')?.classList.add('sel')
+}
+
+function ingresoSelecCantidad(n) {
+  _ingCantidad = n
+  document.querySelectorAll('.cant-btn').forEach(b => b.classList.remove('sel'))
+  document.getElementById('ing-cant-' + n)?.classList.add('sel')
+}
+
+function ingresoAppManual() {
+  _ingAppModoManual = true
+  document.getElementById('ing-app-smart').style.display  = 'none'
+  document.getElementById('ing-app-manual').style.display = ''
+  setTimeout(() => document.getElementById('ing-app-manual-input').focus(), 50)
+}
+
+function ingresoAppSmart() {
+  _ingAppModoManual = false
+  document.getElementById('ing-app-smart').style.display  = ''
+  document.getElementById('ing-app-manual').style.display = 'none'
+  setTimeout(() => document.getElementById('ing-app-marca-search').focus(), 50)
+}
+
+function ingresoFiltrarMarca() {
+  const q   = document.getElementById('ing-app-marca-search').value.toLowerCase().trim()
+  const dd  = document.getElementById('ing-app-marca-dd')
+  if (!q) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+
+  if (!_marcas.length) { cargarMarcas().then(() => ingresoFiltrarMarca()); return }
+
+  const hits = _marcas.filter(m => m.nombre.toLowerCase().includes(q)).slice(0, 8)
+  const rawQ = document.getElementById('ing-app-marca-search').value.trim()
+  let html = hits.map(m =>
+    `<div class="smart-item" data-id="${m.id}" data-nombre="${esc(m.nombre)}" onclick="ingresoSelecMarca(this)">
+      <div class="si-main">${ingHighlight(esc(m.nombre), q)}</div>
+    </div>`).join('')
+  if (!hits.length)
+    html = `<div class="smart-item" style="color:var(--text3);cursor:default;font-size:12px">Sin resultados — podés escribir manualmente</div>`
+  dd.innerHTML = html
+  dd.classList.add('open')
+}
+
+async function ingresoSelecMarca(el) {
+  _ingAppMarcaId     = el.dataset.id
+  _ingAppMarcaNombre = toCapFirst(el.dataset.nombre)
+  _ingAppModeloNombre = ''
+  document.getElementById('ing-app-marca-dd').classList.remove('open')
+  document.getElementById('ing-app-marca-row').style.display = 'none'
+  const pill = document.getElementById('ing-app-marca-pill')
+  pill.innerHTML = `<div class="smart-pill" style="margin-top:6px">
+    <i class="fa-solid fa-tag" style="font-size:11px"></i>
+    <span>${esc(_ingAppMarcaNombre)}</span>
+    <button class="pill-x" onclick="ingresoClearMarca()" title="Cambiar"><i class="fa-solid fa-xmark"></i></button>
+  </div>`
+  pill.style.display = 'block'
+  // Cargar modelos de esta marca
+  const { data } = await db.from('modelos_vehiculos').select('*').eq('marca_id', _ingAppMarcaId).order('nombre')
+  _ingAppModelos = data || []
+  const mInput = document.getElementById('ing-app-modelo-search')
+  mInput.disabled = false; mInput.style.opacity = ''
+  setTimeout(() => mInput.focus(), 60)
+}
+
+function ingresoClearMarca() {
+  _ingAppMarcaId = null; _ingAppMarcaNombre = ''; _ingAppModeloNombre = ''; _ingAppModelos = []
+  document.getElementById('ing-app-marca-row').style.display = ''
+  document.getElementById('ing-app-marca-search').value = ''
+  document.getElementById('ing-app-marca-dd').classList.remove('open')
+  document.getElementById('ing-app-marca-pill').style.display = 'none'
+  document.getElementById('ing-app-marca-pill').innerHTML = ''
+  // Limpiar modelo también
+  ingresoClearModelo()
+  document.getElementById('ing-app-modelo-search').disabled = true
+  setTimeout(() => document.getElementById('ing-app-marca-search').focus(), 50)
+}
+
+function ingresoFiltrarModelo() {
+  const q  = document.getElementById('ing-app-modelo-search').value.toLowerCase().trim()
+  const dd = document.getElementById('ing-app-modelo-dd')
+  if (!q) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+
+  const hits = _ingAppModelos.filter(m => m.nombre.toLowerCase().includes(q)).slice(0, 8)
+  const rawQ = toCapFirst(document.getElementById('ing-app-modelo-search').value.trim())
+  let html = hits.map(m =>
+    `<div class="smart-item" data-nombre="${esc(toCapFirst(m.nombre))}" onclick="ingresoSelecModelo(this)">
+      <div class="si-main">${ingHighlight(esc(toCapFirst(m.nombre)), q)}</div>
+    </div>`).join('')
+  const exacto = hits.find(m => m.nombre.toLowerCase() === q)
+  if (!exacto)
+    html += `<div class="smart-item new-item" data-nombre="${esc(rawQ)}" onclick="ingresoAgregarModelo(this)">
+      <i class="fa-solid fa-plus" style="margin-right:6px"></i>Agregar "${esc(rawQ)}" y guardarlo
+    </div>`
+  if (!hits.length && !rawQ)
+    html = `<div class="smart-item" style="color:var(--text3);cursor:default;font-size:12px">Sin modelos cargados — escribí para agregar</div>`
+  dd.innerHTML = html
+  dd.classList.add('open')
+}
+
+async function ingresoAgregarModelo(el) {
+  if (!_ingAppMarcaId) return
+  const nombre = toCapFirst(el.dataset.nombre.trim())
+  if (!nombre) return
+  document.getElementById('ing-app-modelo-dd').classList.remove('open')
+  const { data, error } = await db.from('modelos_vehiculos').insert({ marca_id: _ingAppMarcaId, nombre }).select().single()
+  if (error) { toast('Error al guardar el modelo', 'error'); return }
+  _ingAppModelos.push(data)
+  toast(`Modelo "${nombre}" guardado`)
+  ingresoSelecModeloNombre(nombre)
+}
+
+function ingresoSelecModelo(el) {
+  ingresoSelecModeloNombre(el.dataset.nombre)
+}
+
+function ingresoSelecModeloNombre(nombre) {
+  _ingAppModeloNombre = toCapFirst(nombre)
+  document.getElementById('ing-app-modelo-dd').classList.remove('open')
+  document.getElementById('ing-app-modelo-row').style.display = 'none'
+  const pill = document.getElementById('ing-app-modelo-pill')
+  pill.innerHTML = `<div class="smart-pill" style="margin-top:6px">
+    <i class="fa-solid fa-car-side" style="font-size:11px"></i>
+    <span>${esc(_ingAppModeloNombre)}</span>
+    <button class="pill-x" onclick="ingresoClearModelo()" title="Cambiar"><i class="fa-solid fa-xmark"></i></button>
+  </div>`
+  pill.style.display = 'block'
+  setTimeout(() => ingresoNext(), 180)
+}
+
+function ingresoClearModelo() {
+  _ingAppModeloNombre = ''
+  document.getElementById('ing-app-modelo-row').style.display = ''
+  document.getElementById('ing-app-modelo-search').value = ''
+  document.getElementById('ing-app-modelo-dd').classList.remove('open')
+  document.getElementById('ing-app-modelo-pill').style.display = 'none'
+  document.getElementById('ing-app-modelo-pill').innerHTML = ''
+}
+
+// ── Guardar ingreso ─────────────────────
+async function guardarIngreso(sinPropietario) {
+  // Para no-vehiculo, cliente es obligatorio
+  if (_ingTipo !== 'vehiculo' && !_ingClienteId) {
+    toast('Seleccioná un cliente', 'error'); return
+  }
+
+  // Construir descripción de la aplicación (inyector/bomba)
+  let appDesc = ''
+  if (_ingTipo === 'inyector' || _ingTipo === 'bomba') {
+    if (_ingAppModoManual) {
+      appDesc = document.getElementById('ing-app-manual-input').value.trim()
+    } else if (_ingAppMarcaNombre) {
+      appDesc = _ingAppMarcaNombre + (_ingAppModeloNombre ? ' ' + _ingAppModeloNombre : '')
+    }
+  }
+  const obs = _ingTipo === 'vehiculo'
+    ? 'Vehículo a reparar'
+    : _ingTipo === 'otro'
+      ? document.getElementById('ing-app-manual-input').value.trim()
+    : _ingTipo === 'inyector'
+      ? `${_ingCantidad} Inyector${_ingCantidad > 1 ? 'es' : ''}` + (appDesc ? ' — ' + appDesc : '')
+      : 'Bomba' + (appDesc ? ' — ' + appDesc : '')
+
+  const { error } = await db.from('ordenes_trabajo').insert({
+    cliente_id:    sinPropietario ? null : (_ingClienteId || null),
+    vehiculo_id:   _ingVehiculoId || null,
+    estado:        'sin_presupuestar',
+    observaciones: obs || null,
+    fecha_ingreso: new Date().toISOString().split('T')[0],
+  })
+
+  if (error) { toast('Error al guardar el ingreso', 'error'); return }
+
+  closeModal('modal-ingreso')
+  toast(`Ingreso registrado — ${_ingClienteNombre}`, 'success')
+  cargarOrdenes()
+  cargarDashboard()
+}
+
+// Cerrar dropdowns al hacer click fuera
+document.addEventListener('click', e => {
+  ;['ing-cli', 'ing-s3cli', 'ing-veh'].forEach(pfx => {
+    const rowId = pfx === 'ing-veh' ? 'ing-veh-input-row' : pfx + '-row'
+    const ddId  = pfx + '-dd'
+    if (!e.target.closest(`#${rowId}`) && !e.target.closest(`#${ddId}`))
+      document.getElementById(ddId)?.classList.remove('open')
+  })
+  ;['ing-app-marca', 'ing-app-modelo'].forEach(pfx => {
+    if (!e.target.closest(`#${pfx}-row`) && !e.target.closest(`#${pfx}-dd`))
+      document.getElementById(pfx + '-dd')?.classList.remove('open')
+  })
+})
 </script>
 
 <div style="position:fixed;bottom:12px;right:16px;font-size:11px;color:var(--text3);pointer-events:none;z-index:9999;user-select:none;">© Indiesel 2026</div>
