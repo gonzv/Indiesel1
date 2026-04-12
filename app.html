@@ -70,13 +70,11 @@ input, select, textarea { font-family: inherit; }
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 12px;
 }
-.logo-circle {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: linear-gradient(135deg, var(--accent), var(--accent-d));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 900; color: white;
-  flex-shrink: 0; letter-spacing: -1px;
-  box-shadow: 0 0 20px rgba(34,197,94,.3);
+.logo-img {
+  width: 44px; height: 44px; flex-shrink: 0;
+  object-fit: contain;
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(95deg) brightness(0.95);
+  mix-blend-mode: screen;
 }
 .sidebar-logo .brand { line-height: 1.2; }
 .sidebar-logo .brand h1 { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--text); }
@@ -394,6 +392,8 @@ tbody tr:last-child td { border-bottom: none; }
 .toast.success i { color: var(--accent); }
 .toast.error   { border-color: var(--danger); }
 .toast.error   i { color: var(--danger); }
+.toast.warn    { border-color: var(--warn); background: rgba(245,158,11,.12); }
+.toast.warn    i { color: var(--warn); }
 .toast.out { animation: toastOut .3s ease forwards; }
 @keyframes toastIn  { from { opacity:0; transform: translateX(20px); } to { opacity:1; transform: none; } }
 @keyframes toastOut { to   { opacity:0; transform: translateX(20px); } }
@@ -532,7 +532,7 @@ tbody tr:last-child td { border-bottom: none; }
 <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-circle">ID</div>
+    <img src="logo D indiesel png.jpg" class="logo-img" alt="Indiesel">
     <div class="brand">
       <h1>INDIESEL</h1>
       <p>Laboratorio Diesel · MdP</p>
@@ -550,13 +550,19 @@ tbody tr:last-child td { border-bottom: none; }
     <button class="nav-item" onclick="navigate('ordenes')">
       <i class="fa-solid fa-wrench"></i> Órdenes de trabajo
     </button>
+    <button class="nav-item" onclick="navigate('laboratorio')">
+      <i class="fa-solid fa-flask"></i> Laboratorio
+    </button>
+    <button class="nav-item" onclick="navigate('vehiculos')">
+      <i class="fa-solid fa-car"></i> Vehículos
+    </button>
 
     <div class="nav-section-label">Documentos</div>
     <button class="nav-item" onclick="navigate('presupuestos')">
       <i class="fa-solid fa-file-invoice-dollar"></i> Presupuestos
     </button>
     <button class="nav-item" onclick="navigate('informes')">
-      <i class="fa-solid fa-flask"></i> Informes de prueba
+      <i class="fa-solid fa-file-waveform"></i> Informes de prueba
     </button>
 
     <div class="nav-section-label">Inventario</div>
@@ -732,7 +738,6 @@ tbody tr:last-child td { border-bottom: none; }
               <th>Vehículo</th>
               <th>Ingreso</th>
               <th>Estado</th>
-              <th>Total</th>
               <th></th>
             </tr>
           </thead>
@@ -742,6 +747,90 @@ tbody tr:last-child td { border-bottom: none; }
                 <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
                 <h3>Sin órdenes</h3>
                 <p>Creá la primera orden de trabajo</p>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: VEHÍCULOS ═══ -->
+  <div class="page" id="page-vehiculos">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:400px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="search-vehiculos" placeholder="Buscar patente, marca, modelo..." oninput="filtrarVehiculos()">
+      </div>
+      <button class="btn btn-primary" onclick="abrirNuevoVehiculo()">
+        <i class="fa-solid fa-plus"></i> Nuevo vehículo
+      </button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Patente</th>
+              <th>Marca</th>
+              <th>Modelo</th>
+              <th>Año</th>
+              <th>Cliente</th>
+              <th style="text-align:center">Órdenes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-vehiculos">
+            <tr><td colspan="7"><div class="empty-state">
+              <div class="empty-icon"><i class="fa-solid fa-car"></i></div>
+              <h3>Sin vehículos</h3><p>Cargando...</p>
+            </div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAGE: LABORATORIO ═══ -->
+  <div class="page" id="page-laboratorio">
+    <div class="flex items-center justify-between gap-12 mb-24">
+      <div class="search-bar" style="flex:1;max-width:360px">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Buscar cliente, descripción..." id="search-laboratorio" oninput="filtrarLaboratorio()">
+      </div>
+      <button class="btn btn-primary" onclick="nuevaOrdenLaboratorio()">
+        <i class="fa-solid fa-plus"></i> Nueva orden lab
+      </button>
+    </div>
+
+    <!-- Filtro de estado -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="lab-filtros">
+      <button class="btn btn-sm" id="lab-f-todos"         onclick="setFiltroLab('todos')"         style="background:var(--accent);color:#000;font-weight:700">Todas</button>
+      <button class="btn btn-ghost btn-sm" id="lab-f-presupuestado" onclick="setFiltroLab('presupuestado')">Presupuestado</button>
+      <button class="btn btn-ghost btn-sm" id="lab-f-en_trabajo"    onclick="setFiltroLab('en_trabajo')">En trabajo</button>
+      <button class="btn btn-ghost btn-sm" id="lab-f-listo"         onclick="setFiltroLab('listo')">Listo</button>
+      <button class="btn btn-ghost btn-sm" id="lab-f-entregado"     onclick="setFiltroLab('entregado')">Entregado</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Descripción</th>
+              <th>Ingreso</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tabla-laboratorio">
+            <tr><td colspan="6">
+              <div class="empty-state">
+                <div class="empty-icon"><i class="fa-solid fa-flask"></i></div>
+                <h3>Sin órdenes de laboratorio</h3>
+                <p>Las órdenes de laboratorio aparecen aquí</p>
               </div>
             </td></tr>
           </tbody>
@@ -955,17 +1044,17 @@ tbody tr:last-child td { border-bottom: none; }
             <option value="">— Seleccionar cliente —</option>
           </select>
         </div>
-        <div class="form-grid-2">
-          <div class="field"><label>Marca vehículo</label>
-            <input type="text" id="ord-marca" placeholder="Ej: Chevrolet"></div>
-          <div class="field"><label>Modelo</label>
-            <input type="text" id="ord-modelo" placeholder="Ej: S10 2.8"></div>
-        </div>
-        <div class="form-grid-2">
-          <div class="field"><label>Patente</label>
-            <input type="text" id="ord-patente" placeholder="AB 123 CD"></div>
-          <div class="field"><label>Año</label>
-            <input type="number" id="ord-anio" placeholder="2020"></div>
+        <div class="field">
+          <label>Vehículo</label>
+          <div style="display:flex;gap:8px">
+            <select id="ord-vehiculo-id" style="flex:1" onchange="mostrarInfoVehiculoOrden(this.value)">
+              <option value="">— Sin vehículo —</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" type="button" title="Agregar nuevo vehículo" onclick="abrirNuevoVehiculo('orden')">
+              <i class="fa-solid fa-plus"></i>
+            </button>
+          </div>
+          <div id="ord-vehiculo-info" style="display:none;margin-top:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;color:var(--text2)"></div>
         </div>
         <div class="field"><label>Estado</label>
           <select id="ord-estado">
@@ -975,7 +1064,7 @@ tbody tr:last-child td { border-bottom: none; }
             <option value="entregado">Entregado</option>
           </select>
         </div>
-        <div class="field"><label>Observaciones</label>
+        <div class="field"><label>Descripción del trabajo</label>
           <textarea id="ord-obs" placeholder="Detalles del trabajo..."></textarea>
         </div>
       </div>
@@ -985,6 +1074,218 @@ tbody tr:last-child td { border-bottom: none; }
       <button class="btn btn-primary" onclick="guardarOrden()">
         <i class="fa-solid fa-check"></i> Guardar
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo/Editar Vehículo -->
+<div class="modal-overlay" id="modal-vehiculo">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-vehiculo-titulo"><i class="fa-solid fa-car" style="color:var(--accent);margin-right:8px"></i>Nuevo vehículo</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="cerrarModalVehiculo()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:14px">
+        <div class="field">
+          <label>Patente *</label>
+          <input type="text" id="veh-patente" placeholder="AB 123 CD" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="verificarPatenteExistente()">
+          <div id="veh-patente-aviso" style="display:none;margin-top:4px;font-size:12px;padding:6px 10px;border-radius:4px"></div>
+        </div>
+        <div class="form-grid-2">
+          <div class="field">
+            <label>Marca *</label>
+            <select id="veh-marca-sel" onchange="onMarcaChange()">
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Modelo</label>
+            <input type="text" id="veh-modelo-input" list="veh-modelos-list" placeholder="Seleccioná o escribí..." oninput="onModeloInput()">
+            <datalist id="veh-modelos-list"></datalist>
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="field"><label>Año</label>
+            <input type="number" id="veh-anio" placeholder="2020" min="1950" max="2030"></div>
+          <div class="field"><label>Cliente (opcional)</label>
+            <select id="veh-cliente-sel">
+              <option value="">— Sin asignar —</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarModalVehiculo()">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarVehiculo()">
+        <i class="fa-solid fa-check"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Historial de vehículo -->
+<div class="modal-overlay" id="modal-historial-vehiculo">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-clock-rotate-left" style="color:var(--accent);margin-right:8px"></i><span id="historial-titulo">Historial</span></h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="cerrarHistorial()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Ingreso</th>
+              <th>Cliente</th>
+              <th>Trabajo</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="historial-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cerrarHistorial()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nueva orden de laboratorio -->
+<div class="modal-overlay" id="modal-orden-lab">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-flask" style="color:var(--accent);margin-right:8px"></i>Nueva orden de laboratorio</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-orden-lab')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:14px">
+        <div class="field"><label>Cliente *</label>
+          <select id="lab-cliente">
+            <option value="">— Seleccionar cliente —</option>
+          </select>
+        </div>
+        <div class="field"><label>Estado</label>
+          <select id="lab-estado">
+            <option value="presupuestado">Presupuestado</option>
+            <option value="en_trabajo">En trabajo</option>
+            <option value="listo">Listo</option>
+            <option value="entregado">Entregado</option>
+          </select>
+        </div>
+        <div class="field"><label>Descripción / qué deja el cliente</label>
+          <textarea id="lab-obs" placeholder="Ej: 4 inyectores Bosch para diagnóstico..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-orden-lab')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarOrdenLab()">
+        <i class="fa-solid fa-check"></i> Guardar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Post-creación de cliente -->
+<div class="modal-overlay" id="modal-post-cliente">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-circle-check" style="color:var(--success);margin-right:8px"></i><span id="post-cliente-titulo">Cliente guardado</span></h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-post-cliente')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" style="gap:16px">
+
+      <!-- Paso 1: opciones -->
+      <div id="post-paso-opciones">
+        <p style="color:var(--text2);margin-bottom:16px">¿Qué deja el cliente?</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-secondary" style="justify-content:flex-start;gap:12px;padding:14px 16px" onclick="postClienteElegirVehiculo()">
+            <i class="fa-solid fa-car" style="color:var(--accent);font-size:18px"></i>
+            <div style="text-align:left">
+              <div style="font-weight:700">Vincular un vehículo</div>
+              <div style="font-size:12px;color:var(--text3)">El cliente deja un vehículo en el taller</div>
+            </div>
+          </button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px" onclick="postClienteIrLab()">
+            <i class="fa-solid fa-flask" style="font-size:18px"></i>
+            <div style="text-align:left">
+              <div style="font-weight:700">Deja algo para el laboratorio</div>
+              <div style="font-size:12px;color:var(--text3)">Inyectores u otros elementos para analizar</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: patente -->
+      <div id="post-paso-patente" style="display:none">
+        <div class="field">
+          <label>Patente del vehículo</label>
+          <input type="text" id="post-patente-input" placeholder="AB 123 CD"
+            style="text-transform:uppercase;font-size:18px;font-weight:700;letter-spacing:2px;text-align:center"
+            oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')buscarPatentePost()">
+        </div>
+        <div id="post-patente-resultado" style="display:none;margin-top:12px"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-ghost" onclick="postClienteVolverOpciones()">Atrás</button>
+          <button class="btn btn-primary" style="flex:1" onclick="buscarPatentePost()">
+            <i class="fa-solid fa-magnifying-glass"></i> Buscar
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 3: ¿armar presupuesto? -->
+      <div id="post-paso-presupuesto" style="display:none">
+        <p style="color:var(--text2);margin-bottom:16px">¿Querés armar el presupuesto ahora?</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-secondary" style="justify-content:flex-start;gap:12px;padding:14px 16px" onclick="postArmarPresupuesto()">
+            <i class="fa-solid fa-file-invoice-dollar" style="color:var(--accent);font-size:18px"></i>
+            <div style="text-align:left">
+              <div style="font-weight:700">Sí, armar presupuesto</div>
+              <div style="font-size:12px;color:var(--text3)">Abre el formulario de presupuesto pre-llenado</div>
+            </div>
+          </button>
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px" onclick="closeModal('modal-post-cliente')">
+            <i class="fa-solid fa-check" style="font-size:18px"></i>
+            <div style="text-align:left">
+              <div style="font-weight:700">No, terminar</div>
+              <div style="font-size:12px;color:var(--text3)">El presupuesto se arma en otro momento</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 4: formulario vehículo nuevo -->
+      <div id="post-paso-vehiculo-nuevo" style="display:none">
+        <div style="margin-bottom:12px;padding:10px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:var(--radius-sm);font-size:13px;color:var(--warn)">
+          <i class="fa-solid fa-circle-info"></i> Patente no encontrada — completá los datos para crear el vehículo
+        </div>
+        <div class="form-grid" style="gap:12px">
+          <div class="form-grid-2">
+            <div class="field"><label>Marca</label>
+              <select id="post-veh-marca-sel" onchange="onPostMarcaChange()">
+                <option value="">— Seleccionar —</option>
+              </select>
+            </div>
+            <div class="field"><label>Modelo</label>
+              <input type="text" id="post-veh-modelo" list="post-veh-modelos-list" placeholder="Seleccioná o escribí...">
+              <datalist id="post-veh-modelos-list"></datalist>
+            </div>
+          </div>
+          <div class="field" style="max-width:120px"><label>Año</label>
+            <input type="number" id="post-veh-anio" placeholder="2020" min="1950" max="2030">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn btn-ghost" onclick="postClienteVolverPatente()">Atrás</button>
+          <button class="btn btn-primary" style="flex:1" onclick="crearVehiculoPostCliente()">
+            <i class="fa-solid fa-check"></i> Crear y vincular
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -1148,7 +1449,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
         <!-- Tipo de trabajo -->
-        <div class="field">
+        <div class="field" id="presup-tipo-field">
           <label>Tipo de trabajo</label>
           <div style="display:flex;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-top:4px">
             <button id="presup-btn-lab" onclick="presupSetTipo('lab')"
@@ -1162,6 +1463,8 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
           <input type="text" id="presup-tipo-detalle" placeholder="Ej: 3 inyectores VW Amarok..." style="margin-top:8px">
         </div>
+        <!-- Badge de tipo fijo (cuando viene del flujo post-cliente) -->
+        <div id="presup-tipo-fijo" style="display:none;padding:8px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:700;margin-bottom:4px"></div>
 
         <!-- Ítems -->
         <div>
@@ -1245,12 +1548,29 @@ tbody tr:last-child td { border-bottom: none; }
     <div>
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:6px">Orden de trabajo</div>
       <div id="dr-cliente" style="font-size:18px;font-weight:800;line-height:1.2"></div>
-      <div id="dr-vehiculo" style="font-size:13px;color:var(--text3);margin-top:4px"></div>
+      <div id="dr-vehiculo" style="font-size:14px;font-weight:600;color:var(--text2);margin-top:5px"></div>
     </div>
     <button class="btn btn-icon btn-ghost" onclick="cerrarDrawer()"><i class="fa-solid fa-xmark"></i></button>
   </div>
 
   <div class="drawer-body">
+
+    <!-- Vehículo -->
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">Vehículo</div>
+      <!-- Selector: solo visible cuando la orden NO tiene vehículo asignado -->
+      <div id="dr-vehiculo-selector" style="display:flex;gap:8px;align-items:center">
+        <select id="dr-vehiculo-sel" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;color:var(--text)" onchange="onDrawerVehiculoChange()">
+          <option value="">— Sin vehículo —</option>
+        </select>
+        <button class="btn btn-secondary btn-sm btn-icon" title="Nuevo vehículo" onclick="abrirNuevoVehiculo('drawer')">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+      <!-- Display fijo: visible cuando la orden YA tiene vehículo asignado -->
+      <div id="dr-vehiculo-fijo" style="display:none;padding:8px 12px;background:var(--bg-card);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;color:var(--text)"></div>
+      <div id="dr-vehiculo-info" style="display:none;margin-top:6px;font-size:12px;color:var(--text2);padding:6px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm)"></div>
+    </div>
 
     <!-- Estado -->
     <div>
@@ -1263,10 +1583,16 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
+    <!-- Descripción del trabajo -->
+    <div>
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">Descripción del trabajo</div>
+      <textarea id="dr-obs" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:14px;font-weight:600;color:var(--text);resize:vertical;min-height:60px;transition:border-color var(--transition)" placeholder="¿Qué trabajo se realizó?..."></textarea>
+    </div>
+
     <!-- Items -->
     <div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Items / Trabajos</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Items / Piezas</div>
         <button class="btn btn-primary btn-sm" onclick="agregarFilaItem()">
           <i class="fa-solid fa-plus"></i> Agregar
         </button>
@@ -1275,27 +1601,17 @@ tbody tr:last-child td { border-bottom: none; }
         <table class="items-orden-table">
           <thead>
             <tr>
-              <th style="width:35%">Descripción</th>
-              <th style="width:22%">N° Parte</th>
+              <th style="width:42%">Descripción del trabajo / pieza</th>
+              <th style="width:20%">N° Parte</th>
               <th style="width:10%">Cant.</th>
-              <th style="width:18%">Precio unit.</th>
-              <th style="width:10%;text-align:right">Subtotal</th>
-              <th style="width:5%"></th>
+              <th style="width:22%" title="Solo si es extra que suma al presupuesto">Extra $ <span style="font-weight:400;opacity:.6;font-size:10px">(opcional)</span></th>
+              <th style="width:6%"></th>
             </tr>
           </thead>
           <tbody id="dr-items-tbody"></tbody>
         </table>
       </div>
-      <div class="total-display" style="margin-top:14px">
-        <span>Total de la orden</span>
-        <strong id="dr-total">$0</strong>
-      </div>
-    </div>
-
-    <!-- Observaciones -->
-    <div>
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:8px">Observaciones</div>
-      <textarea id="dr-obs" style="width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;font-size:13px;color:var(--text);resize:vertical;min-height:80px;transition:border-color var(--transition)" placeholder="Notas sobre el trabajo..."></textarea>
+      <div id="dr-total-wrap" style="display:none"><strong id="dr-total"></strong></div>
     </div>
 
     <!-- Fechas -->
@@ -1352,7 +1668,9 @@ const pageNames = {
   dashboard: 'Dashboard',
   clientes: 'Clientes',
   ordenes: 'Órdenes de trabajo',
+  vehiculos: 'Vehículos',
   presupuestos: 'Presupuestos',
+  laboratorio: 'Laboratorio',
   informes: 'Informes de prueba',
   stock: 'Stock',
   config: 'Configuración',
@@ -1386,8 +1704,10 @@ function navigate(page) {
   // Cargar datos
   if (page === 'clientes')      cargarClientes()
   if (page === 'ordenes')       cargarOrdenes()
+  if (page === 'vehiculos')     cargarVehiculos()
   if (page === 'stock')         cargarStock()
   if (page === 'presupuestos')  cargarPresupuestos()
+  if (page === 'laboratorio')   cargarLaboratorio()
   if (page === 'informes')      cargarInformes()
   if (page === 'dashboard')     cargarDashboard()
 }
@@ -1433,13 +1753,13 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
 // ════════════════════════════════════════
 // TOAST
 // ════════════════════════════════════════
-function toast(msg, type = 'success') {
-  const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation' }
+function toast(msg, type = 'success', duration = 3000) {
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', warn: 'fa-triangle-exclamation' }
   const t = document.createElement('div')
   t.className = `toast ${type}`
-  t.innerHTML = `<i class="fa-solid ${icons[type]}"></i> ${msg}`
+  t.innerHTML = `<i class="fa-solid ${icons[type] || icons.success}"></i> ${msg}`
   document.getElementById('toast-container').appendChild(t)
-  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300) }, 3000)
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 300) }, duration)
 }
 
 // ════════════════════════════════════════
@@ -1551,19 +1871,33 @@ async function guardarCliente() {
     condicion_iva:  document.getElementById('cli-condicion-iva').value || 'consumidor_final',
   }
 
-  let error
+  let error, data
   if (_editandoClienteId) {
     ;({ error } = await db.from('clientes').update(payload).eq('id', _editandoClienteId))
   } else {
-    ;({ error } = await db.from('clientes').insert(payload))
+    ;({ error, data } = await db.from('clientes').insert(payload).select().single())
   }
   if (error) { toast('Error al guardar', 'error'); return }
 
   toast(_editandoClienteId ? 'Cliente actualizado' : 'Cliente guardado')
   closeModal('modal-cliente')
   limpiarFormCliente()
-  cargarClientes()
+  await cargarClientes()
   cargarDashboard()
+
+  // Al crear un cliente nuevo, preguntar si deja vehículo
+  if (!_editandoClienteId && data) {
+    _postClienteId = data.id
+    _postClienteNombre = data.nombre
+    document.getElementById('post-cliente-titulo').textContent = `Cliente guardado — ${data.nombre}`
+    document.getElementById('post-paso-opciones').style.display = 'block'
+    document.getElementById('post-paso-patente').style.display = 'none'
+    document.getElementById('post-paso-vehiculo-nuevo').style.display = 'none'
+    document.getElementById('post-paso-presupuesto').style.display = 'none'
+    _postVehiculoId = null
+    _postTipo = 'taller'
+    openModal('modal-post-cliente')
+  }
 }
 
 function limpiarFormCliente() {
@@ -1576,7 +1910,197 @@ function limpiarFormCliente() {
   document.getElementById('cli-condicion-iva').value = 'consumidor_final'
 }
 
+// ── Flujo post-creación de cliente ──────────────────────────────
+let _postClienteId     = null
+let _postClienteNombre = ''
+let _postPatenteValue  = ''
+let _postVehiculoId    = null   // vehículo vinculado en el flujo post-cliente
+let _postTipo          = 'taller' // 'taller' | 'laboratorio'
+
+function postClienteIrLab() {
+  _postTipo = 'laboratorio'
+  _postVehiculoId = null
+  postMostrarPasoPresupuesto()
+}
+
+function postClienteElegirVehiculo() {
+  document.getElementById('post-paso-opciones').style.display = 'none'
+  document.getElementById('post-paso-patente').style.display = 'block'
+  document.getElementById('post-patente-input').value = ''
+  document.getElementById('post-patente-resultado').style.display = 'none'
+  setTimeout(() => document.getElementById('post-patente-input').focus(), 100)
+}
+
+function postMostrarPasoPresupuesto() {
+  document.getElementById('post-paso-opciones').style.display = 'none'
+  document.getElementById('post-paso-patente').style.display = 'none'
+  document.getElementById('post-paso-vehiculo-nuevo').style.display = 'none'
+  document.getElementById('post-paso-presupuesto').style.display = 'block'
+}
+
+function postArmarPresupuesto() {
+  closeModal('modal-post-cliente')
+  navigate('presupuestos')
+  // Pequeño delay para que la página cargue antes de abrir el modal
+  setTimeout(() => {
+    abrirNuevoPresupuesto()
+    // Pre-llenar cliente
+    const sel = document.getElementById('presup-cli-select')
+    sel.value = _postClienteId
+    sel.dispatchEvent(new Event('change'))
+    // Tipo fijo — ya fue elegido en el flujo post-cliente, no se puede cambiar
+    const tipoLab = _postTipo === 'laboratorio'
+    presupSetTipo(tipoLab ? 'lab' : 'pla')
+    document.getElementById('presup-tipo-field').style.display = 'none'
+    const badge = document.getElementById('presup-tipo-fijo')
+    badge.style.display = 'block'
+    badge.style.background = tipoLab ? 'rgba(34,197,94,.12)' : 'rgba(59,130,246,.12)'
+    badge.style.color = tipoLab ? 'var(--accent)' : 'var(--info)'
+    badge.innerHTML = tipoLab
+      ? '<i class="fa-solid fa-flask"></i> Laboratorio'
+      : '<i class="fa-solid fa-car"></i> Playa / Taller'
+    // Si hay vehículo, pre-llenar el detalle con la patente
+    _presupVehiculoId = _postVehiculoId || null
+    if (_postVehiculoId) {
+      const veh = _vehiculos.find(v => v.id === _postVehiculoId)
+      if (veh) {
+        const detalle = [veh.marca, veh.modelo, veh.patente].filter(Boolean).join(' ')
+        document.getElementById('presup-tipo-detalle').value = detalle
+      }
+    }
+  }, 150)
+}
+
+function postClienteVolverOpciones() {
+  document.getElementById('post-paso-patente').style.display = 'none'
+  document.getElementById('post-paso-opciones').style.display = 'block'
+}
+
+function postClienteVolverPatente() {
+  document.getElementById('post-paso-vehiculo-nuevo').style.display = 'none'
+  document.getElementById('post-paso-patente').style.display = 'block'
+}
+
+async function buscarPatentePost() {
+  const patente = document.getElementById('post-patente-input').value.trim().toUpperCase()
+  if (!patente) { toast('Ingresá una patente', 'error'); return }
+  _postPatenteValue = patente
+
+  // Buscar en memoria primero, luego en DB por si no estaba cargada
+  let vehiculoEncontrado = _vehiculos.find(v => v.patente === patente)
+  if (!vehiculoEncontrado) {
+    const { data } = await db.from('vehiculos').select('*').eq('patente', patente).maybeSingle()
+    vehiculoEncontrado = data || null
+  }
+
+  const res = document.getElementById('post-patente-resultado')
+  res.style.display = 'block'
+
+  if (vehiculoEncontrado) {
+    // Vehículo ya existe → vincular directamente
+    const label = [vehiculoEncontrado.marca, vehiculoEncontrado.modelo, vehiculoEncontrado.año ? `(${vehiculoEncontrado.año})` : ''].filter(Boolean).join(' ')
+    res.innerHTML = `
+      <div style="padding:10px 12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:var(--radius-sm);font-size:13px">
+        <div style="font-weight:700;color:var(--success)"><i class="fa-solid fa-circle-check"></i> Vehículo encontrado</div>
+        <div style="margin-top:4px;color:var(--text2)">${esc(patente)} — ${esc(label || 'Sin datos')}</div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="vincularVehiculoExistente('${vehiculoEncontrado.id}')">
+        <i class="fa-solid fa-link"></i> Vincular a ${esc(_postClienteNombre)}
+      </button>`
+  } else {
+    // No existe → ir a formulario de nuevo vehículo
+    res.innerHTML = ''
+    document.getElementById('post-paso-patente').style.display = 'none'
+    document.getElementById('post-paso-vehiculo-nuevo').style.display = 'block'
+    document.getElementById('post-veh-modelo').value = ''
+    document.getElementById('post-veh-anio').value = ''
+    await poblarSelectMarcaPost()
+  }
+}
+
+async function poblarSelectMarcaPost() {
+  await cargarMarcas()
+  const sel = document.getElementById('post-veh-marca-sel')
+  sel.innerHTML = '<option value="">— Seleccionar marca —</option>' +
+    _marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('') +
+    '<option value="__nueva__">+ Agregar nueva marca...</option>'
+}
+
+async function onPostMarcaChange() {
+  const sel = document.getElementById('post-veh-marca-sel')
+  if (sel.value === '__nueva__') {
+    const nombre = prompt('Nombre de la nueva marca:')?.trim()
+    if (!nombre) { sel.value = ''; return }
+    const { data, error } = await db.from('marcas_vehiculos').insert({ nombre }).select().single()
+    if (error) { toast('Ya existe o error al guardar', 'error'); sel.value = ''; return }
+    _marcas = []
+    await poblarSelectMarcaPost()
+    sel.value = data.id
+    toast('Marca agregada')
+  }
+  // Cargar modelos en datalist
+  const marcaId = sel.value
+  const dl = document.getElementById('post-veh-modelos-list')
+  if (!marcaId || marcaId === '__nueva__') { dl.innerHTML = ''; return }
+  const { data } = await db.from('modelos_vehiculos').select('*').eq('marca_id', marcaId).order('nombre')
+  dl.innerHTML = (data || []).map(m => `<option value="${esc(m.nombre)}">`).join('')
+}
+
+async function vincularVehiculoExistente(vehiculoId) {
+  const { error } = await db.from('vehiculos').update({ cliente_id: _postClienteId }).eq('id', vehiculoId)
+  if (error) { toast('Error al vincular', 'error'); return }
+  const idx = _vehiculos.findIndex(v => v.id === vehiculoId)
+  if (idx >= 0) _vehiculos[idx].cliente_id = _postClienteId
+  toast('Vehículo vinculado')
+  cargarVehiculos()
+  _postVehiculoId = vehiculoId
+  _postTipo = 'taller'
+  postMostrarPasoPresupuesto()
+}
+
+async function crearVehiculoPostCliente() {
+  const marcaSel   = document.getElementById('post-veh-marca-sel')
+  const marcaId    = marcaSel.value && marcaSel.value !== '__nueva__' ? marcaSel.value : null
+  const marcaNombre = marcaId ? (_marcas.find(m => m.id === marcaId)?.nombre || '') : ''
+  const modelo     = document.getElementById('post-veh-modelo').value.trim()
+  const anio       = document.getElementById('post-veh-anio').value
+
+  // Guardar modelo nuevo si no existe
+  if (marcaId && modelo) {
+    const { data: modelos } = await db.from('modelos_vehiculos').select('id').eq('marca_id', marcaId).eq('nombre', modelo)
+    if (!modelos?.length) await db.from('modelos_vehiculos').insert({ marca_id: marcaId, nombre: modelo })
+  }
+
+  const { data, error } = await db.from('vehiculos').insert({
+    patente:    _postPatenteValue,
+    marca:      marcaNombre || null,
+    modelo:     modelo || null,
+    año:        anio ? parseInt(anio) : null,
+    cliente_id: _postClienteId,
+  }).select().single()
+
+  if (error) {
+    if (error.code === '23505') { toast('Ya existe un vehículo con esa patente', 'error'); return }
+    toast('Error al crear vehículo: ' + (error.message || ''), 'error'); return
+  }
+
+  toast('Vehículo creado y vinculado al cliente')
+  await cargarVehiculos()
+  await cargarVehiculosSelect()
+  _postVehiculoId = data.id
+  _postTipo = 'taller'
+  postMostrarPasoPresupuesto()
+}
+
 async function eliminarCliente(id) {
+  const [{ count: ordenes }, { count: presups }] = await Promise.all([
+    db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).eq('cliente_id', id),
+    db.from('presupuestos').select('*', { count: 'exact', head: true }).eq('cliente_id', id),
+  ])
+  if (ordenes > 0 || presups > 0) {
+    toast(`No se puede eliminar: tiene ${ordenes} orden(es) y ${presups} presupuesto(s) asociados`, 'error', 6000)
+    return
+  }
   if (!confirm('¿Eliminar este cliente?')) return
   const { error } = await db.from('clientes').delete().eq('id', id)
   if (error) { toast('Error al eliminar', 'error'); return }
@@ -1599,6 +2123,328 @@ function editarCliente(id) {
   document.getElementById('cli-condicion-iva').value = c.condicion_iva || 'consumidor_final'
   openModal('modal-cliente')
 }
+
+// ════════════════════════════════════════
+// VEHÍCULOS
+// ════════════════════════════════════════
+let _vehiculos   = []
+let _marcas      = []
+let _modelos     = []        // modelos del marca seleccionada en el modal
+let _vehModalOrigen = null   // 'orden' | 'drawer' | 'vehiculos' | null
+
+async function cargarVehiculos() {
+  const { data, error } = await db
+    .from('vehiculos')
+    .select('*, clientes(nombre)')
+    .order('created_at', { ascending: false })
+  if (error) { toast('Error al cargar vehículos', 'error'); return }
+  _vehiculos = data || []
+  // Contar órdenes por vehiculo
+  const { data: conteos } = await db
+    .from('ordenes_trabajo')
+    .select('vehiculo_id')
+    .not('vehiculo_id', 'is', null)
+  const conteo = {}
+  ;(conteos || []).forEach(r => { conteo[r.vehiculo_id] = (conteo[r.vehiculo_id] || 0) + 1 })
+  renderVehiculos(_vehiculos, conteo)
+}
+
+function renderVehiculos(lista, conteo = {}) {
+  const tbody = document.getElementById('tabla-vehiculos')
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-car"></i></div>
+      <h3>Sin vehículos registrados</h3>
+      <p>Agregá el primer vehículo</p>
+    </div></td></tr>`
+    return
+  }
+  tbody.innerHTML = lista.map(v => `
+    <tr class="tr-clickable" onclick="verHistorialVehiculo('${v.id}')">
+      <td style="font-weight:700;letter-spacing:.5px">${esc(v.patente || '—')}</td>
+      <td>${esc(v.marca || '—')}</td>
+      <td>${esc(v.modelo || '—')}</td>
+      <td style="color:var(--text3)">${v.año || '—'}</td>
+      <td style="color:var(--text3)">${esc(v.clientes?.nombre || '—')}</td>
+      <td style="text-align:center">
+        <span style="background:var(--bg3);border-radius:20px;padding:2px 10px;font-size:12px;font-weight:600">${conteo[v.id] || 0}</span>
+      </td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-ghost btn-sm btn-icon" title="Editar" onclick="event.stopPropagation();editarVehiculo('${v.id}')">
+          <i class="fa-solid fa-pen" style="color:var(--info)"></i>
+        </button>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Eliminar" onclick="event.stopPropagation();eliminarVehiculo('${v.id}')">
+          <i class="fa-solid fa-trash" style="color:var(--danger)"></i>
+        </button>
+      </td>
+    </tr>`).join('')
+}
+
+function filtrarVehiculos() {
+  const q = document.getElementById('search-vehiculos').value.toLowerCase()
+  renderVehiculos(_vehiculos.filter(v =>
+    (v.patente||'').toLowerCase().includes(q) ||
+    (v.marca||'').toLowerCase().includes(q) ||
+    (v.modelo||'').toLowerCase().includes(q) ||
+    (v.clientes?.nombre||'').toLowerCase().includes(q)
+  ))
+}
+
+async function cargarMarcas() {
+  if (_marcas.length) return   // ya cargadas
+  const { data } = await db.from('marcas_vehiculos').select('*').order('nombre')
+  _marcas = data || []
+}
+
+async function poblarSelectMarca() {
+  await cargarMarcas()
+  const sel = document.getElementById('veh-marca-sel')
+  sel.innerHTML = '<option value="">— Seleccionar marca —</option>' +
+    _marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('') +
+    '<option value="__nueva__">+ Agregar nueva marca...</option>'
+}
+
+async function onMarcaChange() {
+  const sel = document.getElementById('veh-marca-sel')
+  if (sel.value === '__nueva__') {
+    const nombre = prompt('Nombre de la nueva marca:')?.trim()
+    if (!nombre) { sel.value = ''; return }
+    const { data, error } = await db.from('marcas_vehiculos').insert({ nombre }).select().single()
+    if (error) { toast('Ya existe o error al guardar', 'error'); sel.value = ''; return }
+    _marcas = []   // forzar recarga
+    await poblarSelectMarca()
+    sel.value = data.id
+    toast('Marca agregada')
+  }
+  await cargarModelosPorMarca(sel.value)
+}
+
+async function cargarModelosPorMarca(marcaId) {
+  const dl = document.getElementById('veh-modelos-list')
+  document.getElementById('veh-modelo-input').value = ''
+  if (!marcaId || marcaId === '__nueva__') { dl.innerHTML = ''; return }
+  const { data } = await db
+    .from('modelos_vehiculos')
+    .select('*')
+    .eq('marca_id', marcaId)
+    .order('nombre')
+  _modelos = data || []
+  dl.innerHTML = _modelos.map(m => `<option value="${esc(m.nombre)}">`).join('')
+}
+
+function onModeloInput() {
+  // noop — just lets the user type freely; se guarda al confirmar
+}
+
+async function abrirNuevoVehiculo(origen = 'vehiculos') {
+  _vehModalOrigen = origen
+  _editandoVehiculoId = null
+  document.getElementById('modal-vehiculo-titulo').innerHTML =
+    '<i class="fa-solid fa-car" style="color:var(--accent);margin-right:8px"></i>Nuevo vehículo'
+  document.getElementById('veh-patente').value = ''
+  document.getElementById('veh-modelo-input').value = ''
+  document.getElementById('veh-anio').value = ''
+  document.getElementById('veh-patente-aviso').style.display = 'none'
+  await poblarSelectMarca()
+  document.getElementById('veh-marca-sel').value = ''
+  document.getElementById('veh-modelos-list').innerHTML = ''
+  // Poblar clientes
+  const sel = document.getElementById('veh-cliente-sel')
+  sel.innerHTML = '<option value="">— Sin asignar —</option>' +
+    (_clientes || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')
+  openModal('modal-vehiculo')
+}
+
+async function editarVehiculo(id) {
+  const v = _vehiculos.find(v => v.id === id)
+  if (!v) return
+  _editandoVehiculoId = id
+  _vehModalOrigen = 'vehiculos'
+  document.getElementById('modal-vehiculo-titulo').innerHTML =
+    '<i class="fa-solid fa-pen" style="color:var(--accent);margin-right:8px"></i>Editar vehículo'
+  await poblarSelectMarca()
+  document.getElementById('veh-patente').value = v.patente || ''
+  document.getElementById('veh-anio').value = v.año || ''
+  document.getElementById('veh-patente-aviso').style.display = 'none'
+  // Encontrar marca por nombre
+  const marca = _marcas.find(m => m.nombre === v.marca)
+  document.getElementById('veh-marca-sel').value = marca?.id || ''
+  if (marca?.id) await cargarModelosPorMarca(marca.id)
+  document.getElementById('veh-modelo-input').value = v.modelo || ''
+  const sel = document.getElementById('veh-cliente-sel')
+  sel.innerHTML = '<option value="">— Sin asignar —</option>' +
+    (_clientes || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')
+  sel.value = v.cliente_id || ''
+  openModal('modal-vehiculo')
+}
+
+async function verificarPatenteExistente() {
+  const patente = document.getElementById('veh-patente').value.trim().toUpperCase()
+  const aviso = document.getElementById('veh-patente-aviso')
+  if (!patente || (_editandoVehiculoId && _vehiculos.find(v=>v.id===_editandoVehiculoId)?.patente===patente)) {
+    aviso.style.display = 'none'; return
+  }
+  const existente = _vehiculos.find(v => v.patente === patente)
+  if (existente) {
+    aviso.style.display = 'block'
+    aviso.style.background = 'rgba(239,68,68,.1)'
+    aviso.style.color = 'var(--danger)'
+    aviso.textContent = `⚠ Ya existe: ${existente.marca || ''} ${existente.modelo || ''} — ${existente.clientes?.nombre || 'sin cliente'}`
+  } else {
+    aviso.style.display = 'none'
+  }
+}
+
+let _editandoVehiculoId = null
+
+async function guardarVehiculo() {
+  const patente = document.getElementById('veh-patente').value.trim().toUpperCase()
+  if (!patente) { toast('La patente es obligatoria', 'error'); return }
+
+  const marcaSel  = document.getElementById('veh-marca-sel')
+  const marcaId   = marcaSel.value && marcaSel.value !== '__nueva__' ? marcaSel.value : null
+  const marcaNombre = marcaId ? (_marcas.find(m=>m.id===marcaId)?.nombre || '') : ''
+  const modeloVal = document.getElementById('veh-modelo-input').value.trim()
+  const anio      = document.getElementById('veh-anio').value
+  const clienteId = document.getElementById('veh-cliente-sel').value || null
+
+  // Si el modelo es nuevo para esa marca, guardarlo en modelos_vehiculos
+  if (marcaId && modeloVal && !_modelos.find(m => m.nombre === modeloVal)) {
+    await db.from('modelos_vehiculos').insert({ marca_id: marcaId, nombre: modeloVal })
+      .select().single()
+  }
+
+  const payload = {
+    patente,
+    marca:     marcaNombre || null,
+    modelo:    modeloVal   || null,
+    año:       anio ? parseInt(anio) : null,
+    cliente_id: clienteId,
+  }
+
+  let vehiculoGuardado
+  if (_editandoVehiculoId) {
+    const { data, error } = await db.from('vehiculos').update(payload).eq('id', _editandoVehiculoId).select().single()
+    if (error) { toast('Error al guardar: ' + (error.message || ''), 'error'); return }
+    vehiculoGuardado = data
+    toast('Vehículo actualizado')
+  } else {
+    const { data, error } = await db.from('vehiculos').insert(payload).select().single()
+    if (error) {
+      if (error.code === '23505') { toast('Ya existe un vehículo con esa patente', 'error'); return }
+      toast('Error al guardar: ' + (error.message || ''), 'error'); return
+    }
+    vehiculoGuardado = data
+    toast('Vehículo guardado')
+  }
+
+  // Recargar lista de vehículos en memoria
+  await cargarVehiculos()
+  await cargarVehiculosSelect()
+
+  cerrarModalVehiculo()
+
+  // Si se abrió desde orden o drawer, seleccionar el vehículo recién creado
+  if (_vehModalOrigen === 'orden' && vehiculoGuardado) {
+    const sel = document.getElementById('ord-vehiculo-id')
+    if (sel) { sel.value = vehiculoGuardado.id; mostrarInfoVehiculoOrden(vehiculoGuardado.id) }
+  }
+  if (_vehModalOrigen === 'drawer' && vehiculoGuardado) {
+    const sel = document.getElementById('dr-vehiculo-sel')
+    if (sel) { sel.value = vehiculoGuardado.id; onDrawerVehiculoChange() }
+  }
+}
+
+function cerrarModalVehiculo() {
+  closeModal('modal-vehiculo')
+  _editandoVehiculoId = null
+  _vehModalOrigen = null
+}
+
+async function eliminarVehiculo(id) {
+  const { count: ordenes } = await db
+    .from('ordenes_trabajo').select('*', { count: 'exact', head: true }).eq('vehiculo_id', id)
+  if (ordenes > 0) {
+    toast(`No se puede eliminar: tiene ${ordenes} orden(es) asociada(s)`, 'error', 5000)
+    return
+  }
+  if (!confirm('¿Eliminar este vehículo?')) return
+  const { error } = await db.from('vehiculos').delete().eq('id', id)
+  if (error) { toast('Error al eliminar', 'error'); return }
+  toast('Vehículo eliminado')
+  await cargarVehiculos()
+  await cargarVehiculosSelect()
+}
+
+// Carga el select de vehículos usado en modal-orden y en el drawer
+async function cargarVehiculosSelect() {
+  if (!_vehiculos.length) {
+    const { data } = await db.from('vehiculos').select('*').order('patente')
+    _vehiculos = data || []
+  }
+  const opciones = '<option value="">— Sin vehículo —</option>' +
+    _vehiculos.map(v => {
+      const label = [v.patente, v.marca, v.modelo, v.año ? `(${v.año})` : ''].filter(Boolean).join(' · ')
+      return `<option value="${v.id}">${esc(label)}</option>`
+    }).join('')
+  const selOrden  = document.getElementById('ord-vehiculo-id')
+  const selDrawer = document.getElementById('dr-vehiculo-sel')
+  if (selOrden)  selOrden.innerHTML  = opciones
+  if (selDrawer) selDrawer.innerHTML = opciones
+}
+
+function mostrarInfoVehiculoOrden(vehiculoId) {
+  const info = document.getElementById('ord-vehiculo-info')
+  if (!vehiculoId) { info.style.display = 'none'; return }
+  const v = _vehiculos.find(v => v.id === vehiculoId)
+  if (!v) { info.style.display = 'none'; return }
+  info.style.display = 'block'
+  info.textContent = [v.marca, v.modelo, v.año, v.clientes?.nombre ? `— ${v.clientes.nombre}` : ''].filter(Boolean).join(' ')
+}
+
+function onDrawerVehiculoChange() {
+  const vehiculoId = document.getElementById('dr-vehiculo-sel').value
+  const info = document.getElementById('dr-vehiculo-info')
+  const header = document.getElementById('dr-vehiculo')
+  if (!vehiculoId) {
+    info.style.display = 'none'
+    header.textContent = 'Sin vehículo registrado'
+    return
+  }
+  const v = _vehiculos.find(v => v.id === vehiculoId)
+  if (!v) { info.style.display = 'none'; return }
+  header.textContent = [v.marca, v.modelo, v.patente ? `(${v.patente})` : ''].filter(Boolean).join(' ')
+  info.style.display = 'block'
+  info.textContent = [v.patente, v.año ? `Año ${v.año}` : ''].filter(Boolean).join(' · ')
+}
+
+async function verHistorialVehiculo(id) {
+  const v = _vehiculos.find(v => v.id === id)
+  if (!v) return
+  const { data: ordenes } = await db
+    .from('ordenes_trabajo')
+    .select('*, clientes(nombre)')
+    .eq('vehiculo_id', id)
+    .order('created_at', { ascending: false })
+  const lista = ordenes || []
+  const estadoColor = { presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
+  const estadoLabel = { presupuestado:'Presupuestado', en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
+  const filasHtml = lista.length ? lista.map(o => `
+    <tr class="tr-clickable" onclick="cerrarHistorial();abrirOrden('${o.id}')">
+      <td style="color:var(--text3);font-size:12px">${formatFecha(o.fecha_ingreso)}</td>
+      <td>${esc(o.clientes?.nombre || '—')}</td>
+      <td>${esc(o.observaciones || '—')}</td>
+      <td><span style="background:${estadoColor[o.estado]||'#888'};color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700">${estadoLabel[o.estado]||o.estado}</span></td>
+    </tr>`).join('')
+    : `<tr><td colspan="4" style="padding:20px;text-align:center;color:var(--text3)">Sin órdenes para este vehículo</td></tr>`
+
+  document.getElementById('historial-titulo').textContent =
+    `${v.patente || 'Sin patente'} — ${v.marca || ''} ${v.modelo || ''}`
+  document.getElementById('historial-tbody').innerHTML = filasHtml
+  openModal('modal-historial-vehiculo')
+}
+
+function cerrarHistorial() { closeModal('modal-historial-vehiculo') }
 
 // ════════════════════════════════════════
 // ÓRDENES
@@ -1635,7 +2481,6 @@ function renderOrdenes(lista) {
       <td style="color:var(--text3)">${esc(o.vehiculos ? `${o.vehiculos.marca} ${o.vehiculos.modelo}` : '—')}</td>
       <td style="color:var(--text3)">${formatFecha(o.fecha_ingreso)}</td>
       <td>${badgeEstado(o.estado)}</td>
-      <td style="font-weight:600">${o.total ? '$ '+Number(o.total).toLocaleString('es-AR') : '—'}</td>
       <td style="text-align:right">
         <button class="btn btn-ghost btn-sm btn-icon" title="Ver orden" onclick="event.stopPropagation();verOrden('${o.id}')">
           <i class="fa-solid fa-eye" style="color:var(--info)"></i>
@@ -1658,34 +2503,19 @@ async function cargarClientesSelect() {
   const { data } = await db.from('clientes').select('id,nombre').order('nombre')
   sel.innerHTML = '<option value="">— Seleccionar cliente —</option>' +
     (data || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')
+  await cargarVehiculosSelect()
 }
 
 async function guardarOrden() {
   const clienteId = document.getElementById('ord-cliente').value
   if (!clienteId) { toast('Seleccioná un cliente', 'error'); return }
 
-  // Crear vehículo si hay datos
-  let vehiculoId = null
-  const marca = document.getElementById('ord-marca').value.trim()
-  const modelo = document.getElementById('ord-modelo').value.trim()
-  const patente = document.getElementById('ord-patente').value.trim()
-  const anio = document.getElementById('ord-anio').value
-
-  if (marca || modelo || patente) {
-    const { data: veh } = await db.from('vehiculos').insert({
-      cliente_id: clienteId,
-      marca: marca || null,
-      modelo: modelo || null,
-      patente: patente || null,
-      año: anio ? parseInt(anio) : null,
-    }).select().single()
-    vehiculoId = veh?.id
-  }
+  const vehiculoId = document.getElementById('ord-vehiculo-id').value || null
 
   const { error } = await db.from('ordenes_trabajo').insert({
-    cliente_id: clienteId,
-    vehiculo_id: vehiculoId,
-    estado: document.getElementById('ord-estado').value,
+    cliente_id:    clienteId,
+    vehiculo_id:   vehiculoId,
+    estado:        document.getElementById('ord-estado').value,
     observaciones: document.getElementById('ord-obs').value.trim() || null,
     fecha_ingreso: new Date().toISOString().split('T')[0],
   })
@@ -1700,12 +2530,119 @@ async function guardarOrden() {
 }
 
 function limpiarFormOrden() {
-  ['ord-cliente','ord-marca','ord-modelo','ord-patente','ord-anio','ord-obs'].forEach(id => {
-    document.getElementById(id).value = ''
-  })
-  document.getElementById('ord-estado').value = 'presupuestado'
+  document.getElementById('ord-cliente').value     = ''
+  document.getElementById('ord-vehiculo-id').value = ''
+  document.getElementById('ord-obs').value         = ''
+  document.getElementById('ord-estado').value      = 'presupuestado'
+  document.getElementById('ord-vehiculo-info').style.display = 'none'
 }
 
+
+// ════════════════════════════════════════
+// LABORATORIO
+// ════════════════════════════════════════
+let _ordenesLab   = []
+let _filtroLab    = 'todos'
+
+async function cargarLaboratorio() {
+  const tbody = document.getElementById('tabla-laboratorio')
+  tbody.innerHTML = `<tr><td colspan="6" style="padding:20px"><div class="skeleton" style="height:40px"></div></td></tr>`
+
+  const { data, error } = await db
+    .from('ordenes_trabajo')
+    .select('*, clientes(nombre)')
+    .eq('tipo', 'laboratorio')
+    .order('created_at', { ascending: false })
+
+  if (error) { toast('Error al cargar laboratorio', 'error'); return }
+  _ordenesLab = data || []
+  renderLaboratorio()
+}
+
+function renderLaboratorio(lista = null) {
+  const tbody = document.getElementById('tabla-laboratorio')
+  let items = lista ?? _ordenesLab
+  if (_filtroLab !== 'todos') items = items.filter(o => o.estado === _filtroLab)
+
+  const q = document.getElementById('search-laboratorio')?.value.toLowerCase() || ''
+  if (q) items = items.filter(o =>
+    (o.clientes?.nombre || '').toLowerCase().includes(q) ||
+    (o.observaciones   || '').toLowerCase().includes(q)
+  )
+
+  if (!items.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-flask"></i></div>
+      <h3>Sin órdenes</h3><p>No hay órdenes de laboratorio ${_filtroLab !== 'todos' ? 'con ese estado' : ''}</p>
+    </div></td></tr>`
+    return
+  }
+
+  tbody.innerHTML = items.map((o, i) => `
+    <tr class="tr-clickable" onclick="abrirOrden('${o.id}')">
+      <td style="color:var(--text3);font-size:12px">#${String(_ordenesLab.length - _ordenesLab.indexOf(o)).padStart(4,'0')}</td>
+      <td style="font-weight:600">${esc(o.clientes?.nombre || '—')}</td>
+      <td style="color:var(--text2)">${esc(o.observaciones || '—')}</td>
+      <td style="color:var(--text3)">${formatFecha(o.fecha_ingreso)}</td>
+      <td>${badgeEstado(o.estado)}</td>
+      <td style="text-align:right">
+        <i class="fa-solid fa-chevron-right" style="font-size:12px;color:var(--text3)"></i>
+      </td>
+    </tr>`).join('')
+}
+
+function filtrarLaboratorio() { renderLaboratorio() }
+
+function setFiltroLab(estado) {
+  _filtroLab = estado
+  // Actualizar botones de filtro
+  const ids = ['todos','presupuestado','en_trabajo','listo','entregado']
+  ids.forEach(id => {
+    const btn = document.getElementById(`lab-f-${id}`)
+    if (!btn) return
+    if (id === estado) {
+      btn.style.background = 'var(--accent)'
+      btn.style.color = '#000'
+      btn.style.fontWeight = '700'
+      btn.classList.remove('btn-ghost')
+    } else {
+      btn.style.background = ''
+      btn.style.color = ''
+      btn.style.fontWeight = ''
+      btn.classList.add('btn-ghost')
+    }
+  })
+  renderLaboratorio()
+}
+
+function nuevaOrdenLaboratorio() {
+  document.getElementById('lab-obs').value = ''
+  document.getElementById('lab-estado').value = 'en_trabajo'
+  // Poblar clientes
+  const sel = document.getElementById('lab-cliente')
+  sel.innerHTML = '<option value="">— Seleccionar cliente —</option>' +
+    (_clientes || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')
+  openModal('modal-orden-lab')
+}
+
+async function guardarOrdenLab(clienteIdParam = null, obsParam = null) {
+  const clienteId = clienteIdParam || document.getElementById('lab-cliente').value
+  if (!clienteId) { toast('Seleccioná un cliente', 'error'); return }
+
+  const { error } = await db.from('ordenes_trabajo').insert({
+    cliente_id:    clienteId,
+    tipo:          'laboratorio',
+    estado:        clienteIdParam ? 'en_trabajo' : document.getElementById('lab-estado').value,
+    observaciones: obsParam || document.getElementById('lab-obs').value.trim() || null,
+    fecha_ingreso: new Date().toISOString().split('T')[0],
+  })
+
+  if (error) { toast('Error al guardar', 'error'); return }
+  toast('Orden de laboratorio creada')
+  if (!clienteIdParam) closeModal('modal-orden-lab')
+  if (currentPage === 'laboratorio') cargarLaboratorio()
+  cargarDashboard()
+}
 
 // ════════════════════════════════════════
 // STOCK
@@ -1832,7 +2769,8 @@ async function cargarPresupuestos() {
 // ════════════════════════════════════════
 // PRESUPUESTOS — FORM / PDF
 // ════════════════════════════════════════
-let _presupTipoActual = 'lab'
+let _presupTipoActual  = 'lab'
+let _presupVehiculoId  = null
 let _presupItemCounter = 0
 let _editandoPresupuestoId = null
 
@@ -1864,6 +2802,9 @@ function abrirNuevoPresupuesto() {
 function limpiarPresupuesto() {
   _editandoPresupuestoId = null
   _presupTipoActual = 'lab'
+  _presupVehiculoId = null
+  document.getElementById('presup-tipo-field').style.display = 'block'
+  document.getElementById('presup-tipo-fijo').style.display = 'none'
   _presupItemCounter = 0
   document.getElementById('presup-titulo').textContent = 'Nuevo presupuesto'
   document.getElementById('presup-tbody').innerHTML = ''
@@ -2029,6 +2970,7 @@ async function guardarPresupuesto(generarPdf) {
     datos_cliente: datosCliente,
     tipo:          _presupTipoActual,
     tipo_detalle:  document.getElementById('presup-tipo-detalle').value.trim() || null,
+    vehiculo_id:   _presupVehiculoId || null,
     iva,
     descuento:     desc,
     forma_pago:    presupGetMediosPago().join(' / '),
@@ -2096,13 +3038,18 @@ async function verOrden(id) {
   const estadoColor = { presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
   const fila = (lbl, val) => val ? `<tr><td style="padding:3px 8px 3px 0;color:#777;font-size:12px;font-weight:600;white-space:nowrap">${lbl}</td><td style="padding:3px 0;font-size:13px">${val}</td></tr>` : ''
 
-  const itemsHtml = items.length ? items.map((it, i) => `
-    <tr style="background:${i%2===0?'#f9f9f9':'#fff'}">
+  const trabajoRow = o.observaciones ? `
+    <tr style="background:#f5f5f5">
+      <td style="padding:7px 8px;text-align:center;color:#aaa;font-size:12px">—</td>
+      <td style="padding:7px 8px;font-size:13px;font-style:italic;color:#444" colspan="3">${esc(o.observaciones)}</td>
+    </tr>` : ''
+  const itemsHtml = trabajoRow + (items.length ? items.map((it, i) => `
+    <tr style="background:${i%2===0?'#fff':'#f9f9f9'}">
       <td style="padding:7px 8px;text-align:center;color:#888;font-size:12px">${i+1}</td>
       <td style="padding:7px 8px;font-size:13px">${esc(it.descripcion||'')}</td>
       <td style="padding:7px 8px;text-align:center;font-size:12px;color:#666">${esc(it.numero_parte||'—')}</td>
       <td style="padding:7px 8px;text-align:center;font-size:13px">${it.cantidad||1}</td>
-    </tr>`) .join('') : `<tr><td colspan="4" style="padding:16px;text-align:center;color:#aaa">Sin ítems registrados</td></tr>`
+    </tr>`).join('') : `<tr><td colspan="4" style="padding:16px;text-align:center;color:#aaa">Sin ítems registrados</td></tr>`)
 
   const estadoLabel = estadoMap[o.estado] || o.estado
   const estadoClr   = estadoColor[o.estado] || '#64748b'
@@ -2157,13 +3104,6 @@ async function verOrden(id) {
       </thead>
       <tbody>${itemsHtml}</tbody>
     </table>
-
-    <!-- Observaciones -->
-    ${o.observaciones ? `
-    <div style="background:#f0f7f0;border:1px solid #c8e6c9;border-radius:6px;padding:12px 14px;font-size:13px">
-      <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#16a34a;margin-bottom:6px">Observaciones</div>
-      <div style="white-space:pre-wrap;color:#333">${esc(o.observaciones)}</div>
-    </div>` : ''}
   `
 
   document.getElementById('orden-preview-pdf-btn').onclick = () => ordenBuildPDF(o, items)
@@ -2203,35 +3143,38 @@ function ordenBuildPDF(o, items) {
     doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...VERDE); doc.text('CLIENTE / VEHÍCULO',mL+3,y+4); y+=12
     const colAx=mL+2,colAval=mL+22,colBx=mL+cW/2+4,colBval=mL+cW/2+24
     doc.setFontSize(8.5)
-    drawF('Cliente:',cli.nombre||'',colAx,colAval,y); drawF(veh?'Vehículo:':'',veh?`${veh.marca||''} ${veh.modelo||''}`.trim():'',colBx,colBval,y); y+=7
-    drawF('Tel:',cli.telefono||'',colAx,colAval,y); drawF(veh?'Patente:':'',veh?.patente||'',colBx,colBval,y); y+=7
-    drawF('Email:',cli.email||'',colAx,colAval,y); drawF(veh&&veh.año?'Año:':'',veh?.año?String(veh.año):'',colBx,colBval,y); y+=12
+    drawF('Cliente:',cli.nombre||'',colAx,colAval,y); drawF(veh?'Marca:':'',veh?.marca||'',colBx,colBval,y); y+=7
+    drawF('Tel:',cli.telefono||'',colAx,colAval,y); drawF(veh?'Modelo:':'',veh?.modelo||'',colBx,colBval,y); y+=7
+    drawF('Email:',cli.email||'',colAx,colAval,y); drawF(veh?'Patente:':'',veh?.patente||'',colBx,colBval,y); y+=7
+    if (cli.cuit || (veh && veh.año)) {
+      drawF(cli.cuit?'CUIT:':'',cli.cuit||'',colAx,colAval,y); drawF(veh?.año?'Año:':'',veh?.año?String(veh.año):'',colBx,colBval,y); y+=7
+    }
+    y+=5
 
-    // Ítems — sin precios
-    const tableBody = items.map((it,i) => [
-      String(i+1), it.descripcion||'', it.numero_parte||'—', String(it.cantidad||1)
-    ])
+    // Ítems — sin precios (la descripción del trabajo va como primera fila)
+    const tableBody = [
+      ...(o.observaciones ? [['—', o.observaciones, '', '']] : []),
+      ...items.map((it,i) => [String(i+1), it.descripcion||'', it.numero_parte||'—', String(it.cantidad||1)])
+    ]
+    const trabajoRowIdx = o.observaciones ? 0 : -1
     doc.autoTable({
       startY:y,
-      head:[['#','Descripción del trabajo / pieza','N° Parte','Cant.']],
+      head:[['#','Descripción / pieza','N° Parte','Cant.']],
       body:tableBody, theme:'striped',
       headStyles:{fillColor:VERDE,textColor:[255,255,255],fontStyle:'bold',fontSize:8.5,cellPadding:3},
       bodyStyles:{fontSize:8.5,textColor:GOSC,cellPadding:{top:5,bottom:5,left:3,right:3}},
       alternateRowStyles:{fillColor:[249,249,249]},
       columnStyles:{0:{cellWidth:8,halign:'center'},1:{cellWidth:'auto'},2:{cellWidth:28,halign:'center'},3:{cellWidth:13,halign:'center'}},
-      margin:{left:mL,right:mR}
+      margin:{left:mL,right:mR},
+      didParseCell(data) {
+        if (data.row.index === trabajoRowIdx && data.section === 'body') {
+          data.cell.styles.fillColor = [245,245,245]
+          data.cell.styles.textColor = [80,80,80]
+          data.cell.styles.fontStyle = 'italic'
+        }
+      }
     })
     y = doc.lastAutoTable.finalY + 8
-
-    // Observaciones
-    if (o.observaciones) {
-      doc.setFillColor(240,247,241); doc.rect(mL,y-1,cW,6,'F')
-      doc.setDrawColor(...LINEA); doc.setLineWidth(0.3); doc.rect(mL,y-1,cW,6,'S')
-      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...VERDE); doc.text('OBSERVACIONES',mL+3,y+3.2); y+=11
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(...GOSC)
-      const obsLines = doc.splitTextToSize(o.observaciones, cW-4)
-      doc.text(obsLines,mL+2,y)
-    }
 
     // Pie
     const pieY=pH-30
@@ -2498,27 +3441,30 @@ async function aprobarPresupuesto(id) {
     if (clienteId) await db.from('presupuestos').update({ cliente_id: clienteId }).eq('id', id)
   }
 
-  // Armar observaciones a partir del presupuesto
-  const lineas = []
-  if (p.tipo_detalle) lineas.push(`Trabajo: ${p.tipo_detalle}`)
-  if (p.items_presupuesto?.length) {
-    lineas.push('Ítems presupuestados:')
-    p.items_presupuesto.forEach(i => {
-      lineas.push(`  - ${i.descripcion} (x${i.cantidad})`)
-    })
-  }
-  const observaciones = lineas.join('\n') || null
-
   // Crear orden de trabajo
-  const { error: errOrden } = await db.from('ordenes_trabajo').insert({
+  const tipoOrden = p.tipo === 'lab' ? 'laboratorio' : 'taller'
+  const { data: ordenCreada, error: errOrden } = await db.from('ordenes_trabajo').insert({
     cliente_id:     clienteId || null,
+    vehiculo_id:    p.vehiculo_id || null,
     presupuesto_id: id,
+    tipo:           tipoOrden,
     estado:         'en_trabajo',
-    observaciones,
+    observaciones:  p.tipo_detalle || null,
     fecha_ingreso:  new Date().toISOString().split('T')[0],
     total:          p.total || null,
-  })
+  }).select().single()
   if (errOrden) { toast('Error al crear la orden', 'error'); console.error(errOrden); return }
+
+  // Insertar los ítems del presupuesto como ítems de la orden
+  if (p.items_presupuesto?.length && ordenCreada?.id) {
+    const itemsOrden = p.items_presupuesto.map(i => ({
+      orden_id:     ordenCreada.id,
+      descripcion:  i.descripcion,
+      numero_parte: i.numero_parte || null,
+      cantidad:     i.cantidad || 1,
+    }))
+    await db.from('items_orden').insert(itemsOrden)
+  }
 
   // Marcar presupuesto como aprobado
   await db.from('presupuestos').update({ estado: 'aprobado' }).eq('id', id)
@@ -2690,14 +3636,48 @@ let _itemsNuevos = []   // filas nuevas aún no guardadas
 
 async function abrirOrden(id) {
   _ordenActual = _ordenes.find(o => o.id === id)
-  if (!_ordenActual) return
+  if (!_ordenActual) {
+    // Si no está en memoria (ej: venimos desde historial de vehículo), buscar en DB
+    const { data } = await db
+      .from('ordenes_trabajo')
+      .select('*, clientes(nombre), vehiculos(marca,modelo,patente,año)')
+      .eq('id', id)
+      .single()
+    if (!data) { toast('No se encontró la orden', 'error'); return }
+    // Navegar a la página de órdenes y cargar la lista si hace falta
+    navigate('ordenes')
+    if (!_ordenes.length) await cargarOrdenes()
+    _ordenActual = data
+    // Asegurarse de que esté en _ordenes para operaciones posteriores
+    if (!_ordenes.find(o => o.id === id)) _ordenes.unshift(data)
+  }
 
   // Título
-  document.getElementById('dr-cliente').textContent  = _ordenActual.clientes?.nombre || '—'
+  document.getElementById('dr-cliente').textContent = _ordenActual.clientes?.nombre || '—'
   const veh = _ordenActual.vehiculos
   document.getElementById('dr-vehiculo').textContent = veh
     ? [veh.marca, veh.modelo, veh.patente ? `(${veh.patente})` : ''].filter(Boolean).join(' ')
-    : 'Sin vehículo registrado'
+    : 'Sin vehículo asignado'
+
+  // Selector de vehículo en el drawer — solo editable si no tiene vehículo asignado
+  const selectorDr = document.getElementById('dr-vehiculo-selector')
+  const fijoDr     = document.getElementById('dr-vehiculo-fijo')
+  const infoDr     = document.getElementById('dr-vehiculo-info')
+  if (veh) {
+    // Vehículo ya asignado: mostrar como texto, ocultar selector
+    selectorDr.style.display = 'none'
+    fijoDr.style.display = 'block'
+    fijoDr.textContent = [veh.marca, veh.modelo, veh.patente ? `(${veh.patente})` : ''].filter(Boolean).join(' ')
+    infoDr.style.display = 'block'
+    infoDr.textContent = [veh.patente, veh.año ? `Año ${veh.año}` : ''].filter(Boolean).join(' · ')
+  } else {
+    // Sin vehículo: mostrar selector para asignar
+    selectorDr.style.display = 'flex'
+    fijoDr.style.display = 'none'
+    infoDr.style.display = 'none'
+    await cargarVehiculosSelect()
+    document.getElementById('dr-vehiculo-sel').value = ''
+  }
 
   // Estado
   actualizarBotonesEstado(_ordenActual.estado)
@@ -2744,13 +3724,10 @@ function renderItemsOrden() {
   _itemsOrden.forEach(item => {
     rows.push(`
       <tr id="item-row-${item.id}">
-        <td><input type="text" value="${esc(item.descripcion || '')}" onchange="actualizarItemGuardado('${item.id}','descripcion',this.value)"></td>
-        <td><input type="text" value="${esc(item.numero_parte || '')}" onchange="actualizarItemGuardado('${item.id}','numero_parte',this.value)"></td>
-        <td><input type="number" value="${item.cantidad || 1}" min="1" style="text-align:center" onchange="actualizarItemGuardado('${item.id}','cantidad',this.value);recalcularTotal()"></td>
-        <td><input type="number" value="${item.precio_unitario || ''}" placeholder="0" step="0.01" onchange="actualizarItemGuardado('${item.id}','precio_unitario',this.value);recalcularTotal()"></td>
-        <td style="text-align:right;font-size:12px;font-weight:600;color:var(--text3);padding-right:6px" id="sub-${item.id}">
-          ${item.precio_unitario ? '$'+Number(item.precio_unitario * item.cantidad).toLocaleString('es-AR') : '—'}
-        </td>
+        <td><input type="text" value="${esc(item.descripcion || '')}" placeholder="Descripción del trabajo..." onchange="actualizarItemGuardado('${item.id}','descripcion',this.value)"></td>
+        <td><input type="text" value="${esc(item.numero_parte || '')}" placeholder="—" onchange="actualizarItemGuardado('${item.id}','numero_parte',this.value)"></td>
+        <td><input type="number" value="${item.cantidad || 1}" min="1" style="text-align:center" onchange="actualizarItemGuardado('${item.id}','cantidad',this.value)"></td>
+        <td><input type="number" value="${item.precio_unitario || ''}" placeholder="—" step="0.01" title="Completar solo si suma al presupuesto" onchange="actualizarItemGuardado('${item.id}','precio_unitario',this.value)" style="${item.precio_unitario ? 'color:var(--warn)' : ''}"></td>
         <td><button class="btn btn-danger btn-sm btn-icon" onclick="eliminarItemOrden('${item.id}')"><i class="fa-solid fa-trash"></i></button></td>
       </tr>`)
   })
@@ -2758,18 +3735,17 @@ function renderItemsOrden() {
   // Filas nuevas (aún no guardadas)
   _itemsNuevos.forEach((item, idx) => {
     rows.push(`
-      <tr id="new-row-${idx}" style="background:rgba(34,197,94,.04)">
-        <td><input type="text" placeholder="Descripción" oninput="_itemsNuevos[${idx}].descripcion=this.value"></td>
-        <td><input type="text" placeholder="0445110231" oninput="_itemsNuevos[${idx}].numero_parte=this.value"></td>
-        <td><input type="number" value="1" min="1" style="text-align:center" oninput="_itemsNuevos[${idx}].cantidad=+this.value;recalcularTotal()"></td>
-        <td><input type="number" placeholder="0" step="0.01" oninput="_itemsNuevos[${idx}].precio_unitario=+this.value;recalcularTotal()"></td>
-        <td style="text-align:right;font-size:12px;font-weight:600;color:var(--text3);padding-right:6px">—</td>
+      <tr id="new-row-${idx}" style="background:rgba(34,197,94,.05);outline:1px dashed var(--accent)">
+        <td><input type="text" placeholder="Descripción del trabajo..." oninput="_itemsNuevos[${idx}].descripcion=this.value"></td>
+        <td><input type="text" placeholder="—" oninput="_itemsNuevos[${idx}].numero_parte=this.value"></td>
+        <td><input type="number" value="1" min="1" style="text-align:center" oninput="_itemsNuevos[${idx}].cantidad=+this.value"></td>
+        <td><input type="number" placeholder="— (suma al presupuesto)" step="0.01" title="Completar solo si este extra suma al presupuesto" oninput="_itemsNuevos[${idx}].precio_unitario=+this.value" style="color:var(--warn)"></td>
         <td><button class="btn btn-danger btn-sm btn-icon" onclick="quitarFilaNueva(${idx})"><i class="fa-solid fa-xmark"></i></button></td>
       </tr>`)
   })
 
   tbody.innerHTML = rows.length ? rows.join('') : `
-    <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">
+    <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text3);font-size:13px">
       Sin items — tocá "Agregar" para sumar trabajos
     </td></tr>`
 
@@ -2814,7 +3790,9 @@ function recalcularTotal() {
   const totalGuardados = _itemsOrden.reduce((s, i) => s + (i.precio_unitario || 0) * (i.cantidad || 1), 0)
   const totalNuevos    = _itemsNuevos.reduce((s, i) => s + (i.precio_unitario || 0) * (i.cantidad || 1), 0)
   const total = totalGuardados + totalNuevos
-  document.getElementById('dr-total').textContent = '$' + total.toLocaleString('es-AR', { minimumFractionDigits: 0 })
+  const wrap = document.getElementById('dr-total-wrap')
+  if (wrap) wrap.style.display = total > 0 ? 'flex' : 'none'
+  document.getElementById('dr-total').textContent = '$ ' + total.toLocaleString('es-AR', { minimumFractionDigits: 2 })
   return total
 }
 
@@ -2874,8 +3852,11 @@ async function guardarDetalleOrden() {
 
   // 3. Calcular y guardar total + datos de la orden
   const total = recalcularTotal()
+  // Si ya tenía vehículo asignado, no lo cambiamos; si no tenía, tomamos el selector
+  const vehiculoSelId = _ordenActual.vehiculo_id || document.getElementById('dr-vehiculo-sel').value || null
   const { error } = await db.from('ordenes_trabajo').update({
     estado:          _ordenActual.estado,
+    vehiculo_id:     vehiculoSelId,
     observaciones:   document.getElementById('dr-obs').value.trim() || null,
     fecha_ingreso:   document.getElementById('dr-fecha-ingreso').value || null,
     fecha_entrega:   document.getElementById('dr-fecha-entrega').value || null,
