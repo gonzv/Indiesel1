@@ -66,19 +66,18 @@ input, select, textarea { font-family: inherit; }
   transition: transform var(--transition);
 }
 .sidebar-logo {
-  padding: 24px 20px 20px;
+  padding: 20px 20px 16px;
   border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
 .logo-img {
-  width: 44px; height: 44px; flex-shrink: 0;
+  width: 64px; height: 64px;
   object-fit: contain;
-  filter: invert(1) sepia(1) saturate(5) hue-rotate(95deg) brightness(0.95);
+  filter: invert(1) sepia(1) saturate(3) hue-rotate(88deg) brightness(0.72);
   mix-blend-mode: screen;
 }
-.sidebar-logo .brand { line-height: 1.2; }
-.sidebar-logo .brand h1 { font-size: 16px; font-weight: 800; letter-spacing: 1px; color: var(--text); }
-.sidebar-logo .brand p  { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.sidebar-logo .brand { line-height: 1.2; text-align: center; }
+.sidebar-logo .brand p  { font-size: 10px; color: var(--text3); letter-spacing: 0.5px; }
 
 .sidebar-nav { flex: 1; padding: 12px 10px; overflow-y: auto; }
 .nav-section-label {
@@ -525,27 +524,148 @@ tbody tr:last-child td { border-bottom: none; }
 .gap-8 { gap: 8px; }
 .gap-12 { gap: 12px; }
 .gap-16 { gap: 16px; }
+
+/* ══════════════════════════════════════════
+   INFORMES — form embed
+══════════════════════════════════════════ */
+.inf-inj-block {
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.inf-pruebas-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 400px; }
+.inf-pruebas-table th {
+  text-align: left; font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  color: var(--text3); padding: 6px 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.inf-pruebas-table td { padding: 4px 6px; border-bottom: 1px solid rgba(51,65,85,.35); }
+.inf-pruebas-table tbody tr:last-child td { border-bottom: none; }
+.inf-pruebas-table input[type="number"],
+.inf-pruebas-table input[type="text"] {
+  background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 6px; padding: 6px 8px;
+  font-size: 13px; color: var(--text); width: 100%;
+  transition: border-color var(--transition);
+}
+.inf-pruebas-table input:focus { outline: none; border-color: var(--accent); }
+.inf-pruebas-table input[type="checkbox"] {
+  width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer;
+}
+.inf-btn-add-inj {
+  width: 100%; padding: 11px;
+  border: 2px dashed var(--border); border-radius: var(--radius-sm);
+  background: transparent; color: var(--text2);
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: inherit;
+}
+.inf-btn-add-inj:hover { border-color: var(--accent); color: var(--accent); background: rgba(34,197,94,.05); }
+
+/* ══════════════════════════════════════════
+   USER PICKER — selector de usuario
+══════════════════════════════════════════ */
+.user-picker {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 48px;
+}
+.user-picker.hidden { display: none; }
+.user-picker-header { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.user-picker-header .pick-logo {
+  width: 72px; height: 72px; object-fit: contain;
+  filter: invert(1) sepia(1) saturate(3) hue-rotate(88deg) brightness(0.72);
+  mix-blend-mode: screen;
+}
+.user-picker-header h2 { font-size: 22px; font-weight: 800; }
+.user-picker-header p  { font-size: 13px; color: var(--text3); }
+.user-cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.user-card {
+  width: 150px;
+  background: var(--bg2); border: 1.5px solid var(--border);
+  border-radius: var(--radius); cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; padding: 28px 16px;
+  font-size: 15px; font-weight: 700;
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  user-select: none;
+}
+.user-card:hover { transform: translateY(-4px); box-shadow: 0 8px 32px rgba(0,0,0,.4); }
+.user-card:hover .user-avatar { transform: scale(1.08); }
+.user-avatar {
+  width: 68px; height: 68px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0;
+  transition: transform var(--transition);
+}
+/* Usuario activo en sidebar footer */
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px 6px;
+}
+.sidebar-user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.sidebar-user-info { line-height: 1.3; }
+.sidebar-user-info strong { font-size: 13px; font-weight: 700; display: block; }
+.sidebar-user-info span   { font-size: 10px; color: var(--text3); }
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════════ USER PICKER ═══════════════════════ -->
+<div class="user-picker" id="user-picker">
+  <div class="user-picker-header">
+    <img src="logo D indiesel png.jpg" class="pick-logo" alt="Indiesel">
+    <h2>¿Quién va a usar el sistema?</h2>
+    <p>Seleccioná tu usuario para continuar</p>
+  </div>
+  <div class="user-cards">
+    <div class="user-card" onclick="selectUser('gonzalo')">
+      <div class="user-avatar" style="background:rgba(168,85,247,.15);color:#a855f7">
+        <i class="fa-solid fa-user-tie"></i>
+      </div>
+      <span>Gonzalo</span>
+    </div>
+    <div class="user-card" onclick="selectUser('papa')">
+      <div class="user-avatar" style="background:rgba(34,197,94,.15);color:var(--accent)">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <span>Nicolás</span>
+    </div>
+    <div class="user-card" onclick="selectUser('empleado')">
+      <div class="user-avatar" style="background:rgba(245,158,11,.15);color:var(--warn)">
+        <i class="fa-solid fa-user-gear"></i>
+      </div>
+      <span>Gabriel</span>
+    </div>
+  </div>
+</div>
 
 <!-- ═══════════════════════ SIDEBAR ═══════════════════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <img src="logo D indiesel png.jpg" class="logo-img" alt="Indiesel">
     <div class="brand">
-      <h1>INDIESEL</h1>
       <p>Laboratorio Diesel · MdP</p>
     </div>
   </div>
 
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
     <button class="nav-item active" onclick="navigate('dashboard')">
       <i class="fa-solid fa-chart-pie"></i> Dashboard
     </button>
-    <button class="nav-item" onclick="navigate('clientes')">
-      <i class="fa-solid fa-users"></i> Clientes
+
+    <div class="nav-section-label">Taller</div>
+    <button class="nav-item" onclick="navigate('presupuestos')">
+      <i class="fa-solid fa-file-invoice-dollar"></i> Presupuestos
     </button>
     <button class="nav-item" onclick="navigate('ordenes')">
       <i class="fa-solid fa-wrench"></i> Órdenes de trabajo
@@ -553,14 +673,16 @@ tbody tr:last-child td { border-bottom: none; }
     <button class="nav-item" onclick="navigate('laboratorio')">
       <i class="fa-solid fa-flask"></i> Laboratorio
     </button>
+
+    <div class="nav-section-label">Registros</div>
+    <button class="nav-item" onclick="navigate('clientes')">
+      <i class="fa-solid fa-users"></i> Clientes
+    </button>
     <button class="nav-item" onclick="navigate('vehiculos')">
       <i class="fa-solid fa-car"></i> Vehículos
     </button>
 
     <div class="nav-section-label">Documentos</div>
-    <button class="nav-item" onclick="navigate('presupuestos')">
-      <i class="fa-solid fa-file-invoice-dollar"></i> Presupuestos
-    </button>
     <button class="nav-item" onclick="navigate('informes')">
       <i class="fa-solid fa-file-waveform"></i> Informes de prueba
     </button>
@@ -572,8 +694,20 @@ tbody tr:last-child td { border-bottom: none; }
   </nav>
 
   <div class="sidebar-footer">
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="sidebar-user-avatar" id="sidebar-user-avatar">
+        <i class="fa-solid fa-user"></i>
+      </div>
+      <div class="sidebar-user-info">
+        <strong id="sidebar-user-name">—</strong>
+        <span>Usuario activo</span>
+      </div>
+    </div>
     <button class="nav-item" onclick="navigate('config')">
       <i class="fa-solid fa-gear"></i> Configuración
+    </button>
+    <button class="nav-item" onclick="logoutUser()" style="color:var(--text3)">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i> Cambiar usuario
     </button>
   </div>
 </aside>
@@ -615,14 +749,6 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div class="stat-card">
         <div class="stat-top">
-          <span class="stat-label">Stock items</span>
-          <div class="stat-icon stat-green"><i class="fa-solid fa-boxes-stacked"></i></div>
-        </div>
-        <div class="stat-value" id="stat-stock">—</div>
-        <div class="stat-sub">en inventario</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-top">
           <span class="stat-label">Presupuestos</span>
           <div class="stat-icon stat-red"><i class="fa-solid fa-file-invoice-dollar"></i></div>
         </div>
@@ -631,7 +757,12 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
+    <!-- Alertas: vehículos sin patente -->
+    <div id="dash-sin-patente" style="display:none;margin-bottom:16px"></div>
+
     <div class="grid-2" style="gap:16px">
+      <!-- CARD ÚLTIMAS ÓRDENES — visible para empleados, oculto para admin -->
+      <!--
       <div class="card">
         <div class="card-header">
           <div class="card-icon" style="background:rgba(34,197,94,.12);color:var(--accent)">
@@ -646,6 +777,25 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="empty-state" style="padding:30px 16px">
             <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
             <p>No hay órdenes aún</p>
+          </div>
+        </div>
+      </div>
+      -->
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon" style="background:rgba(245,158,11,.12);color:var(--warn)">
+            <i class="fa-solid fa-file-invoice-dollar"></i>
+          </div>
+          <div>
+            <h3>Últimos presupuestos</h3>
+            <p>Presupuestos recientes</p>
+          </div>
+        </div>
+        <div class="card-body" id="dash-ultimos-presupuestos">
+          <div class="empty-state" style="padding:30px 16px">
+            <div class="empty-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+            <p>No hay presupuestos aún</p>
           </div>
         </div>
       </div>
@@ -670,7 +820,7 @@ tbody tr:last-child td { border-bottom: none; }
           <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('presupuestos');abrirNuevoPresupuesto()">
             <i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn)"></i> Nuevo presupuesto
           </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="window.open('index.html','_blank')">
+          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('informes')">
             <i class="fa-solid fa-flask" style="color:var(--danger)"></i> Generar informe PDF
           </button>
         </div>
@@ -854,7 +1004,7 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="table-wrap">
         <table>
           <thead>
-            <tr><th>N°</th><th>Cliente</th><th>Fecha</th><th>Validez</th><th>Estado</th><th>Total</th><th></th></tr>
+            <tr><th>N°</th><th>Cliente</th><th>Vehículo / Inyección</th><th>Fecha</th><th>Validez</th><th>Estado</th><th>Total</th><th>Saldo</th><th></th></tr>
           </thead>
           <tbody id="tabla-presupuestos">
             <tr><td colspan="7">
@@ -872,16 +1022,94 @@ tbody tr:last-child td { border-bottom: none; }
 
   <!-- ═══ PAGE: INFORMES ═══ -->
   <div class="page" id="page-informes">
-    <div class="flex items-center justify-between gap-12 mb-24">
-      <div class="search-bar" style="flex:1;max-width:360px">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Buscar informe...">
+
+    <!-- Nuevo informe -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(59,130,246,.12);color:var(--info)">
+          <i class="fa-solid fa-file-waveform"></i>
+        </div>
+        <div>
+          <h3>Nuevo informe de prueba</h3>
+          <p>Completá los datos y generá el PDF</p>
+        </div>
       </div>
-      <button class="btn btn-primary" onclick="window.open('index.html','_blank')">
-        <i class="fa-solid fa-file-arrow-up"></i> Generar informe PDF
-      </button>
+      <div class="card-body">
+        <div class="form-grid-3" style="margin-bottom:0">
+          <div class="field">
+            <label>Vehículo</label>
+            <input type="text" id="inf-vehiculo" placeholder="Ej: Chevrolet S10 2.8 MWM">
+          </div>
+          <div class="field">
+            <label>Fecha</label>
+            <input type="text" id="inf-fecha">
+          </div>
+          <div class="field">
+            <label>N° Informe</label>
+            <input type="text" id="inf-ninforme" placeholder="0001">
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Inyectores -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(34,197,94,.12);color:var(--accent)">
+          <i class="fa-solid fa-gear"></i>
+        </div>
+        <div>
+          <h3>Inyectores</h3>
+          <p id="inf-inj-count-label">0 inyectores</p>
+        </div>
+      </div>
+      <div class="card-body" style="padding-bottom:8px">
+        <div id="inf-inj-container"></div>
+        <button class="inf-btn-add-inj" onclick="infAgregarInyector()">
+          <i class="fa-solid fa-plus"></i> Agregar inyector
+        </button>
+      </div>
+    </div>
+
+    <!-- Firma y Logo -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(100,116,139,.12);color:var(--text3)">
+          <i class="fa-solid fa-image"></i>
+        </div>
+        <div>
+          <h3>Firma y Logo</h3>
+          <p>Se guardan automáticamente en este dispositivo</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="form-grid-2">
+          <div class="field">
+            <label>Firma (PNG/JPG)</label>
+            <input type="file" id="inf-firma-file" accept="image/png,image/jpeg" onchange="infGuardarImg('firma',this)">
+            <span style="font-size:11px;color:var(--accent)" id="inf-firma-status"></span>
+          </div>
+          <div class="field">
+            <label>Logo Indiesel (PNG)</label>
+            <input type="file" id="inf-logo-file" accept="image/png,image/jpeg" onchange="infGuardarImg('logo',this)">
+            <span style="font-size:11px;color:var(--accent)" id="inf-logo-status"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-lg" onclick="generarPDFInforme()" style="margin-bottom:24px">
+      <i class="fa-solid fa-file-arrow-down"></i> Generar PDF
+    </button>
+
+    <!-- Historial -->
     <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:rgba(100,116,139,.12);color:var(--text3)">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div><h3>Historial de informes</h3><p>Informes generados anteriormente</p></div>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -892,7 +1120,7 @@ tbody tr:last-child td { border-bottom: none; }
               <div class="empty-state">
                 <div class="empty-icon"><i class="fa-solid fa-flask"></i></div>
                 <h3>Sin informes</h3>
-                <p>Los informes guardados aparecen acá</p>
+                <p>Los informes generados aparecen acá</p>
               </div>
             </td></tr>
           </tbody>
@@ -900,6 +1128,12 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
     </div>
   </div>
+
+  <datalist id="inf-fab-list">
+    <option value="Bosch"><option value="Delphi"><option value="Denso">
+    <option value="Siemens"><option value="Continental"><option value="Magneti Marelli">
+    <option value="Stanadyne">
+  </datalist>
 
   <!-- ═══ PAGE: STOCK ═══ -->
   <div class="page" id="page-stock">
@@ -1088,7 +1322,7 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="modal-body">
       <div class="form-grid" style="gap:14px">
         <div class="field">
-          <label>Patente *</label>
+          <label>Patente <span style="font-size:11px;color:var(--text3)">(requerida para nuevo)</span></label>
           <input type="text" id="veh-patente" placeholder="AB 123 CD" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="verificarPatenteExistente()">
           <div id="veh-patente-aviso" style="display:none;margin-top:4px;font-size:12px;padding:6px 10px;border-radius:4px"></div>
         </div>
@@ -1234,6 +1468,9 @@ tbody tr:last-child td { border-bottom: none; }
             <i class="fa-solid fa-magnifying-glass"></i> Buscar
           </button>
         </div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:8px;color:var(--text3);font-size:13px" onclick="continuarSinPatente()">
+          <i class="fa-solid fa-circle-exclamation"></i> No sé la patente — continuar sin ella
+        </button>
       </div>
 
       <!-- Paso 3: ¿armar presupuesto? -->
@@ -1259,7 +1496,7 @@ tbody tr:last-child td { border-bottom: none; }
 
       <!-- Paso 4: formulario vehículo nuevo -->
       <div id="post-paso-vehiculo-nuevo" style="display:none">
-        <div style="margin-bottom:12px;padding:10px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:var(--radius-sm);font-size:13px;color:var(--warn)">
+        <div id="post-veh-aviso" style="margin-bottom:12px;padding:10px 12px;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);border-radius:var(--radius-sm);font-size:13px;color:var(--warn)">
           <i class="fa-solid fa-circle-info"></i> Patente no encontrada — completá los datos para crear el vehículo
         </div>
         <div class="form-grid" style="gap:12px">
@@ -1399,8 +1636,54 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-presup-preview')">Cerrar</button>
+      <button class="btn btn-ghost" onclick="abrirRegistrarPago()">
+        <i class="fa-solid fa-hand-holding-dollar" style="color:var(--accent)"></i> Registrar pago
+      </button>
       <button class="btn btn-primary" id="presup-preview-pdf-btn" onclick="">
         <i class="fa-solid fa-file-pdf"></i> Descargar PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Registrar pago a cuenta -->
+<div class="modal-overlay" id="modal-pago-presup">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-hand-holding-dollar" style="color:var(--accent);margin-right:8px"></i>Registrar pago</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-pago-presup')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Monto $</label>
+        <input type="number" id="pago-monto" min="0" step="1" placeholder="0" style="font-size:20px;font-weight:700">
+      </div>
+      <div class="form-grid-2">
+        <div class="field">
+          <label>Fecha</label>
+          <input type="date" id="pago-fecha">
+        </div>
+        <div class="field">
+          <label>Medio de pago</label>
+          <select id="pago-medio">
+            <option value="">— Sin especificar —</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Débito">Débito</option>
+            <option value="Crédito">Crédito</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Notas (opcional)</label>
+        <input type="text" id="pago-notas" placeholder="Observaciones...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-pago-presup')">Cancelar</button>
+      <button class="btn btn-primary" onclick="guardarPago()">
+        <i class="fa-solid fa-check"></i> Guardar pago
       </button>
     </div>
   </div>
@@ -1662,6 +1945,82 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
 // ════════════════════════════════════════
+// SESIÓN DE USUARIO
+// ════════════════════════════════════════
+const INACTIVITY_MS = 15 * 60 * 1000  // 15 minutos sin actividad → vuelve al picker
+
+const USUARIOS = {
+  gonzalo: { nombre: 'Gonzalo', icono: 'fa-user-tie', color: '#a855f7',        bg: 'rgba(168,85,247,.15)', ocultar: [] },
+  papa:    { nombre: 'Nicolás', icono: 'fa-user',     color: 'var(--accent)',  bg: 'rgba(34,197,94,.15)',  ocultar: [] },
+  empleado:{ nombre: 'Gabriel', icono: 'fa-user-gear',color: 'var(--warn)',    bg: 'rgba(245,158,11,.15)', ocultar: ['presupuestos', 'config'] },
+}
+
+let _inactivityTimer = null
+
+function selectUser(id) {
+  const u = USUARIOS[id]
+  if (!u) return
+
+  localStorage.setItem('indiesel_user', id)
+  localStorage.setItem('indiesel_activity', Date.now())
+
+  // Actualizar sidebar
+  const avatarEl = document.getElementById('sidebar-user-avatar')
+  avatarEl.style.background = u.bg
+  avatarEl.style.color = u.color
+  avatarEl.innerHTML = `<i class="fa-solid ${u.icono}"></i>`
+  document.getElementById('sidebar-user-name').textContent = u.nombre
+
+  // Aplicar permisos: mostrar todos los nav-items y ocultar los restringidos
+  document.querySelectorAll('.nav-item[onclick^="navigate"]').forEach(btn => {
+    btn.style.display = ''
+  })
+  u.ocultar.forEach(page => {
+    const btn = document.querySelector(`.nav-item[onclick="navigate('${page}')"]`)
+    if (btn) btn.style.display = 'none'
+  })
+
+  // Si está en una página restringida, redirigir al dashboard
+  if (u.ocultar.includes(currentPage)) navigate('dashboard')
+
+  // Ocultar picker
+  document.getElementById('user-picker').classList.add('hidden')
+
+  _resetInactivity()
+}
+
+function logoutUser() {
+  clearTimeout(_inactivityTimer)
+  localStorage.removeItem('indiesel_user')
+  localStorage.removeItem('indiesel_activity')
+  document.getElementById('user-picker').classList.remove('hidden')
+}
+
+function _resetInactivity() {
+  clearTimeout(_inactivityTimer)
+  _inactivityTimer = setTimeout(logoutUser, INACTIVITY_MS)
+  if (localStorage.getItem('indiesel_user')) {
+    localStorage.setItem('indiesel_activity', Date.now())
+  }
+}
+
+// Reinicia el timer con cualquier interacción
+;['mousemove', 'keydown', 'click', 'touchstart', 'scroll'].forEach(ev => {
+  document.addEventListener(ev, _resetInactivity, { passive: true })
+})
+
+// Al cargar: verificar sesión existente (se llama después de que currentPage esté definido)
+function checkSession() {
+  const id = localStorage.getItem('indiesel_user')
+  const ts = parseInt(localStorage.getItem('indiesel_activity') || '0')
+
+  if (id && USUARIOS[id] && Date.now() - ts < INACTIVITY_MS) {
+    selectUser(id)   // restaura sesión sin pedir usuario
+  }
+  // Si no hay sesión válida, el picker ya está visible por defecto
+}
+
+// ════════════════════════════════════════
 // NAVEGACIÓN
 // ════════════════════════════════════════
 const pageNames = {
@@ -1677,6 +2036,7 @@ const pageNames = {
 }
 
 let currentPage = 'dashboard'
+checkSession()
 
 function navigate(page) {
   // Ocultar páginas
@@ -1767,18 +2127,48 @@ function toast(msg, type = 'success', duration = 3000) {
 // ════════════════════════════════════════
 async function cargarDashboard() {
   try {
-    const [{ count: c1 }, { count: c2 }, { count: c3 }, { count: c4 }] = await Promise.all([
+    const [{ count: c1 }, { count: c2 }, { count: c3 }] = await Promise.all([
       db.from('clientes').select('*', { count: 'exact', head: true }),
       db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).in('estado', ['en_trabajo','presupuestado']),
-      db.from('stock').select('*', { count: 'exact', head: true }),
       db.from('presupuestos').select('*', { count: 'exact', head: true }).eq('estado','pendiente'),
     ])
     document.getElementById('stat-clientes').textContent     = c1 ?? 0
     document.getElementById('stat-ordenes').textContent      = c2 ?? 0
-    document.getElementById('stat-stock').textContent        = c3 ?? 0
-    document.getElementById('stat-presupuestos').textContent = c4 ?? 0
+    document.getElementById('stat-presupuestos').textContent = c3 ?? 0
 
-    // Últimas órdenes
+    // Vehículos sin patente
+    const { data: sinPatente } = await db.from('vehiculos')
+      .select('id, marca, modelo, año, cliente_id, clientes(nombre)')
+      .or('patente.is.null,patente.eq.')
+      .order('created_at', { ascending: false })
+    const divSP = document.getElementById('dash-sin-patente')
+    if (sinPatente && sinPatente.length > 0) {
+      divSP.style.display = 'block'
+      divSP.innerHTML = `
+        <div style="padding:14px 16px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius);display:flex;align-items:flex-start;gap:12px">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--warn);font-size:18px;margin-top:2px;flex-shrink:0"></i>
+          <div style="flex:1">
+            <div style="font-weight:700;color:var(--warn);margin-bottom:6px">${sinPatente.length} vehículo${sinPatente.length > 1 ? 's' : ''} sin patente</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              ${sinPatente.map(v => {
+                const desc = [v.marca, v.modelo, v.año ? `(${v.año})` : ''].filter(Boolean).join(' ') || 'Sin datos'
+                const cliente = v.clientes?.nombre || 'Sin cliente'
+                return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px">
+                  <span style="color:var(--text2)"><span style="color:var(--text)">${esc(desc)}</span> — ${esc(cliente)}</span>
+                  <button class="btn btn-sm btn-ghost" style="color:var(--warn);border-color:rgba(245,158,11,.4);flex-shrink:0" onclick="navegarYEditarVehiculo('${v.id}')">
+                    <i class="fa-solid fa-pen"></i> Agregar patente
+                  </button>
+                </div>`
+              }).join('')}
+            </div>
+          </div>
+        </div>`
+    } else {
+      divSP.style.display = 'none'
+    }
+
+    // BLOQUE ÚLTIMAS ÓRDENES — para empleados (descomentar y comentar el de presupuestos)
+    /*
     const { data: ordenes } = await db
       .from('ordenes_trabajo')
       .select('*, clientes(nombre)')
@@ -1790,16 +2180,40 @@ async function cargarDashboard() {
       cont.innerHTML = `<div class="empty-state" style="padding:30px 16px">
         <div class="empty-icon"><i class="fa-solid fa-wrench"></i></div>
         <p>No hay órdenes aún</p></div>`
-      return
+    } else {
+      cont.innerHTML = ordenes.map(o => `
+        <div onclick="abrirOrden('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition);border-radius:var(--radius-sm);padding-left:8px;padding-right:8px;margin:0 -8px" onmouseenter="this.style.background='rgba(255,255,255,.04)'" onmouseleave="this.style.background=''">
+          <div>
+            <div style="font-size:13px;font-weight:600">${o.clientes?.nombre || '—'}</div>
+            <div style="font-size:11px;color:var(--text3)">${o.vehiculo_desc || ''} · ${formatFecha(o.fecha_ingreso)}</div>
+          </div>
+          ${badgeEstado(o.estado)}
+        </div>`).join('')
     }
-    cont.innerHTML = ordenes.map(o => `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border)">
-        <div>
-          <div style="font-size:13px;font-weight:600">${o.clientes?.nombre || '—'}</div>
-          <div style="font-size:11px;color:var(--text3)">${o.vehiculo_desc || ''} · ${formatFecha(o.fecha_ingreso)}</div>
-        </div>
-        ${badgeEstado(o.estado)}
-      </div>`).join('')
+    */
+
+    // Últimos presupuestos
+    const { data: presups } = await db
+      .from('presupuestos')
+      .select('*, clientes(nombre)')
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    const contP = document.getElementById('dash-ultimos-presupuestos')
+    if (!presups || presups.length === 0) {
+      contP.innerHTML = `<div class="empty-state" style="padding:30px 16px">
+        <div class="empty-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+        <p>No hay presupuestos aún</p></div>`
+    } else {
+      contP.innerHTML = presups.map(p => `
+        <div onclick="navigate('presupuestos');verPresupuesto('${p.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:background var(--transition);border-radius:var(--radius-sm);padding-left:8px;padding-right:8px;margin:0 -8px" onmouseenter="this.style.background='rgba(255,255,255,.04)'" onmouseleave="this.style.background=''">
+          <div>
+            <div style="font-size:13px;font-weight:600">${p.datos_cliente?.nombre || p.clientes?.nombre || '—'}</div>
+            <div style="font-size:11px;color:var(--text3)">${p.tipo_detalle || '—'} · ${formatFecha(p.fecha)}</div>
+          </div>
+          ${badgeEstado(p.estado)}
+        </div>`).join('')
+    }
   } catch(e) {
     console.error(e)
   }
@@ -1981,6 +2395,17 @@ function postClienteVolverPatente() {
   document.getElementById('post-paso-patente').style.display = 'block'
 }
 
+function continuarSinPatente() {
+  _postPatenteValue = ''
+  document.getElementById('post-paso-patente').style.display = 'none'
+  document.getElementById('post-paso-vehiculo-nuevo').style.display = 'block'
+  document.getElementById('post-veh-aviso').innerHTML =
+    '<i class="fa-solid fa-circle-info"></i> Completá los datos del vehículo — la patente se puede agregar después'
+  document.getElementById('post-veh-modelo').value = ''
+  document.getElementById('post-veh-anio').value = ''
+  poblarSelectMarcaPost()
+}
+
 async function buscarPatentePost() {
   const patente = document.getElementById('post-patente-input').value.trim().toUpperCase()
   if (!patente) { toast('Ingresá una patente', 'error'); return }
@@ -2012,6 +2437,8 @@ async function buscarPatentePost() {
     res.innerHTML = ''
     document.getElementById('post-paso-patente').style.display = 'none'
     document.getElementById('post-paso-vehiculo-nuevo').style.display = 'block'
+    document.getElementById('post-veh-aviso').innerHTML =
+      '<i class="fa-solid fa-circle-info"></i> Patente no encontrada — completá los datos para crear el vehículo'
     document.getElementById('post-veh-modelo').value = ''
     document.getElementById('post-veh-anio').value = ''
     await poblarSelectMarcaPost()
@@ -2072,7 +2499,7 @@ async function crearVehiculoPostCliente() {
   }
 
   const { data, error } = await db.from('vehiculos').insert({
-    patente:    _postPatenteValue,
+    patente:    _postPatenteValue || null,
     marca:      marcaNombre || null,
     modelo:     modelo || null,
     año:        anio ? parseInt(anio) : null,
@@ -2255,6 +2682,12 @@ async function abrirNuevoVehiculo(origen = 'vehiculos') {
   openModal('modal-vehiculo')
 }
 
+async function navegarYEditarVehiculo(id) {
+  navigate('vehiculos')
+  await cargarVehiculos()
+  editarVehiculo(id)
+}
+
 async function editarVehiculo(id) {
   const v = _vehiculos.find(v => v.id === id)
   if (!v) return
@@ -2299,7 +2732,7 @@ let _editandoVehiculoId = null
 
 async function guardarVehiculo() {
   const patente = document.getElementById('veh-patente').value.trim().toUpperCase()
-  if (!patente) { toast('La patente es obligatoria', 'error'); return }
+  if (!patente && !_editandoVehiculoId) { toast('La patente es obligatoria', 'error'); return }
 
   const marcaSel  = document.getElementById('veh-marca-sel')
   const marcaId   = marcaSel.value && marcaSel.value !== '__nueva__' ? marcaSel.value : null
@@ -2315,7 +2748,7 @@ async function guardarVehiculo() {
   }
 
   const payload = {
-    patente,
+    patente:   patente || null,
     marca:     marcaNombre || null,
     modelo:    modeloVal   || null,
     año:       anio ? parseInt(anio) : null,
@@ -2737,17 +3170,38 @@ async function eliminarStock(id) {
 // PRESUPUESTOS / INFORMES (base)
 // ════════════════════════════════════════
 async function cargarPresupuestos() {
-  const { data } = await db.from('presupuestos').select('*, clientes(nombre), vehiculos(marca,modelo)').order('created_at', { ascending: false })
+  const [{ data }, { data: pagosAll }] = await Promise.all([
+    db.from('presupuestos').select('*, clientes(nombre), vehiculos(marca,modelo)').order('created_at', { ascending: false }),
+    db.from('pagos_presupuesto').select('presupuesto_id, monto')
+  ])
   const tbody = document.getElementById('tabla-presupuestos')
-  if (!data?.length) { tbody.innerHTML = emptyRow(7, 'fa-file-invoice-dollar', 'Sin presupuestos', 'Creá el primer presupuesto'); return }
-  tbody.innerHTML = data.map(p => `
+  if (!data?.length) { tbody.innerHTML = emptyRow(9, 'fa-file-invoice-dollar', 'Sin presupuestos', 'Creá el primer presupuesto'); return }
+
+  // Agrupar pagos por presupuesto_id
+  const pagosPorPresup = {}
+  ;(pagosAll || []).forEach(pg => {
+    pagosPorPresup[pg.presupuesto_id] = (pagosPorPresup[pg.presupuesto_id] || 0) + Number(pg.monto)
+  })
+
+  tbody.innerHTML = data.map(p => {
+    const total     = Number(p.total) || 0
+    const pagado    = pagosPorPresup[p.id] || 0
+    const saldo     = total - pagado
+    const saldoHtml = !total
+      ? `<td style="color:var(--text3)">—</td>`
+      : saldo <= 0
+        ? `<td><span style="color:var(--accent);font-weight:700;font-size:12px"><i class="fa-solid fa-circle-check"></i> Pagado</span></td>`
+        : `<td style="color:#e53935;font-weight:700">$ ${saldo.toLocaleString('es-AR')}</td>`
+    return `
     <tr>
       <td style="color:var(--text3)">#${esc(p.n_presupuesto || '—')}</td>
       <td style="font-weight:600">${esc(p.datos_cliente?.nombre || p.clientes?.nombre || '—')}</td>
+      <td style="color:var(--text3)">${esc(p.tipo_detalle || '—')}</td>
       <td style="color:var(--text3)">${formatFecha(p.fecha)}</td>
       <td style="color:var(--text3)">${p.validez_dias ? p.validez_dias + ' días' : '—'}</td>
       <td>${badgeEstado(p.estado)}</td>
-      <td style="font-weight:600">${p.total ? '$ '+Number(p.total).toLocaleString('es-AR') : '—'}</td>
+      <td style="font-weight:600">${total ? '$ '+total.toLocaleString('es-AR') : '—'}</td>
+      ${saldoHtml}
       <td style="display:flex;gap:4px;align-items:center">
         ${p.estado === 'pendiente' ? `
         <button class="btn btn-ghost btn-sm" title="Aprobar y crear orden" onclick="aprobarPresupuesto('${p.id}')" style="color:var(--accent);border-color:var(--accent)">
@@ -2759,11 +3213,12 @@ async function cargarPresupuestos() {
         <button class="btn btn-ghost btn-sm btn-icon" title="Editar presupuesto" onclick="editarPresupuesto('${p.id}')">
           <i class="fa-solid fa-pen" style="color:var(--text2)"></i>
         </button>
-        <button class="btn btn-ghost btn-sm btn-icon" title="Generar PDF" onclick="presupPDFDesdeDB('${p.id}')">
-          <i class="fa-solid fa-file-pdf" style="color:var(--warn)"></i>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Registrar pago" onclick="abrirRegistrarPago('${p.id}')">
+          <i class="fa-solid fa-hand-holding-dollar" style="color:var(--accent)"></i>
         </button>
       </td>
-    </tr>`).join('')
+    </tr>`
+  }).join('')
 }
 
 // ════════════════════════════════════════
@@ -2773,6 +3228,7 @@ let _presupTipoActual  = 'lab'
 let _presupVehiculoId  = null
 let _presupItemCounter = 0
 let _editandoPresupuestoId = null
+let _presupViendoId    = null
 
 function abrirNuevoPresupuesto() {
   limpiarPresupuesto()
@@ -3262,23 +3718,26 @@ async function editarPresupuesto(id) {
 }
 
 async function verPresupuesto(id) {
-  const { data: p, error } = await db
-    .from('presupuestos')
-    .select('*, items_presupuesto(*)')
-    .eq('id', id)
-    .single()
+  _presupViendoId = id
+  const [{ data: p, error }, { data: pagosData }] = await Promise.all([
+    db.from('presupuestos').select('*, items_presupuesto(*)').eq('id', id).single(),
+    db.from('pagos_presupuesto').select('*').eq('presupuesto_id', id).order('fecha', { ascending: true })
+  ])
   if (error || !p) { toast('No se pudo cargar el presupuesto', 'error'); return }
 
-  const cli       = p.datos_cliente || {}
-  const items     = p.items_presupuesto || []
-  const desc      = parseFloat(p.descuento) || 0
-  const sub       = items.reduce((a, i) => a + (i.cantidad * i.precio_unitario), 0)
-  const dm        = sub * desc / 100
-  const cd        = sub - dm
-  const ivm       = p.iva ? cd * 0.21 : 0
-  const total     = cd + ivm
-  const medios    = p.forma_pago || '—'
-  const fmt       = n => '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })
+  const cli         = p.datos_cliente || {}
+  const items       = p.items_presupuesto || []
+  const desc        = parseFloat(p.descuento) || 0
+  const sub         = items.reduce((a, i) => a + (i.cantidad * i.precio_unitario), 0)
+  const dm          = sub * desc / 100
+  const cd          = sub - dm
+  const ivm         = p.iva ? cd * 0.21 : 0
+  const total       = cd + ivm
+  const medios      = p.forma_pago || '—'
+  const pagosList   = pagosData || []
+  const totalPagado = pagosList.reduce((a, pg) => a + Number(pg.monto), 0)
+  const saldo       = total - totalPagado
+  const fmt         = n => '$ ' + n.toLocaleString('es-AR', { minimumFractionDigits:2, maximumFractionDigits:2 })
   const fila      = (lbl, val) => val ? `<tr><td style="padding:4px 8px 4px 0;color:#777;font-size:12px;font-weight:600;white-space:nowrap">${lbl}</td><td style="padding:4px 0;font-size:13px">${val}</td></tr>` : ''
 
   const tipoLabel = p.tipo === 'pla' ? 'Vehículo' : 'Unidad a reparar'
@@ -3381,6 +3840,54 @@ async function verPresupuesto(id) {
       </div>
     </div>
 
+    <!-- Pagos a cuenta -->
+    <div style="margin-bottom:20px;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
+      <div style="background:#f0f7f0;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e0e0e0">
+        <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#1a9e3a">Pagos a cuenta</div>
+      </div>
+      ${pagosList.length ? `
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f9f9f9">
+            <th style="padding:7px 12px;font-size:11px;font-weight:700;text-align:left;color:#555">Fecha</th>
+            <th style="padding:7px 12px;font-size:11px;font-weight:700;text-align:left;color:#555">Medio</th>
+            <th style="padding:7px 12px;font-size:11px;font-weight:700;text-align:left;color:#555">Notas</th>
+            <th style="padding:7px 12px;font-size:11px;font-weight:700;text-align:right;color:#555">Monto</th>
+            <th style="padding:7px 8px;width:32px"></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${pagosList.map((pg, i) => `
+          <tr style="border-top:1px solid #f0f0f0;background:${i%2===0?'#fff':'#fafafa'}">
+            <td style="padding:7px 12px;font-size:13px;white-space:nowrap">${pg.fecha ? new Date(pg.fecha+'T12:00:00').toLocaleDateString('es-AR') : '—'}</td>
+            <td style="padding:7px 12px;font-size:13px;color:#666">${esc(pg.medio_pago||'—')}</td>
+            <td style="padding:7px 12px;font-size:12px;color:#888">${esc(pg.notas||'')}</td>
+            <td style="padding:7px 12px;font-size:13px;font-weight:700;text-align:right;color:#1a9e3a">${fmt(Number(pg.monto))}</td>
+            <td style="padding:7px 8px;text-align:center">
+              <button onclick="eliminarPago('${pg.id}')" title="Eliminar pago" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;padding:2px 4px;border-radius:4px" onmouseover="this.style.color='#e53935'" onmouseout="this.style.color='#ccc'">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      ` : `<div style="padding:16px;text-align:center;color:#aaa;font-size:13px">Sin pagos registrados</div>`}
+      <div style="padding:12px 16px;background:#f5f5f5;border-top:1px solid #e0e0e0;display:flex;justify-content:flex-end">
+        <div style="min-width:220px">
+          <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;color:#555">
+            <span>Total presupuesto</span><span style="font-weight:600">${fmt(total)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:13px;color:#555">
+            <span>Pagado</span><span style="color:#1a9e3a;font-weight:600">- ${fmt(totalPagado)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0 2px;font-size:16px;font-weight:800;border-top:2px solid ${saldo <= 0 ? '#1a9e3a' : '#e53935'};margin-top:4px;color:${saldo <= 0 ? '#1a9e3a' : '#e53935'}">
+            <span>Saldo</span><span>${fmt(Math.max(0, saldo))}</span>
+          </div>
+          ${saldo <= 0 ? '<div style="font-size:11px;color:#1a9e3a;text-align:right;margin-top:4px"><i class="fa-solid fa-circle-check"></i> Pagado</div>' : ''}
+        </div>
+      </div>
+    </div>
+
     <!-- Nota -->
     <div style="font-size:11px;color:#aaa;font-style:italic">* ${PRESUP_NOTAS}</div>
   `
@@ -3389,6 +3896,44 @@ async function verPresupuesto(id) {
   document.getElementById('presup-preview-pdf-btn').onclick = () => presupPDFDesdeDB(id)
 
   openModal('modal-presup-preview')
+}
+
+// ── Pagos a cuenta ──────────────────────────────────────
+function abrirRegistrarPago(id) {
+  if (id) _presupViendoId = id
+  if (!_presupViendoId) return
+  document.getElementById('pago-monto').value = ''
+  document.getElementById('pago-fecha').value  = new Date().toISOString().slice(0, 10)
+  document.getElementById('pago-medio').value  = 'Efectivo'
+  document.getElementById('pago-notas').value  = ''
+  openModal('modal-pago-presup')
+}
+
+async function guardarPago() {
+  const monto = parseFloat(document.getElementById('pago-monto').value)
+  if (!monto || monto <= 0) { toast('Ingresá un monto válido', 'error'); return }
+  const payload = {
+    presupuesto_id: _presupViendoId,
+    monto,
+    fecha:      document.getElementById('pago-fecha').value,
+    medio_pago: document.getElementById('pago-medio').value || null,
+    notas:      document.getElementById('pago-notas').value.trim() || null,
+  }
+  const { error } = await db.from('pagos_presupuesto').insert(payload)
+  if (error) { toast('Error al guardar el pago', 'error'); console.error(error); return }
+  toast('Pago registrado', 'success')
+  closeModal('modal-pago-presup')
+  const preview = document.getElementById('modal-presup-preview')
+  if (preview?.classList.contains('open')) verPresupuesto(_presupViendoId)
+  else cargarPresupuestos()
+}
+
+async function eliminarPago(pagoId) {
+  if (!confirm('¿Eliminar este pago?')) return
+  const { error } = await db.from('pagos_presupuesto').delete().eq('id', pagoId)
+  if (error) { toast('Error al eliminar el pago', 'error'); return }
+  toast('Pago eliminado', 'success')
+  verPresupuesto(_presupViendoId)
 }
 
 async function presupPDFDesdeDB(id) {
@@ -3613,18 +4158,24 @@ function presupBuildPDF(data) {
 }
 
 async function cargarInformes() {
-  const { data } = await db.from('informes_prueba').select('*, clientes(nombre)').order('created_at', { ascending: false })
+  infInitForm()
   const tbody = document.getElementById('tabla-informes')
-  if (!data?.length) { tbody.innerHTML = emptyRow(6, 'fa-flask', 'Sin informes', 'Los informes guardados aparecen acá'); return }
-  tbody.innerHTML = data.map(i => `
-    <tr>
-      <td style="color:var(--text3)">#${esc(i.n_informe || '—')}</td>
-      <td style="font-weight:600">${esc(i.clientes?.nombre || '—')}</td>
-      <td style="color:var(--text3)">${esc(i.vehiculo || '—')}</td>
-      <td style="color:var(--text3)">${formatFecha(i.fecha)}</td>
-      <td style="color:var(--text3)">${Array.isArray(i.resultados) ? i.resultados.length : '—'}</td>
-      <td></td>
-    </tr>`).join('')
+  try {
+    const { data, error } = await db.from('informes_prueba').select('*, clientes(nombre)').order('created_at', { ascending: false })
+    if (error) throw error
+    if (!data?.length) { tbody.innerHTML = emptyRow(6, 'fa-flask', 'Sin informes', 'Los informes generados aparecen acá'); return }
+    tbody.innerHTML = data.map(i => `
+      <tr>
+        <td style="color:var(--text3)">#${esc(i.n_informe || '—')}</td>
+        <td style="font-weight:600">${esc(i.clientes?.nombre || '—')}</td>
+        <td style="color:var(--text3)">${esc(i.vehiculo || '—')}</td>
+        <td style="color:var(--text3)">${formatFecha(i.fecha)}</td>
+        <td style="color:var(--text3)">${Array.isArray(i.resultados) ? i.resultados.length : '—'}</td>
+        <td></td>
+      </tr>`).join('')
+  } catch {
+    tbody.innerHTML = emptyRow(6, 'fa-flask', 'Sin historial', 'Los informes generados aparecen acá')
+  }
 }
 
 // ════════════════════════════════════════
@@ -3984,6 +4535,346 @@ document.addEventListener('DOMContentLoaded', () => {
   cargarDashboard()
   checkConnection()
 })
+
+// ════════════════════════════════════════
+// INFORMES — GENERADOR PDF
+// ════════════════════════════════════════
+const INF_PRUEBAS = [
+  { nombre: 'Estanqueidad',  hint: 'LEAK',  ref: '35.0+-35.0' },
+  { nombre: 'Plena carga',   hint: 'VL',    ref: '62.2+-4.2'  },
+  { nombre: 'Retorno',       hint: 'VL(R)', ref: '30.0+-25.0' },
+  { nombre: 'Emisiones',     hint: 'EM',    ref: '17.2+-3.0'  },
+  { nombre: 'Ralenti',       hint: 'LL',    ref: '4.4+-2.0'   },
+  { nombre: 'Pre-inyeccion', hint: 'VE',    ref: '1.7+-1.3'   },
+]
+
+let infInjCount = 0
+let infInitialized = false
+let _jspdfLoaded = false
+
+function infInitForm() {
+  if (infInitialized) return
+  infInitialized = true
+
+  const now = new Date()
+  const p = n => String(n).padStart(2,'0')
+  document.getElementById('inf-fecha').value =
+    `${p(now.getDate())}/${p(now.getMonth()+1)}/${now.getFullYear()} - ${p(now.getHours())}:${p(now.getMinutes())} hs`
+
+  const last = parseInt(localStorage.getItem('ind_n') || '0')
+  document.getElementById('inf-ninforme').value = String(last + 1).padStart(4,'0')
+
+  if (localStorage.getItem('ind_firma')) document.getElementById('inf-firma-status').textContent = '✓ Cargada'
+  if (localStorage.getItem('ind_logo'))  document.getElementById('inf-logo-status').textContent  = '✓ Cargado'
+
+  // Lazy load jsPDF
+  if (!_jspdfLoaded) {
+    _jspdfLoaded = true
+    const s = document.createElement('script')
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+    document.head.appendChild(s)
+  }
+
+  infAgregarInyector()
+}
+
+function infAgregarInyector() {
+  infInjCount++
+  const id = infInjCount
+  const rows = INF_PRUEBAS.map((p, i) => `
+    <tr>
+      <td style="white-space:nowrap">
+        <span style="font-size:12px;font-weight:600;color:var(--text)">${p.nombre}</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:4px">${p.hint}</span>
+      </td>
+      <td style="width:90px"><input type="number" step="0.1" min="0" id="ii${id}v${i}" placeholder="0.0"></td>
+      <td style="width:120px"><input type="text" id="ii${id}r${i}" value="${p.ref}"></td>
+      <td style="width:44px;text-align:center"><input type="checkbox" id="ii${id}o${i}" checked></td>
+    </tr>`).join('')
+
+  const div = document.createElement('div')
+  div.className = 'inf-inj-block'
+  div.id = `inf-inj-${id}`
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span style="font-size:13px;font-weight:700;color:var(--text)">Inyector ${id}</span>
+      <button class="btn btn-danger btn-sm" onclick="infEliminarInyector(${id})">
+        <i class="fa-solid fa-trash"></i> Eliminar
+      </button>
+    </div>
+    <div class="form-grid-2" style="margin-bottom:12px">
+      <div class="field">
+        <label>N° de Parte (PN)</label>
+        <input type="text" id="ii${id}pn" placeholder="Ej: 0445110231">
+      </div>
+      <div class="field">
+        <label>Fabricante</label>
+        <input type="text" id="ii${id}fab" placeholder="Ej: Bosch" list="inf-fab-list">
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="inf-pruebas-table">
+        <thead><tr>
+          <th>Prueba</th><th>Valor</th><th>Referencia</th>
+          <th style="text-align:center">OK</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`
+  document.getElementById('inf-inj-container').appendChild(div)
+  infUpdateCount()
+}
+
+function infEliminarInyector(id) {
+  document.getElementById(`inf-inj-${id}`)?.remove()
+  infUpdateCount()
+}
+
+function infUpdateCount() {
+  const n = document.querySelectorAll('.inf-inj-block').length
+  const el = document.getElementById('inf-inj-count-label')
+  if (el) el.textContent = n === 1 ? '1 inyector' : `${n} inyectores`
+}
+
+function infGuardarImg(tipo, input) {
+  if (!input.files[0]) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    localStorage.setItem(`ind_${tipo}`, e.target.result)
+    document.getElementById(`inf-${tipo}-status`).textContent = '✓ Guardado'
+    toast(`${tipo === 'firma' ? 'Firma' : 'Logo'} guardado`, 'success')
+  }
+  reader.readAsDataURL(input.files[0])
+}
+
+function infLeerForm() {
+  const vehiculo = document.getElementById('inf-vehiculo').value || '—'
+  const fecha    = document.getElementById('inf-fecha').value    || '—'
+  const nInforme = document.getElementById('inf-ninforme').value || '0001'
+
+  const inyectores = []
+  document.querySelectorAll('.inf-inj-block').forEach(card => {
+    const id = card.id.replace('inf-inj-','')
+    const pruebas = INF_PRUEBAS.map((p, i) => ({
+      nombre: p.nombre,
+      val:    parseFloat(document.getElementById(`ii${id}v${i}`)?.value) || 0,
+      ref:    document.getElementById(`ii${id}r${i}`)?.value || p.ref,
+      ok:     document.getElementById(`ii${id}o${i}`)?.checked ?? true,
+    }))
+    inyectores.push({
+      pn:  document.getElementById(`ii${id}pn`)?.value  || '—',
+      fab: document.getElementById(`ii${id}fab`)?.value || '—',
+      pruebas,
+    })
+  })
+
+  return { vehiculo, fecha, nInforme, inyectores }
+}
+
+async function generarPDFInforme() {
+  if (!window.jspdf) { toast('jsPDF todavía está cargando, intentá de nuevo.', 'warn'); return }
+
+  const { vehiculo, fecha, nInforme, inyectores } = infLeerForm()
+  if (!inyectores.length) { toast('Agregá al menos un inyector.', 'warn'); return }
+
+  const { jsPDF } = window.jspdf
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  const W = 210, H = 297, M = 13
+  const pt = p => p * 0.352778
+
+  function parseRef(r) {
+    const sep = r.includes('+-') ? '+-' : r.includes('±') ? '±' : null
+    if (!sep) return [null, null]
+    const [c, t] = r.split(sep)
+    return [parseFloat(c) - parseFloat(t), parseFloat(c) + parseFloat(t)]
+  }
+  function refDisp(r) { return r.replace('+-','±') }
+  function barPct(val, ref) {
+    const [mn, mx] = parseRef(ref)
+    if (mn === null || mx === mn) return 0.5
+    const rng = mx - mn, mar = rng * 0.30, tot = rng + 2 * mar
+    return Math.max(0.01, Math.min(0.99, (val - (mn - mar)) / tot))
+  }
+  function drawBar(x, y, w, h, pct, ref) {
+    const [mn, mx] = parseRef(ref)
+    let zs, ze
+    if (mn !== null && mx !== mn) {
+      const rng = mx - mn, mar = rng * 0.30, tot = rng + 2 * mar
+      zs = mar / tot; ze = (mar + rng) / tot
+    } else { zs = 0.25; ze = 0.75 }
+    doc.setFillColor(240,240,240); doc.setDrawColor(187,187,187); doc.setLineWidth(0.14)
+    doc.rect(x, y, w, h, 'FD')
+    const zx = x + zs * w, zw = (ze - zs) * w
+    doc.setFillColor(206,206,206); doc.rect(zx, y, zw, h, 'F')
+    doc.setDrawColor(85,85,85); doc.setLineWidth(0.25)
+    doc.line(zx, y-0.53, zx, y+h+0.53)
+    doc.line(zx+zw, y-0.53, zx+zw, y+h+0.53)
+    doc.setDrawColor(0,0,0); doc.setLineWidth(0.70)
+    const mx2 = x + pct * w
+    doc.line(mx2, y-0.88, mx2, y+h+0.88)
+  }
+
+  // ── Encabezado ──
+  doc.setFont('helvetica','bold'); doc.setFontSize(24); doc.setTextColor(0,0,0)
+  doc.text('INDIESEL', W/2, pt(44), {align:'center'})
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(102,102,102)
+  doc.text('Laboratorio Diesel', W/2, pt(57), {align:'center'})
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(0,0,0)
+  doc.text('INFORME DE PRUEBA DE INYECTORES', W/2, pt(73), {align:'center'})
+  doc.setDrawColor(0,0,0); doc.setLineWidth(0.21)
+  doc.line(M, pt(80), W-M, pt(80))
+
+  // ── Tabla info ──
+  let y = pt(96)
+  const rowH = pt(15)
+  const labelW = pt(72), valW = pt(165)
+  const tblW = labelW + valW, tblX = (W - tblW) / 2
+  ;[['Fecha:', fecha], ['Vehiculo:', vehiculo], ['N° Informe:', nInforme]].forEach(([lbl, val], i) => {
+    if (i % 2 === 0) { doc.setFillColor(248,248,248); doc.rect(tblX-2.12, y-3.0, tblW+4.23, rowH, 'F') }
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5)
+    doc.setTextColor(102,102,102); doc.text(lbl, tblX, y)
+    doc.setTextColor(0,0,0);       doc.text(String(val), tblX+labelW, y)
+    y += rowH
+  })
+  doc.setDrawColor(0,0,0); doc.setLineWidth(0.21)
+  doc.line(M, y-0.71, W-M, y-0.71)
+  y += pt(15)
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(12)
+  doc.text('RESULTADOS DE PRUEBA', M, y)
+  y += pt(14)
+
+  // ── Grilla de inyectores ──
+  const FOOTER_H = pt(90)
+  const availPt   = (H - FOOTER_H - y) / 0.352778
+  const n         = inyectores.length
+  const cols      = n > 1 ? 2 : 1
+  const gapMm     = pt(12)
+  const colW      = (W - M*2 - gapMm*(cols-1)) / cols
+  const colXArr   = Array.from({length:cols}, (_,i) => M + i*(colW+gapMm))
+  const nPerCol   = Math.ceil(n / cols)
+  const nTests    = inyectores[0].pruebas.length
+  const fixedPt   = nPerCol * (12+18+15+9+8)
+  const rowTotal  = nPerCol * nTests
+  const rowHPt    = Math.max(13, Math.min(19, (availPt - fixedPt) / Math.max(rowTotal,1)))
+  const barHPt    = Math.max(5, rowHPt * 0.40)
+  const TITLE_H   = pt(12), PN_H  = pt(18), BADGE_H  = pt(15)
+  const SUBHDR_H  = pt(9),  BLOCK = pt(8),  ROW_H    = pt(rowHPt), BAR_H = pt(barHPt)
+  const NAME_W    = colW*0.27, VAL_W = colW*0.11, REF_W = colW*0.22
+  const SYM_W     = colW*0.09
+  const BAR_W     = colW - NAME_W - VAL_W - REF_W - SYM_W - pt(2)
+  const gridY     = y
+  const colYArr   = Array(cols).fill(y)
+
+  inyectores.forEach((inj, idx) => {
+    const col = idx % cols
+    const cx  = colXArr[col]
+    let cy    = colYArr[col]
+    const okAll = inj.pruebas.every(p => p.ok)
+    if (colYArr[col] > gridY + 0.5) {
+      cy -= pt(4)
+      doc.setDrawColor(204,204,204); doc.setLineWidth(0.14)
+      doc.line(cx, cy+pt(2), cx+colW, cy+pt(2))
+      cy -= pt(4)
+    }
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(0,0,0)
+    doc.text(`INYECTOR ${idx+1}`, cx, cy); cy += TITLE_H
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(68,68,68)
+    doc.text(`Nro de inyector: ${inj.pn}   Fabricante: ${inj.fab}`, cx, cy); cy += PN_H
+    doc.setLineWidth(0.21); doc.setDrawColor(0,0,0)
+    doc.setFillColor(okAll?232:204, okAll?232:204, okAll?232:204)
+    doc.rect(cx, cy-1.06, colW, 4.59, 'FD')
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(0,0,0)
+    doc.text(okAll?'APROBADO':'REQUIERE REPARACION', cx+colW/2, cy+2.2, {align:'center'}); cy += BADGE_H
+    const barX = cx + NAME_W + VAL_W + REF_W
+    doc.setFont('helvetica','normal'); doc.setFontSize(5.5); doc.setTextColor(170,170,170)
+    doc.text('PRUEBA',     cx,              cy)
+    doc.text('VALOR',      cx+NAME_W,       cy)
+    doc.text('REFERENCIA', cx+NAME_W+VAL_W, cy)
+    doc.text('RANGO',      barX,            cy)
+    cy += SUBHDR_H
+    inj.pruebas.forEach(p => {
+      const ry = cy
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(51,51,51)
+      doc.text(p.nombre, cx, ry)
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(0,0,0)
+      doc.text(String(p.val), cx+NAME_W, ry)
+      doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(119,119,119)
+      doc.text(refDisp(p.ref), cx+NAME_W+VAL_W, ry)
+      const pct  = barPct(p.val, p.ref)
+      const bary = ry - BAR_H + pt(1.5)
+      drawBar(barX, bary, BAR_W, BAR_H, pct, p.ref)
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(0,0,0)
+      doc.text(p.ok?'OK':'X', cx+colW, bary+BAR_H/2+pt(3), {align:'right'})
+      cy += ROW_H
+    })
+    colYArr[col] = cy + BLOCK
+    if (col === cols-1) { const maxY = Math.max(...colYArr); colYArr.fill(maxY) }
+  })
+
+  // ── Observación ──
+  let oy = Math.max(...colYArr) - 1.41
+  doc.setLineWidth(0.18); doc.setDrawColor(0,0,0)
+  doc.line(M, oy, W-M, oy); oy += pt(14)
+  const fallidas = inyectores.map((inj,i) => ({n:i+1,ko:!inj.pruebas.every(p=>p.ok)})).filter(x=>x.ko).map(x=>x.n)
+  let obs
+  if (!fallidas.length) {
+    obs = 'Todos los inyectores aprobaron las pruebas. Se encuentran dentro de los parametros de fabrica.'
+  } else {
+    const pl = fallidas.length > 1
+    obs = `Inyector${pl?'es':''} ${fallidas.join(', ')}: resultado${pl?'s':''} fuera de rango. Requier${pl?'en':'e'} reparacion.`
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(0,0,0)
+  doc.text('OBSERVACION', M, oy); oy += pt(12)
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(51,51,51)
+  doc.text(doc.splitTextToSize(obs, W-M*2), M, oy)
+
+  // ── Pie de página ──
+  const firmaW = 25, firmaH = firmaW*(255/671)
+  const firmaData = localStorage.getItem('ind_firma')
+  if (firmaData) doc.addImage(firmaData, 'PNG', M, H-pt(52)-firmaH, firmaW, firmaH)
+  doc.setDrawColor(0,0,0); doc.setLineWidth(0.18)
+  doc.line(M, H-pt(49), M+firmaW, H-pt(49))
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(0,0,0)
+  doc.text('Gonzalo De Pilato',   M, H-pt(41))
+  doc.text('Tecnico Responsable', M, H-pt(33))
+  const logoData = localStorage.getItem('ind_logo')
+  const logoSz = 28
+  if (logoData) {
+    doc.addImage(logoData, 'PNG', W/2-logoSz/2, H-pt(38)-logoSz, logoSz, logoSz)
+  } else {
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(160,160,160)
+    doc.text('INDIESEL', W/2, H-pt(38)-logoSz/2+2, {align:'center'})
+  }
+  doc.setDrawColor(170,170,170); doc.setLineWidth(0.14)
+  doc.line(M, H-pt(32), W-M, H-pt(32))
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(0,0,0)
+  doc.text('WhatsApp: 2233059372  |  Tel: 223 478-9900', W/2, H-pt(22), {align:'center'})
+  doc.text('Mar del Plata, Argentina', W/2, H-pt(13), {align:'center'})
+
+  // ── Guardar ──
+  doc.save(`Indiesel_Informe_${nInforme}.pdf`)
+  const num = parseInt(nInforme)
+  if (!isNaN(num)) {
+    localStorage.setItem('ind_n', num)
+    document.getElementById('inf-ninforme').value = String(num + 1).padStart(4,'0')
+  }
+
+  // Guardar en DB (opcional, si la tabla existe)
+  try {
+    await db.from('informes_prueba').insert({
+      n_informe: nInforme,
+      vehiculo,
+      fecha: new Date().toISOString().split('T')[0],
+      resultados: inyectores,
+    })
+    cargarInformes()
+  } catch { /* tabla puede no existir aún */ }
+
+  toast(`Informe #${nInforme} generado`, 'success')
+}
 </script>
+
+<div style="position:fixed;bottom:12px;right:16px;font-size:11px;color:var(--text3);pointer-events:none;z-index:9999;user-select:none;">© Indiesel 2026</div>
 </body>
 </html>
