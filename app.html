@@ -809,13 +809,10 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- ═══ PAGE: DASHBOARD ═══ -->
   <div class="page active" id="page-dashboard">
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-top">
-          <span class="stat-label">Clientes</span>
-          <div class="stat-icon stat-blue"><i class="fa-solid fa-users"></i></div>
-        </div>
-        <div class="stat-value" id="stat-clientes">—</div>
-        <div class="stat-sub">registrados</div>
+      <div class="stat-card" onclick="abrirIngreso()" style="cursor:pointer;background:var(--primary);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+        <i class="fa-solid fa-arrow-right-to-bracket" style="font-size:2rem;opacity:.9"></i>
+        <span style="font-size:1.1rem;font-weight:700;letter-spacing:.01em">Agregar ingreso</span>
+        <span id="stat-clientes" style="display:none"></span>
       </div>
       <div class="stat-card">
         <div class="stat-top">
@@ -837,9 +834,6 @@ tbody tr:last-child td { border-bottom: none; }
 
     <!-- Alertas: vehículos sin patente -->
     <div id="dash-sin-patente" style="display:none;margin-bottom:16px"></div>
-
-    <!-- Pendientes de presupuestar -->
-    <div id="dash-sin-presupuestar" style="display:none;margin-bottom:16px"></div>
 
     <div class="grid-2" style="gap:16px">
       <!-- CARD ÚLTIMAS ÓRDENES — visible para empleados, oculto para admin -->
@@ -863,6 +857,9 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       -->
 
+      <!-- Pendientes de presupuestar -->
+      <div id="dash-sin-presupuestar" style="display:none"></div>
+
       <div class="card">
         <div class="card-header">
           <div class="card-icon" style="background:rgba(245,158,11,.12);color:var(--warn)">
@@ -881,34 +878,6 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-header">
-          <div class="card-icon" style="background:rgba(59,130,246,.12);color:var(--info)">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <div>
-            <h3>Acceso rápido</h3>
-            <p>Acciones frecuentes</p>
-          </div>
-        </div>
-        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-          <button class="btn btn-primary" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="abrirIngreso()">
-            <i class="fa-solid fa-arrow-right-to-bracket"></i> Agregar ingreso
-          </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('clientes');limpiarFormCliente();openModal('modal-cliente')">
-            <i class="fa-solid fa-user-plus" style="color:var(--info)"></i> Nuevo cliente
-          </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('ordenes');openModal('modal-orden')">
-            <i class="fa-solid fa-plus" style="color:var(--accent)"></i> Nueva orden de trabajo
-          </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('presupuestos');abrirNuevoPresupuesto()">
-            <i class="fa-solid fa-file-invoice-dollar" style="color:var(--warn)"></i> Nuevo presupuesto
-          </button>
-          <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:13px 16px" onclick="navigate('informes')">
-            <i class="fa-solid fa-flask" style="color:var(--danger)"></i> Generar informe PDF
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -957,9 +926,7 @@ tbody tr:last-child td { border-bottom: none; }
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" placeholder="Buscar orden..." id="search-ordenes" oninput="filtrarOrdenes()">
       </div>
-      <button class="btn btn-primary" onclick="openModal('modal-orden')">
-        <i class="fa-solid fa-plus"></i> Nueva orden
-      </button>
+      <!-- Las órdenes se crean automáticamente al aprobar un presupuesto -->
     </div>
 
     <div class="card">
@@ -1040,7 +1007,6 @@ tbody tr:last-child td { border-bottom: none; }
     <!-- Filtro de estado -->
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="lab-filtros">
       <button class="btn btn-sm" id="lab-f-todos"         onclick="setFiltroLab('todos')"         style="background:var(--accent);color:#000;font-weight:700">Todas</button>
-      <button class="btn btn-ghost btn-sm" id="lab-f-presupuestado" onclick="setFiltroLab('presupuestado')">Presupuestado</button>
       <button class="btn btn-ghost btn-sm" id="lab-f-en_trabajo"    onclick="setFiltroLab('en_trabajo')">En trabajo</button>
       <button class="btn btn-ghost btn-sm" id="lab-f-listo"         onclick="setFiltroLab('listo')">Listo</button>
       <button class="btn btn-ghost btn-sm" id="lab-f-entregado"     onclick="setFiltroLab('entregado')">Entregado</button>
@@ -1078,9 +1044,9 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="flex items-center justify-between gap-12 mb-24">
       <div class="search-bar" style="flex:1;max-width:360px">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Buscar presupuesto...">
+        <input type="text" id="search-presupuestos" placeholder="Buscar presupuesto..." oninput="filtrarPresupuestos(this.value)">
       </div>
-      <button class="btn btn-primary" onclick="abrirNuevoPresupuesto()">
+      <button class="btn btn-primary" onclick="iniciarNuevoPresupuesto()">
         <i class="fa-solid fa-plus"></i> Nuevo presupuesto
       </button>
     </div>
@@ -1376,7 +1342,6 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="field"><label>Estado</label>
           <select id="ord-estado">
-            <option value="presupuestado">Presupuestado</option>
             <option value="en_trabajo">En trabajo</option>
             <option value="listo">Listo</option>
             <option value="entregado">Entregado</option>
@@ -1577,7 +1542,7 @@ tbody tr:last-child td { border-bottom: none; }
         <div class="form-grid-2">
           <div class="field"><label>Año</label>
             <input type="number" id="veh-anio" placeholder="2020" min="1950" max="2030"></div>
-          <div class="field"><label>Cliente (opcional)</label>
+          <div class="field" id="veh-cliente-field"><label>Cliente (opcional)</label>
             <select id="veh-cliente-sel">
               <option value="">— Sin asignar —</option>
             </select>
@@ -1638,7 +1603,6 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="field"><label>Estado</label>
           <select id="lab-estado">
-            <option value="presupuestado">Presupuestado</option>
             <option value="en_trabajo">En trabajo</option>
             <option value="listo">Listo</option>
             <option value="entregado">Entregado</option>
@@ -1924,6 +1888,23 @@ tbody tr:last-child td { border-bottom: none; }
   </div>
 </div>
 
+<!-- Modal: Selector ingreso sin presupuestar -->
+<div class="modal-overlay" id="modal-selector-ingreso">
+  <div class="modal" style="max-width:480px;width:95vw">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-clock" style="color:var(--danger);margin-right:8px"></i>Ingresos sin presupuestar</h2>
+      <button class="btn btn-icon btn-ghost btn-sm" onclick="closeModal('modal-selector-ingreso')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text2);margin-bottom:14px;font-size:14px">¿El presupuesto es para uno de estos ingresos?</p>
+      <div id="selector-ingreso-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+      <button class="btn btn-ghost" style="width:100%" onclick="closeModal('modal-selector-ingreso');abrirNuevoPresupuesto()">
+        <i class="fa-solid fa-plus"></i> Presupuesto nuevo sin ingreso
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal-presupuesto">
   <div class="modal" style="max-width:820px;width:95vw">
     <div class="modal-header">
@@ -2094,8 +2075,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div>
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:10px">Estado</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap" id="dr-estados">
-        <button class="status-btn s-sin_presupuestar" onclick="cambiarEstado('sin_presupuestar')">Sin presupuesto</button>
-        <button class="status-btn s-presupuestado" onclick="cambiarEstado('presupuestado')">Presupuestado</button>
         <button class="status-btn s-en_trabajo"    onclick="cambiarEstado('en_trabajo')">En trabajo</button>
         <button class="status-btn s-listo"         onclick="cambiarEstado('listo')">Listo</button>
         <button class="status-btn s-entregado"     onclick="cambiarEstado('entregado')">Entregado</button>
@@ -2365,7 +2344,7 @@ async function cargarDashboard() {
   try {
     const [{ count: c1 }, { count: c2 }, { count: c3 }] = await Promise.all([
       db.from('clientes').select('*', { count: 'exact', head: true }),
-      db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).in('estado', ['sin_presupuestar','en_trabajo','presupuestado']),
+      db.from('ordenes_trabajo').select('*', { count: 'exact', head: true }).in('estado', ['en_trabajo','listo']),
       db.from('presupuestos').select('*', { count: 'exact', head: true }).eq('estado','pendiente'),
     ])
     document.getElementById('stat-clientes').textContent     = c1 ?? 0
@@ -2403,11 +2382,12 @@ async function cargarDashboard() {
       divSP.style.display = 'none'
     }
 
-    // Órdenes sin presupuesto (creadas por ingreso)
+    // Presupuestos sin completar (creados desde ingresos)
     const { data: sinPresup } = await db
-      .from('ordenes_trabajo')
-      .select('id, observaciones, fecha_ingreso, cliente_id, vehiculo_id, clientes(nombre)')
-      .eq('estado', 'sin_presupuestar')
+      .from('presupuestos')
+      .select('id, tipo_detalle, fecha, cliente_id, vehiculo_id, clientes(nombre)')
+      .eq('estado', 'pendiente')
+      .is('total', null)
       .order('created_at', { ascending: false })
 
     _ordenesPendientesPresup = sinPresup || []
@@ -2430,7 +2410,7 @@ async function cargarDashboard() {
               <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);gap:12px">
                 <div style="min-width:0">
                   <div style="font-size:14px;font-weight:600">${esc(o.clientes?.nombre || 'Sin cliente')}</div>
-                  <div style="font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.observaciones || '—')} · ${formatFecha(o.fecha_ingreso)}</div>
+                  <div style="font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.tipo_detalle || '—')} · ${formatFecha(o.fecha)}</div>
                 </div>
                 <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="presupuestarOrden('${o.id}')">
                   <i class="fa-solid fa-file-invoice-dollar"></i> Presupuestar
@@ -2956,10 +2936,11 @@ async function abrirNuevoVehiculo(origen = 'vehiculos') {
   await poblarSelectMarca()
   document.getElementById('veh-marca-sel').value = ''
   document.getElementById('veh-modelos-list').innerHTML = ''
-  // Poblar clientes
+  // Poblar clientes y ocultar el campo si viene del ingreso (el cliente se vincula en paso 3)
   const sel = document.getElementById('veh-cliente-sel')
   sel.innerHTML = '<option value="">— Sin asignar —</option>' +
     (_clientes || []).map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('')
+  document.getElementById('veh-cliente-field').style.display = origen === 'ingreso' ? 'none' : ''
   openModal('modal-vehiculo')
 }
 
@@ -3056,21 +3037,22 @@ async function guardarVehiculo() {
   await cargarVehiculos()
   await cargarVehiculosSelect()
 
+  const origenGuardado = _vehModalOrigen  // guardar ANTES de que cerrarModalVehiculo lo resetee
   cerrarModalVehiculo()
 
-  // Si se abrió desde orden o drawer, seleccionar el vehículo recién creado
-  if (_vehModalOrigen === 'orden' && vehiculoGuardado) {
+  // Retorno al contexto de origen
+  if (origenGuardado === 'orden' && vehiculoGuardado) {
     const sel = document.getElementById('ord-vehiculo-id')
     if (sel) { sel.value = vehiculoGuardado.id; mostrarInfoVehiculoOrden(vehiculoGuardado.id) }
   }
-  if (_vehModalOrigen === 'drawer' && vehiculoGuardado) {
+  if (origenGuardado === 'drawer' && vehiculoGuardado) {
     const sel = document.getElementById('dr-vehiculo-sel')
     if (sel) { sel.value = vehiculoGuardado.id; onDrawerVehiculoChange() }
   }
-  if (_vehModalOrigen === 'ingreso' && vehiculoGuardado) {
+  if (origenGuardado === 'ingreso' && vehiculoGuardado) {
     const label = [vehiculoGuardado.patente, vehiculoGuardado.marca, vehiculoGuardado.modelo, vehiculoGuardado.año ? `(${vehiculoGuardado.año})` : ''].filter(Boolean).join(' · ')
-    ingresoSelecVehiculo(vehiculoGuardado.id, label)
     openModal('modal-ingreso')
+    ingresoSelecVehiculo(vehiculoGuardado.id, label)
   }
 }
 
@@ -3146,11 +3128,11 @@ async function verHistorialVehiculo(id) {
     .eq('vehiculo_id', id)
     .order('created_at', { ascending: false })
   const lista = ordenes || []
-  const estadoColor = { presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
-  const estadoLabel = { presupuestado:'Presupuestado', en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
+  const estadoColor = { en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
+  const estadoLabel = { en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
   const filasHtml = lista.length ? lista.map(o => `
     <tr class="tr-clickable" onclick="cerrarHistorial();abrirOrden('${o.id}')">
-      <td style="color:var(--text3);font-size:12px">${formatFecha(o.fecha_ingreso)}</td>
+      <td style="color:var(--text3);font-size:12px">${formatFechaHora(o.created_at)}</td>
       <td>${esc(o.clientes?.nombre || '—')}</td>
       <td>${esc(o.observaciones || '—')}</td>
       <td><span style="background:${estadoColor[o.estado]||'#888'};color:#fff;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700">${estadoLabel[o.estado]||o.estado}</span></td>
@@ -3177,6 +3159,7 @@ async function cargarOrdenes() {
   const { data, error } = await db
     .from('ordenes_trabajo')
     .select('*, clientes(nombre), vehiculos(marca,modelo,patente)')
+    .in('estado', ['en_trabajo', 'listo', 'entregado'])
     .order('created_at', { ascending: false })
 
   if (error) { toast('Error al cargar órdenes', 'error'); return }
@@ -3198,7 +3181,7 @@ function renderOrdenes(lista) {
       <td style="color:var(--text3);font-size:12px">#${String(_ordenes.length - i).padStart(4,'0')}</td>
       <td style="font-weight:600">${esc(o.clientes?.nombre || '—')}</td>
       <td style="color:var(--text3)">${esc(o.vehiculos ? `${o.vehiculos.marca} ${o.vehiculos.modelo}` : '—')}</td>
-      <td style="color:var(--text3)">${formatFecha(o.fecha_ingreso)}</td>
+      <td style="color:var(--text3)">${formatFechaHora(o.created_at)}</td>
       <td>${badgeEstado(o.estado)}</td>
       <td style="text-align:right">
         <button class="btn btn-ghost btn-sm btn-icon" title="Ver orden" onclick="event.stopPropagation();verOrden('${o.id}')">
@@ -3213,7 +3196,9 @@ function filtrarOrdenes() {
   const q = document.getElementById('search-ordenes').value.toLowerCase()
   renderOrdenes(_ordenes.filter(o =>
     o.clientes?.nombre?.toLowerCase().includes(q) ||
-    o.estado?.includes(q)
+    o.vehiculos?.marca?.toLowerCase().includes(q) ||
+    o.vehiculos?.modelo?.toLowerCase().includes(q) ||
+    o.observaciones?.toLowerCase().includes(q)
   ))
 }
 
@@ -3252,7 +3237,7 @@ function limpiarFormOrden() {
   document.getElementById('ord-cliente').value     = ''
   document.getElementById('ord-vehiculo-id').value = ''
   document.getElementById('ord-obs').value         = ''
-  document.getElementById('ord-estado').value      = 'presupuestado'
+  document.getElementById('ord-estado').value      = 'en_trabajo'
   document.getElementById('ord-vehiculo-info').style.display = 'none'
 }
 
@@ -3315,7 +3300,7 @@ function filtrarLaboratorio() { renderLaboratorio() }
 function setFiltroLab(estado) {
   _filtroLab = estado
   // Actualizar botones de filtro
-  const ids = ['todos','presupuestado','en_trabajo','listo','entregado']
+  const ids = ['todos','en_trabajo','listo','entregado']
   ids.forEach(id => {
     const btn = document.getElementById(`lab-f-${id}`)
     if (!btn) return
@@ -3455,23 +3440,29 @@ async function eliminarStock(id) {
 // ════════════════════════════════════════
 // PRESUPUESTOS / INFORMES (base)
 // ════════════════════════════════════════
+let _presupuestosData    = []
+let _pagosPorPresupData  = {}
+
 async function cargarPresupuestos() {
   const [{ data }, { data: pagosAll }] = await Promise.all([
     db.from('presupuestos').select('*, clientes(nombre), vehiculos(marca,modelo)').order('created_at', { ascending: false }),
     db.from('pagos_presupuesto').select('presupuesto_id, monto')
   ])
-  const tbody = document.getElementById('tabla-presupuestos')
-  if (!data?.length) { tbody.innerHTML = emptyRow(9, 'fa-file-invoice-dollar', 'Sin presupuestos', 'Creá el primer presupuesto'); return }
-
-  // Agrupar pagos por presupuesto_id
-  const pagosPorPresup = {}
+  _presupuestosData = data || []
+  _pagosPorPresupData = {}
   ;(pagosAll || []).forEach(pg => {
-    pagosPorPresup[pg.presupuesto_id] = (pagosPorPresup[pg.presupuesto_id] || 0) + Number(pg.monto)
+    _pagosPorPresupData[pg.presupuesto_id] = (_pagosPorPresupData[pg.presupuesto_id] || 0) + Number(pg.monto)
   })
+  document.getElementById('search-presupuestos').value = ''
+  renderPresupuestos(_presupuestosData)
+}
 
-  tbody.innerHTML = data.map(p => {
+function renderPresupuestos(lista) {
+  const tbody = document.getElementById('tabla-presupuestos')
+  if (!lista.length) { tbody.innerHTML = emptyRow(9, 'fa-file-invoice-dollar', 'Sin presupuestos', 'Creá el primer presupuesto'); return }
+  tbody.innerHTML = lista.map(p => {
     const total     = Number(p.total) || 0
-    const pagado    = pagosPorPresup[p.id] || 0
+    const pagado    = _pagosPorPresupData[p.id] || 0
     const saldo     = total - pagado
     const saldoHtml = !total
       ? `<td style="color:var(--text3)">—</td>`
@@ -3505,6 +3496,41 @@ async function cargarPresupuestos() {
       </td>
     </tr>`
   }).join('')
+}
+
+function filtrarPresupuestos(q) {
+  if (!q.trim()) { renderPresupuestos(_presupuestosData); return }
+  const term = q.toLowerCase()
+  const filtrada = _presupuestosData.filter(p => {
+    const cliente   = (p.datos_cliente?.nombre || p.clientes?.nombre || '').toLowerCase()
+    const detalle   = (p.tipo_detalle || '').toLowerCase()
+    const numero    = (p.n_presupuesto || '').toLowerCase()
+    return cliente.includes(term) || detalle.includes(term) || numero.includes(term)
+  })
+  renderPresupuestos(filtrada)
+}
+
+async function iniciarNuevoPresupuesto() {
+  // Buscar presupuestos sin completar (ingresos pendientes)
+  const { data: pendientes } = await db
+    .from('presupuestos')
+    .select('id, tipo_detalle, fecha, cliente_id, vehiculo_id, clientes(nombre)')
+    .eq('estado', 'pendiente')
+    .is('total', null)
+    .order('created_at', { ascending: false })
+  _ordenesPendientesPresup = pendientes || []
+  if (!_ordenesPendientesPresup.length) { abrirNuevoPresupuesto(); return }
+  // Mostrar selector
+  const lista = document.getElementById('selector-ingreso-lista')
+  lista.innerHTML = _ordenesPendientesPresup.map(o => `
+    <div onclick="presupuestarOrden('${o.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;gap:12px" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+      <div>
+        <div style="font-weight:600;font-size:14px">${esc(o.clientes?.nombre || 'Sin cliente')}</div>
+        <div style="font-size:12px;color:var(--text3)">${esc(o.tipo_detalle || '—')} · ${formatFecha(o.fecha)}</div>
+      </div>
+      <i class="fa-solid fa-chevron-right" style="color:var(--text3);flex-shrink:0"></i>
+    </div>`).join('')
+  openModal('modal-selector-ingreso')
 }
 
 // ════════════════════════════════════════
@@ -3544,22 +3570,8 @@ function abrirNuevoPresupuesto() {
 }
 
 function presupuestarOrden(id) {
-  const o = _ordenesPendientesPresup.find(x => x.id === id)
-  if (!o) return
-  _presupOrdenId = id
-  abrirNuevoPresupuesto()
-  // Pre-llenar cliente
-  if (o.cliente_id) {
-    const sel = document.getElementById('presup-cli-select')
-    sel.value = o.cliente_id
-    presupSeleccionarCliente()
-  }
-  // Pre-llenar descripción
-  if (o.observaciones) {
-    document.getElementById('presup-tipo-detalle').value = o.observaciones
-  }
-  // Tipo: vehículo → planta, otros → lab
-  presupSetTipo(o.vehiculo_id ? 'pla' : 'lab')
+  closeModal('modal-selector-ingreso')
+  editarPresupuesto(id)
 }
 
 function limpiarPresupuesto() {
@@ -3753,11 +3765,6 @@ async function guardarPresupuesto(generarPdf) {
     const { data: presup, error } = await db.from('presupuestos').insert(payload).select().single()
     if (error) { toast('Error al guardar presupuesto', 'error'); console.error(error); return }
     presupId = presup.id
-    // Si viene de un ingreso, marcar la orden como presupuestada
-    if (_presupOrdenId) {
-      await db.from('ordenes_trabajo').update({ estado: 'presupuestado' }).eq('id', _presupOrdenId)
-      _presupOrdenId = null
-    }
   }
 
   // Guardar ítems
@@ -3803,8 +3810,8 @@ async function verOrden(id) {
   const total   = items.reduce((s, i) => s + (i.precio_unitario||0)*(i.cantidad||1), 0)
   const cli     = o.clientes || {}
   const veh     = o.vehiculos
-  const estadoMap = { sin_presupuestar:'Sin presupuesto', presupuestado:'Presupuestado', en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
-  const estadoColor = { sin_presupuestar:'#ef4444', presupuestado:'#f59e0b', en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
+  const estadoMap = { en_trabajo:'En trabajo', listo:'Listo', entregado:'Entregado' }
+  const estadoColor = { en_trabajo:'#3b82f6', listo:'#22c55e', entregado:'#64748b' }
   const fila = (lbl, val) => val ? `<tr><td style="padding:3px 8px 3px 0;color:#777;font-size:12px;font-weight:600;white-space:nowrap">${lbl}</td><td style="padding:3px 0;font-size:13px">${val}</td></tr>` : ''
 
   const trabajoRow = o.observaciones ? `
@@ -3886,7 +3893,7 @@ function ordenBuildPDF(o, items) {
     const pW=210, pH=297, mL=18, mR=18, mT=14, cW=pW-mL-mR
     const VERDE=[22,163,74], GRIS=[110,110,110], GOSC=[40,40,40], LINEA=[210,210,210]
     let y = mT
-    const estadoLabel = {presupuestado:'Presupuestado',en_trabajo:'En trabajo',listo:'Listo',entregado:'Entregado'}[o.estado] || o.estado
+    const estadoLabel = {en_trabajo:'En trabajo',listo:'Listo',entregado:'Entregado'}[o.estado] || o.estado
 
     // Banner
     doc.setFillColor(...VERDE); doc.rect(mL,y,cW,22,'F')
@@ -4301,13 +4308,19 @@ async function aprobarPresupuesto(id) {
 
   // Crear orden de trabajo
   const tipoOrden = p.tipo === 'lab' ? 'laboratorio' : 'taller'
+  // Descripción = detalle del presupuesto + lista de ítems presupuestados
+  const itemsDesc = (p.items_presupuesto || [])
+    .filter(i => i.descripcion)
+    .map(i => `· ${i.descripcion}${i.cantidad > 1 ? ` (×${i.cantidad})` : ''}`)
+    .join('\n')
+  const obsOrden = [p.tipo_detalle, itemsDesc].filter(Boolean).join('\n')
   const { data: ordenCreada, error: errOrden } = await db.from('ordenes_trabajo').insert({
     cliente_id:     clienteId || null,
     vehiculo_id:    p.vehiculo_id || null,
     presupuesto_id: id,
     tipo:           tipoOrden,
     estado:         'en_trabajo',
-    observaciones:  p.tipo_detalle || null,
+    observaciones:  obsOrden || null,
     fecha_ingreso:  new Date().toISOString().split('T')[0],
     total:          p.total || null,
   }).select().single()
@@ -4820,16 +4833,21 @@ function formatFecha(f) {
   return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' })
 }
 
+function formatFechaHora(f) {
+  if (!f) return '—'
+  const d = new Date(f)
+  return d.toLocaleDateString('es-AR', { day:'2-digit', month:'2-digit', year:'numeric' }) +
+    ' ' + d.toLocaleTimeString('es-AR', { hour:'2-digit', minute:'2-digit' })
+}
+
 function badgeEstado(estado) {
   const map = {
-    sin_presupuestar: ['badge-red',   'Sin presupuesto'],
-    presupuestado: ['badge-amber', 'Presupuestado'],
-    en_trabajo:    ['badge-blue',  'En trabajo'],
-    listo:         ['badge-green', 'Listo'],
-    entregado:     ['badge-gray',  'Entregado'],
-    pendiente:     ['badge-amber', 'Pendiente'],
-    aprobado:      ['badge-green', 'Aprobado'],
-    rechazado:     ['badge-red',   'Rechazado'],
+    en_trabajo: ['badge-blue',  'En trabajo'],
+    listo:      ['badge-green', 'Listo'],
+    entregado:  ['badge-gray',  'Entregado'],
+    pendiente:  ['badge-amber', 'Pendiente'],
+    aprobado:   ['badge-green', 'Aprobado'],
+    rechazado:  ['badge-red',   'Rechazado'],
   }
   const [cls, label] = map[estado] || ['badge-gray', estado || '—']
   return `<span class="badge ${cls}">${label}</span>`
@@ -5197,6 +5215,7 @@ let _ingClienteId = null
 let _ingClienteNombre = ''
 let _ingVehiculoId = null
 let _ingVehiculoLabel = ''
+let _ingVehClientePrefill = null
 let _ingFromWizard = false
 
 // El cliente siempre está en el paso 3 (ing-s3cli-*)
@@ -5205,7 +5224,7 @@ function _ingCliPfx() { return 's3cli' }
 function abrirIngreso() {
   _ingStep = 1; _ingTipo = null
   _ingClienteId = null; _ingClienteNombre = ''
-  _ingVehiculoId = null; _ingVehiculoLabel = ''
+  _ingVehiculoId = null; _ingVehiculoLabel = ''; _ingVehClientePrefill = null
 
   document.querySelectorAll('.tipo-tile').forEach(t => t.classList.remove('sel'))
   document.getElementById('ing-otro-wrap').style.display = 'none'
@@ -5346,7 +5365,13 @@ function ingresoNext() {
     if (_ingTipo === 'vehiculo' && !_ingVehiculoId) return
     _ingStep = 3
     _ingRenderStep()
-    setTimeout(() => document.getElementById('ing-s3cli-search').focus(), 80)
+    // Si el vehículo ya tiene propietario, auto-rellenarlo
+    if (_ingVehClientePrefill) {
+      ingresoSelecCliente(_ingVehClientePrefill.id, _ingVehClientePrefill.nombre, 's3cli')
+      _ingVehClientePrefill = null
+    } else {
+      setTimeout(() => document.getElementById('ing-s3cli-search').focus(), 80)
+    }
   }
 }
 
@@ -5470,6 +5495,11 @@ function ingresoSelecVehiculo(id, label) {
     <button class="pill-x" onclick="ingresoClearVehiculo()" title="Cambiar"><i class="fa-solid fa-xmark"></i></button>
   </div>`
   pill.style.display = 'block'
+  // Si el vehículo tiene propietario registrado, pre-rellenar el cliente en paso 3
+  const veh = _vehiculos.find(v => v.id === id)
+  _ingVehClientePrefill = (veh?.cliente_id && veh?.clientes?.nombre)
+    ? { id: veh.cliente_id, nombre: veh.clientes.nombre }
+    : null
   // Auto-avanzar al paso de cliente
   setTimeout(() => ingresoNext(), 180)
 }
@@ -5687,19 +5717,19 @@ async function guardarIngreso(sinPropietario) {
       ? `${_ingCantidad} Inyector${_ingCantidad > 1 ? 'es' : ''}` + (appDesc ? ' — ' + appDesc : '')
       : 'Bomba' + (appDesc ? ' — ' + appDesc : '')
 
-  const { error } = await db.from('ordenes_trabajo').insert({
-    cliente_id:    sinPropietario ? null : (_ingClienteId || null),
-    vehiculo_id:   _ingVehiculoId || null,
-    estado:        'sin_presupuestar',
-    observaciones: obs || null,
-    fecha_ingreso: new Date().toISOString().split('T')[0],
+  const { error } = await db.from('presupuestos').insert({
+    cliente_id:   sinPropietario ? null : (_ingClienteId || null),
+    vehiculo_id:  _ingVehiculoId || null,
+    estado:       'pendiente',
+    tipo_detalle: obs || null,
+    tipo:         _ingVehiculoId ? 'pla' : 'lab',
+    fecha:        new Date().toISOString().split('T')[0],
   })
 
   if (error) { toast('Error al guardar el ingreso', 'error'); return }
 
   closeModal('modal-ingreso')
-  toast(`Ingreso registrado — ${_ingClienteNombre}`, 'success')
-  cargarOrdenes()
+  toast(`Ingreso registrado — queda pendiente de presupuestar`, 'success')
   cargarDashboard()
 }
 
