@@ -5467,7 +5467,7 @@ function ingresoFiltrarClientes(pfx) {
     </div>`).join('')
 
   dd.innerHTML = rows + `
-    <div class="smart-item new-item" data-q="${esc(rawQ)}" data-pfx="${pfx}" onclick="ingresoCrearClienteRapido(this)">
+    <div class="smart-item new-item" data-q="${esc(rawQ)}" data-pfx="${pfx}" onclick="ingresoCrearCliente(this)">
       <i class="fa-solid fa-user-plus" style="margin-right:7px"></i>Crear cliente "${esc(rawQ)}"
     </div>`
   dd.classList.add('open')
@@ -5853,8 +5853,9 @@ async function guardarIngreso() {
       appDesc = _ingAppMarcaNombre + (_ingAppModeloNombre ? ' ' + _ingAppModeloNombre : '')
     }
   }
+  const _vehParaObs = _ingTipo === 'vehiculo' ? _vehiculos.find(v => v.id === _ingVehiculoId) : null
   const obs = _ingTipo === 'vehiculo'
-    ? 'Vehículo a reparar'
+    ? [_vehParaObs?.marca, _vehParaObs?.modelo].filter(Boolean).join(' ') || 'Vehículo a reparar'
     : _ingTipo === 'otro'
       ? document.getElementById('ing-app-manual-input').value.trim()
     : _ingTipo === 'inyector'
