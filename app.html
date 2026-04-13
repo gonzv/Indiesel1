@@ -1373,7 +1373,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="modal-body" style="min-height:300px">
       <!-- Stepper -->
-      <div class="step-bar">
+      <div class="step-bar" id="ing-step-bar">
         <div class="sdot on" id="ing-dot-1">1</div>
         <div class="sline" id="ing-line-1"></div>
         <div class="sdot" id="ing-dot-2">2</div>
@@ -1477,17 +1477,34 @@ tbody tr:last-child td { border-bottom: none; }
 
         <!-- Sub-panel: vehiculo -->
         <div id="ing-s2-veh" style="display:none">
-          <div class="field" style="margin-bottom:0">
-            <label>Buscar vehículo</label>
-            <div style="position:relative">
-              <div class="smart-row" id="ing-veh-input-row">
-                <i class="fa-solid fa-magnifying-glass smart-icon"></i>
-                <input type="text" id="ing-veh-search" placeholder="Patente, marca, modelo..." oninput="ingresoFiltrarVehiculos()" autocomplete="off">
-              </div>
-              <div class="smart-dd" id="ing-veh-dd"></div>
+          <div id="ing-veh-form">
+            <!-- Marca -->
+            <div class="field" style="margin-bottom:12px">
+              <label>Marca <span style="color:var(--danger);font-size:10px">requerida</span></label>
+              <select id="ing-veh-marca-sel" onchange="ingVehMarcaChange()" style="width:100%">
+                <option value="">— Seleccioná la marca —</option>
+              </select>
             </div>
-            <div id="ing-veh-pill" style="display:none"></div>
+            <!-- Modelo -->
+            <div class="field" style="margin-bottom:12px">
+              <label>Modelo</label>
+              <input type="text" id="ing-veh-modelo" placeholder="Ej: Hilux, Amarok..." list="ing-veh-modelos-list" autocomplete="off" disabled style="opacity:.55">
+              <datalist id="ing-veh-modelos-list"></datalist>
+            </div>
+            <!-- Patente con sugerencias -->
+            <div class="field" style="margin-bottom:0">
+              <label>Patente <span style="font-size:11px;color:var(--text3);text-transform:none;letter-spacing:0">(opcional)</span></label>
+              <div style="position:relative">
+                <div class="smart-row" id="ing-veh-pat-row">
+                  <i class="fa-solid fa-magnifying-glass smart-icon"></i>
+                  <input type="text" id="ing-veh-patente" placeholder="AB 123 CD — si ya existe, aparece para seleccionar" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase();ingVehFiltrarPatente()" autocomplete="off">
+                </div>
+                <div class="smart-dd" id="ing-veh-pat-dd"></div>
+              </div>
+            </div>
           </div>
+          <!-- Pill cuando se selecciona vehículo existente -->
+          <div id="ing-veh-pill" style="display:none"></div>
         </div>
 
       </div>
@@ -1508,6 +1525,32 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
 
     </div>
+
+    <!-- STEP GUARDADO: ¿armar presupuesto? -->
+    <div id="ing-step-saved" style="display:none;padding:8px 0">
+      <div style="text-align:center;margin-bottom:20px">
+        <i class="fa-solid fa-circle-check" style="font-size:2.5rem;color:var(--accent)"></i>
+        <div style="font-size:16px;font-weight:700;margin-top:10px">¡Ingreso registrado!</div>
+        <div style="color:var(--text3);font-size:13px;margin-top:4px">¿Querés armar el presupuesto ahora?</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-secondary" style="justify-content:flex-start;gap:12px;padding:14px 16px" onclick="ingresoArmarPresupuesto()">
+          <i class="fa-solid fa-file-invoice-dollar" style="color:var(--accent);font-size:18px"></i>
+          <div style="text-align:left">
+            <div style="font-weight:700">Sí, armar presupuesto</div>
+            <div style="font-size:12px;color:var(--text3)">Abre el formulario pre-llenado</div>
+          </div>
+        </button>
+        <button class="btn btn-ghost" style="justify-content:flex-start;gap:12px;padding:14px 16px" onclick="closeModal('modal-ingreso')">
+          <i class="fa-solid fa-check" style="font-size:18px"></i>
+          <div style="text-align:left">
+            <div style="font-weight:700">No, terminar</div>
+            <div style="font-size:12px;color:var(--text3)">El presupuesto se arma en otro momento</div>
+          </div>
+        </button>
+      </div>
+    </div>
+
     <div class="modal-footer" id="ing-footer"></div>
   </div>
 </div>
@@ -1522,7 +1565,7 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="modal-body">
       <div class="form-grid" style="gap:14px">
         <div class="field">
-          <label>Patente <span style="font-size:11px;color:var(--text3)">(requerida para nuevo)</span></label>
+          <label>Patente <span style="font-size:11px;color:var(--text3)">(opcional)</span></label>
           <input type="text" id="veh-patente" placeholder="AB 123 CD" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" onblur="verificarPatenteExistente()">
           <div id="veh-patente-aviso" style="display:none;margin-top:4px;font-size:12px;padding:6px 10px;border-radius:4px"></div>
         </div>
@@ -1835,7 +1878,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal('modal-presup-preview')">Cerrar</button>
-      <button class="btn btn-ghost" onclick="abrirRegistrarPago()">
+      <button class="btn btn-ghost" id="presup-preview-pago-btn" onclick="abrirRegistrarPago()">
         <i class="fa-solid fa-hand-holding-dollar" style="color:var(--accent)"></i> Registrar pago
       </button>
       <button class="btn btn-primary" id="presup-preview-pdf-btn" onclick="">
@@ -2466,7 +2509,7 @@ async function cargarDashboard() {
             <div style="font-size:13px;font-weight:600">${p.datos_cliente?.nombre || p.clientes?.nombre || '—'}</div>
             <div style="font-size:11px;color:var(--text3)">${p.tipo_detalle || '—'} · ${formatFecha(p.fecha)}</div>
           </div>
-          ${badgeEstado(p.estado)}
+          ${badgePresupuesto(p)}
         </div>`).join('')
     }
   } catch(e) {
@@ -2993,8 +3036,7 @@ async function verificarPatenteExistente() {
 let _editandoVehiculoId = null
 
 async function guardarVehiculo() {
-  const patente = document.getElementById('veh-patente').value.trim().toUpperCase()
-  if (!patente && !_editandoVehiculoId) { toast('La patente es obligatoria', 'error'); return }
+  const patente = document.getElementById('veh-patente').value.trim().toUpperCase() || null
 
   const marcaSel  = document.getElementById('veh-marca-sel')
   const marcaId   = marcaSel.value && marcaSel.value !== '__nueva__' ? marcaSel.value : null
@@ -3476,11 +3518,11 @@ function renderPresupuestos(lista) {
       <td style="color:var(--text3)">${esc(p.tipo_detalle || '—')}</td>
       <td style="color:var(--text3)">${formatFecha(p.fecha)}</td>
       <td style="color:var(--text3)">${p.validez_dias ? p.validez_dias + ' días' : '—'}</td>
-      <td>${badgeEstado(p.estado)}</td>
+      <td>${badgePresupuesto(p)}</td>
       <td style="font-weight:600">${total ? '$ '+total.toLocaleString('es-AR') : '—'}</td>
       ${saldoHtml}
       <td style="display:flex;gap:4px;align-items:center">
-        ${p.estado === 'pendiente' ? `
+        ${p.estado === 'pendiente' && p.total ? `
         <button class="btn btn-ghost btn-sm" title="Aprobar y crear orden" onclick="aprobarPresupuesto('${p.id}')" style="color:var(--accent);border-color:var(--accent)">
           <i class="fa-solid fa-circle-check"></i> Aprobar
         </button>` : ''}
@@ -3490,9 +3532,10 @@ function renderPresupuestos(lista) {
         <button class="btn btn-ghost btn-sm btn-icon" title="Editar presupuesto" onclick="editarPresupuesto('${p.id}')">
           <i class="fa-solid fa-pen" style="color:var(--text2)"></i>
         </button>
+        ${p.estado === 'aprobado' ? `
         <button class="btn btn-ghost btn-sm btn-icon" title="Registrar pago" onclick="abrirRegistrarPago('${p.id}')">
           <i class="fa-solid fa-hand-holding-dollar" style="color:var(--accent)"></i>
-        </button>
+        </button>` : ''}
       </td>
     </tr>`
   }).join('')
@@ -4215,6 +4258,9 @@ async function verPresupuesto(id) {
   // Conectar botón PDF
   document.getElementById('presup-preview-pdf-btn').onclick = () => presupPDFDesdeDB(id)
 
+  // Mostrar "Registrar pago" solo cuando está aprobado
+  document.getElementById('presup-preview-pago-btn').style.display = p.estado === 'aprobado' ? '' : 'none'
+
   openModal('modal-presup-preview')
 }
 
@@ -4853,6 +4899,15 @@ function badgeEstado(estado) {
   return `<span class="badge ${cls}">${label}</span>`
 }
 
+// Variante para presupuestos: diferencia "Sin presupuesto" vs "Presupuestado"
+function badgePresupuesto(p) {
+  if (p.estado === 'pendiente') {
+    if (!p.total) return '<span class="badge badge-red">Sin presupuesto</span>'
+    return '<span class="badge badge-amber">Presupuestado</span>'
+  }
+  return badgeEstado(p.estado)
+}
+
 function emptyRow(cols, icon, title, desc) {
   return `<tr><td colspan="${cols}"><div class="empty-state">
     <div class="empty-icon"><i class="fa-solid ${icon}"></i></div>
@@ -5222,9 +5277,12 @@ let _ingFromWizard = false
 function _ingCliPfx() { return 's3cli' }
 
 function abrirIngreso() {
-  _ingStep = 1; _ingTipo = null
+  _ingStep = 1; _ingTipo = null; _ingNuevoPresupId = null
   _ingClienteId = null; _ingClienteNombre = ''
   _ingVehiculoId = null; _ingVehiculoLabel = ''; _ingVehClientePrefill = null
+
+  document.getElementById('ing-step-bar').style.display = ''
+  document.getElementById('ing-step-saved').style.display = 'none'
 
   document.querySelectorAll('.tipo-tile').forEach(t => t.classList.remove('sel'))
   document.getElementById('ing-otro-wrap').style.display = 'none'
@@ -5240,10 +5298,11 @@ function abrirIngreso() {
   document.getElementById('ing-s3cli-pill').innerHTML = ''
 
   // Reset panel vehículo
-  document.getElementById('ing-veh-input-row').style.display = ''
-  document.getElementById('ing-veh-search').value = ''
-  document.getElementById('ing-veh-dd').classList.remove('open')
-  document.getElementById('ing-veh-dd').innerHTML = ''
+  _ingVehMarcaId = null
+  document.getElementById('ing-veh-form').style.display = ''
+  document.getElementById('ing-veh-pat-dd').classList.remove('open')
+  document.getElementById('ing-veh-pat-dd').innerHTML = ''
+  document.getElementById('ing-veh-patente').value = ''
   document.getElementById('ing-veh-pill').style.display = 'none'
   document.getElementById('ing-veh-pill').innerHTML = ''
 
@@ -5299,7 +5358,7 @@ function _ingRenderStep() {
 
   const subs = {
     1: '¿Qué ingresa hoy al taller?',
-    2: esVeh ? 'Buscar o registrar el vehículo' : (_ingTipo === 'otro' ? '¿Qué es?' : 'Aplicación y cantidad'),
+    2: esVeh ? 'Datos del vehículo' : (_ingTipo === 'otro' ? '¿Qué es?' : 'Aplicación y cantidad'),
     3: '¿De quién es?'
   }
   document.getElementById('ing-subtitulo').textContent = subs[_ingStep] || ''
@@ -5317,9 +5376,9 @@ function _ingRenderFooter() {
         Continuar <i class="fa-solid fa-arrow-right"></i>
       </button>`
   } else if (_ingStep === 2) {
-    // Vehículo: Continuar deshabilitado hasta elegir vehículo
+    // Vehículo: Continuar requiere marca seleccionada (para crear nuevo) o vehículo existente seleccionado
     // Resto: Continuar siempre habilitado (app es opcional)
-    const okS2 = esVeh ? !!_ingVehiculoId : true
+    const okS2 = esVeh ? (!!_ingVehiculoId || !!_ingVehMarcaId) : true
     f.innerHTML = `
       <button class="btn btn-ghost" onclick="ingresoPrev()"><i class="fa-solid fa-arrow-left"></i> Atrás</button>
       <button class="btn btn-primary" id="ing-btn-s2" onclick="ingresoNext()" ${okS2 ? '' : 'disabled'}>
@@ -5329,8 +5388,7 @@ function _ingRenderFooter() {
     // Paso 3: cliente para todos los tipos
     f.innerHTML = `
       <button class="btn btn-ghost" onclick="ingresoPrev()"><i class="fa-solid fa-arrow-left"></i> Atrás</button>
-      <button class="btn btn-ghost" onclick="guardarIngreso(true)">Sin cliente</button>
-      <button class="btn btn-primary" id="ing-btn-s3" onclick="guardarIngreso()" ${_ingClienteId ? '' : 'disabled'}>
+      <button class="btn btn-primary" id="ing-btn-s3" onclick="guardarIngreso()" ${(_ingClienteId || esVeh) ? '' : 'disabled'}>
         <i class="fa-solid fa-check"></i> Guardar
       </button>`
   }
@@ -5351,18 +5409,28 @@ function ingresoValidarStep1() {
   btn.disabled = !_ingTipo
 }
 
-function ingresoNext() {
+async function ingresoNext() {
   if (_ingStep === 1) {
     if (!_ingTipo) return
     _ingStep = 2
     _ingRenderStep()
-    const focusId = _ingTipo === 'vehiculo' ? 'ing-veh-search'
-      : (_ingTipo === 'inyector' || _ingTipo === 'bomba') ? 'ing-app-marca-search'
-      : 'ing-app-manual-input'
-    setTimeout(() => document.getElementById(focusId)?.focus(), 80)
+    if (_ingTipo === 'vehiculo') {
+      ingVehInicializarStep2()
+    } else {
+      const focusId = (_ingTipo === 'inyector' || _ingTipo === 'bomba') ? 'ing-app-marca-search' : 'ing-app-manual-input'
+      setTimeout(() => document.getElementById(focusId)?.focus(), 80)
+    }
 
   } else if (_ingStep === 2) {
-    if (_ingTipo === 'vehiculo' && !_ingVehiculoId) return
+    if (_ingTipo === 'vehiculo') {
+      if (!_ingVehiculoId) {
+        if (!_ingVehMarcaId) return  // marca requerida
+        await ingVehCrearYSeleccionar()
+        // ingVehCrearYSeleccionar → ingresoSelecVehiculo → setTimeout(ingresoNext, 180)
+        return
+      }
+      // vehículo ya seleccionado → avanzar a paso 3
+    }
     _ingStep = 3
     _ingRenderStep()
     // Si el vehículo ya tiene propietario, auto-rellenarlo
@@ -5399,7 +5467,7 @@ function ingresoFiltrarClientes(pfx) {
     </div>`).join('')
 
   dd.innerHTML = rows + `
-    <div class="smart-item new-item" data-q="${esc(rawQ)}" data-pfx="${pfx}" onclick="ingresoCrearCliente(this)">
+    <div class="smart-item new-item" data-q="${esc(rawQ)}" data-pfx="${pfx}" onclick="ingresoCrearClienteRapido(this)">
       <i class="fa-solid fa-user-plus" style="margin-right:7px"></i>Crear cliente "${esc(rawQ)}"
     </div>`
   dd.classList.add('open')
@@ -5448,46 +5516,125 @@ function ingresoCrearCliente(el) {
   openModal('modal-cliente')
 }
 
-// ── Smart search: vehículos ─────────────
-function ingresoFiltrarVehiculos() {
-  const q  = document.getElementById('ing-veh-search').value.toLowerCase().trim()
-  const dd = document.getElementById('ing-veh-dd')
-  if (!q) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+// Crea el cliente directo con solo el nombre, sin abrir el modal completo
+async function ingresoCrearClienteRapido(el) {
+  const nombre = el.dataset.q?.trim()
+  const pfx    = el.dataset.pfx
+  if (!nombre) return
 
-  const hits = _vehiculos.filter(v => {
-    const txt = [v.patente, v.marca, v.modelo, String(v.año || '')].join(' ').toLowerCase()
-    return txt.includes(q)
-  }).slice(0, 8)
+  const { data, error } = await db.from('clientes').insert({ nombre }).select().single()
+  if (error) { toast('Error al crear cliente', 'error'); console.error(error); return }
 
-  const rawQ = document.getElementById('ing-veh-search').value.trim()
-  let html = hits.map(v => {
+  await cargarClientes()
+  document.getElementById(`ing-${pfx}-dd`).classList.remove('open')
+  ingresoSelecCliente(data.id, data.nombre, pfx)
+  toast(`Cliente "${data.nombre}" creado`, 'success')
+}
+
+// ── Ingreso: form vehículo (step 2) ─────
+let _ingVehMarcaId = null
+
+function ingVehInicializarStep2() {
+  _ingVehMarcaId = null
+  const sel = document.getElementById('ing-veh-marca-sel')
+  if (_marcas.length) {
+    sel.innerHTML = '<option value="">— Seleccioná la marca —</option>' +
+      _marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('')
+  } else {
+    // Si aún no están cargadas, cargar y luego poblar
+    cargarMarcas().then(() => {
+      sel.innerHTML = '<option value="">— Seleccioná la marca —</option>' +
+        _marcas.map(m => `<option value="${m.id}">${esc(m.nombre)}</option>`).join('')
+    })
+  }
+  sel.value = ''
+  const modeloInput = document.getElementById('ing-veh-modelo')
+  modeloInput.value = ''; modeloInput.disabled = true; modeloInput.style.opacity = '.55'
+  document.getElementById('ing-veh-modelos-list').innerHTML = ''
+  document.getElementById('ing-veh-patente').value = ''
+  document.getElementById('ing-veh-pat-dd').classList.remove('open')
+  document.getElementById('ing-veh-pat-dd').innerHTML = ''
+  setTimeout(() => sel.focus(), 80)
+}
+
+async function ingVehMarcaChange() {
+  const sel = document.getElementById('ing-veh-marca-sel')
+  _ingVehMarcaId = sel.value || null
+  const modeloInput = document.getElementById('ing-veh-modelo')
+  const dl = document.getElementById('ing-veh-modelos-list')
+  if (_ingVehMarcaId) {
+    modeloInput.disabled = false; modeloInput.style.opacity = '1'
+    setTimeout(() => modeloInput.focus(), 50)
+    const { data } = await db.from('modelos_vehiculos').select('nombre').eq('marca_id', _ingVehMarcaId).order('nombre')
+    dl.innerHTML = (data || []).map(m => `<option value="${esc(m.nombre)}">`).join('')
+  } else {
+    modeloInput.disabled = true; modeloInput.style.opacity = '.55'
+    modeloInput.value = ''; dl.innerHTML = ''
+  }
+  _ingRenderFooter()
+}
+
+function ingVehFiltrarPatente() {
+  const q  = document.getElementById('ing-veh-patente').value.trim().toUpperCase()
+  const dd = document.getElementById('ing-veh-pat-dd')
+  if (!q || q.length < 2) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+
+  const hits = _vehiculos.filter(v => v.patente && v.patente.toUpperCase().includes(q)).slice(0, 6)
+  if (!hits.length) { dd.classList.remove('open'); dd.innerHTML = ''; return }
+
+  dd.innerHTML = hits.map(v => {
     const label = [v.patente, v.marca, v.modelo, v.año ? `(${v.año})` : ''].filter(Boolean).join(' · ')
     const owner = v.clientes?.nombre || ''
-    return `<div class="smart-item" data-id="${v.id}" data-label="${esc(label)}" onclick="ingresoSelecVehiculoEl(this)">
-      <div class="si-main">${ingHighlight(esc(label), q)}</div>
+    return `<div class="smart-item" data-id="${v.id}" data-label="${esc(label)}" onclick="ingVehSelecExistente(this)">
+      <div class="si-main">${ingHighlight(esc(label), q.toLowerCase())}</div>
       ${owner ? `<div class="si-sub"><i class="fa-solid fa-user" style="font-size:10px;margin-right:4px"></i>${esc(owner)}</div>` : ''}
     </div>`
   }).join('')
-
-  if (!hits.length)
-    html = `<div class="smart-item" style="color:var(--text3);cursor:default;font-size:12px">Sin resultados para "${esc(rawQ)}"</div>`
-
-  html += `<div class="smart-item new-item" onclick="ingresoCrearVehiculo()">
-    <i class="fa-solid fa-plus" style="margin-right:7px"></i>Registrar nuevo vehículo
-  </div>`
-
-  dd.innerHTML = html
   dd.classList.add('open')
 }
 
-function ingresoSelecVehiculoEl(el) {
+function ingVehSelecExistente(el) {
+  document.getElementById('ing-veh-pat-dd').classList.remove('open')
   ingresoSelecVehiculo(el.dataset.id, el.dataset.label)
+}
+
+async function ingVehCrearYSeleccionar() {
+  const marcaSel   = document.getElementById('ing-veh-marca-sel')
+  const marcaNombre = _marcas.find(m => m.id === _ingVehMarcaId)?.nombre || ''
+  const modelo     = document.getElementById('ing-veh-modelo').value.trim() || null
+  const patente    = document.getElementById('ing-veh-patente').value.trim().toUpperCase() || null
+
+  const btn = document.getElementById('ing-btn-s2')
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...' }
+
+  // Si el modelo es nuevo para esa marca, guardarlo en modelos_vehiculos
+  if (_ingVehMarcaId && modelo) {
+    const { data: modEx } = await db.from('modelos_vehiculos').select('id').eq('marca_id', _ingVehMarcaId).ilike('nombre', modelo).limit(1)
+    if (!modEx?.length) await db.from('modelos_vehiculos').insert({ marca_id: _ingVehMarcaId, nombre: modelo })
+  }
+
+  const { data, error } = await db.from('vehiculos').insert({
+    patente,
+    marca:   marcaNombre || null,
+    modelo,
+  }).select('*, clientes(nombre)').single()
+
+  if (error) {
+    if (error.code === '23505') toast('Ya existe un vehículo con esa patente', 'error')
+    else toast('Error al crear el vehículo', 'error')
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Continuar <i class="fa-solid fa-arrow-right"></i>' }
+    return
+  }
+
+  await cargarVehiculos()
+  const label = [data.patente, data.marca, data.modelo].filter(Boolean).join(' · ')
+  ingresoSelecVehiculo(data.id, label)
 }
 
 function ingresoSelecVehiculo(id, label) {
   _ingVehiculoId = id; _ingVehiculoLabel = label
-  document.getElementById('ing-veh-dd').classList.remove('open')
-  document.getElementById('ing-veh-input-row').style.display = 'none'
+  document.getElementById('ing-veh-pat-dd')?.classList.remove('open')
+  document.getElementById('ing-veh-form').style.display = 'none'
   const pill = document.getElementById('ing-veh-pill')
   pill.innerHTML = `<div class="smart-pill">
     <i class="fa-solid fa-car" style="font-size:12px"></i>
@@ -5506,13 +5653,13 @@ function ingresoSelecVehiculo(id, label) {
 
 function ingresoClearVehiculo() {
   _ingVehiculoId = null; _ingVehiculoLabel = ''
-  document.getElementById('ing-veh-input-row').style.display = ''
-  document.getElementById('ing-veh-search').value = ''
-  document.getElementById('ing-veh-dd').classList.remove('open')
+  document.getElementById('ing-veh-form').style.display = ''
+  document.getElementById('ing-veh-pat-dd').classList.remove('open')
+  document.getElementById('ing-veh-pat-dd').innerHTML = ''
   document.getElementById('ing-veh-pill').style.display = 'none'
   document.getElementById('ing-veh-pill').innerHTML = ''
   _ingRenderFooter()
-  setTimeout(() => document.getElementById('ing-veh-search').focus(), 50)
+  setTimeout(() => document.getElementById('ing-veh-marca-sel').focus(), 50)
 }
 
 // ── Highlight de coincidencias ──────────
@@ -5523,12 +5670,7 @@ function ingHighlight(text, q) {
     '<mark style="background:rgba(34,197,94,.25);color:var(--accent);border-radius:2px;padding:0 1px">$1</mark>')
 }
 
-// ── Crear vehículo desde el wizard ──────
-function ingresoCrearVehiculo() {
-  document.getElementById('ing-veh-dd').classList.remove('open')
-  closeModal('modal-ingreso')
-  abrirNuevoVehiculo('ingreso')
-}
+
 
 // ── Helper capitalización ────────────────
 function toCapFirst(s) {
@@ -5694,7 +5836,9 @@ function ingresoClearModelo() {
 }
 
 // ── Guardar ingreso ─────────────────────
-async function guardarIngreso(sinPropietario) {
+let _ingNuevoPresupId = null
+
+async function guardarIngreso() {
   // Para no-vehiculo, cliente es obligatorio
   if (_ingTipo !== 'vehiculo' && !_ingClienteId) {
     toast('Seleccioná un cliente', 'error'); return
@@ -5717,30 +5861,52 @@ async function guardarIngreso(sinPropietario) {
       ? `${_ingCantidad} Inyector${_ingCantidad > 1 ? 'es' : ''}` + (appDesc ? ' — ' + appDesc : '')
       : 'Bomba' + (appDesc ? ' — ' + appDesc : '')
 
-  const { error } = await db.from('presupuestos').insert({
-    cliente_id:   sinPropietario ? null : (_ingClienteId || null),
+  const { data, error } = await db.from('presupuestos').insert({
+    cliente_id:   _ingClienteId || null,
     vehiculo_id:  _ingVehiculoId || null,
     estado:       'pendiente',
     tipo_detalle: obs || null,
     tipo:         _ingVehiculoId ? 'pla' : 'lab',
     fecha:        new Date().toISOString().split('T')[0],
-  })
+  }).select('id').single()
 
   if (error) { toast('Error al guardar el ingreso', 'error'); return }
 
-  closeModal('modal-ingreso')
-  toast(`Ingreso registrado — queda pendiente de presupuestar`, 'success')
+  // Vincular vehículo al cliente si el vehículo no tenía propietario asignado
+  if (_ingVehiculoId && _ingClienteId) {
+    const veh = _vehiculos.find(v => v.id === _ingVehiculoId)
+    if (veh && !veh.cliente_id) {
+      await db.from('vehiculos').update({ cliente_id: _ingClienteId }).eq('id', _ingVehiculoId)
+      cargarVehiculos()
+    }
+  }
+
+  _ingNuevoPresupId = data.id
   cargarDashboard()
+
+  // Mostrar pregunta de presupuesto
+  document.getElementById('ing-step-bar').style.display = 'none'
+  ;[1,2,3].forEach(n => document.getElementById(`ing-step-${n}`).classList.remove('on'))
+  document.getElementById('ing-step-saved').style.display = 'block'
+  document.getElementById('ing-footer').innerHTML = ''
+}
+
+function ingresoArmarPresupuesto() {
+  const id = _ingNuevoPresupId
+  closeModal('modal-ingreso')
+  navigate('presupuestos')
+  setTimeout(() => presupuestarOrden(id), 200)
 }
 
 // Cerrar dropdowns al hacer click fuera
 document.addEventListener('click', e => {
-  ;['ing-cli', 'ing-s3cli', 'ing-veh'].forEach(pfx => {
-    const rowId = pfx === 'ing-veh' ? 'ing-veh-input-row' : pfx + '-row'
-    const ddId  = pfx + '-dd'
-    if (!e.target.closest(`#${rowId}`) && !e.target.closest(`#${ddId}`))
-      document.getElementById(ddId)?.classList.remove('open')
+  ;['ing-cli', 'ing-s3cli'].forEach(pfx => {
+    if (!e.target.closest(`#${pfx}-row`) && !e.target.closest(`#${pfx}-dd`))
+      document.getElementById(pfx + '-dd')?.classList.remove('open')
   })
+  // Patente dropdown del wizard de vehículo
+  if (!e.target.closest('#ing-veh-pat-row') && !e.target.closest('#ing-veh-pat-dd'))
+    document.getElementById('ing-veh-pat-dd')?.classList.remove('open')
   ;['ing-app-marca', 'ing-app-modelo'].forEach(pfx => {
     if (!e.target.closest(`#${pfx}-row`) && !e.target.closest(`#${pfx}-dd`))
       document.getElementById(pfx + '-dd')?.classList.remove('open')
